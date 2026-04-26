@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Deck Builder</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_library">Library</string>
+    <string name="nav_builder">Builder</string>
+    <string name="nav_saved">Saved</string>
+    <string name="nav_battlegrounds">BG</string>
+    <string name="nav_more">More</string>
+
+    <!-- Library -->
+    <string name="library_title">Library</string>
+    <string name="library_search_hint">Search cards by name or text…</string>
+    <string name="library_count_format">%1$d cards</string>
+    <string name="library_empty_no_filters">No cards loaded yet.</string>
+    <string name="library_empty_with_filters">No cards match these filters.</string>
+    <string name="library_new_set_title">New cards in %1$s</string>
+    <string name="library_new_set_subtitle">Tap to filter the library by this set.</string>
+
+    <!-- Common -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_apply">Apply</string>
+    <string name="action_close">Close</string>
+    <string name="action_save">Save</string>
+    <string name="action_save_deck">Save deck</string>
+    <string name="action_decode">Decode</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_back">Back</string>
+    <string name="action_share">Share</string>
+    <string name="action_copy_code">Copy code</string>
+    <string name="action_paste">Paste</string>
+    <string name="action_reset_all">Reset all</string>
+    <string name="action_dismiss">Dismiss</string>
+
+    <!-- Filter sheet -->
+    <string name="filters_title">Filters</string>
+    <string name="filters_section_mana">Mana cost</string>
+    <string name="filters_section_rarity">Rarity</string>
+    <string name="filters_section_type">Type</string>
+    <string name="filters_section_minion_type">Minion type</string>
+    <string name="filters_section_spell_school">Spell school</string>
+    <string name="filters_section_set">Set (recent)</string>
+    <string name="filters_section_show_noncollectible">Show non-collectible</string>
+    <string name="filters_collectible_only">Collectible only</string>
+    <string name="filters_all_cards">All cards</string>
+
+    <!-- Builder -->
+    <string name="builder_new_deck">New deck</string>
+    <string name="builder_pick_class">Pick a class to begin.</string>
+    <string name="builder_waiting_metadata">Waiting for class metadata…</string>
+    <string name="builder_search_pool">Search pool</string>
+    <string name="builder_pool_tab">Pool</string>
+    <string name="builder_deck_tab">Deck</string>
+    <string name="builder_deck_count">%1$d / %2$d</string>
+    <string name="builder_format_standard">Untitled · Standard</string>
+    <string name="builder_empty_deck_title">Empty deck.</string>
+    <string name="builder_empty_deck_body">Switch to the Pool tab and tap cards to add them.</string>
+    <string name="builder_toast_wrong_class">Not a %1$s or Neutral card</string>
+    <string name="builder_toast_legendary_limit">Legendary limit (×1)</string>
+    <string name="builder_toast_card_limit">Card limit (×2)</string>
+    <string name="builder_toast_deck_full">Deck is full (%1$d/%1$d)</string>
+
+    <!-- Saved Decks -->
+    <string name="saved_title">Saved decks</string>
+    <string name="saved_search_hint">Search saved decks</string>
+    <string name="saved_empty_title">No saved decks yet.</string>
+    <string name="saved_empty_body">Tap the + button to import a deck by code, or build one in the Builder tab.</string>
+    <string name="saved_delete_title">Delete deck?</string>
+    <string name="saved_delete_message">"%1$s" will be removed from your saved decks. The share code stays valid — you can re-import it any time.</string>
+
+    <!-- Import sheet -->
+    <string name="import_title">Import deck</string>
+    <string name="import_subtitle">Paste a Hearthstone deck code. Tap Decode to view and save it.</string>
+    <string name="import_invalid">This deck code looks invalid.</string>
+
+    <!-- Deck view -->
+    <string name="deck_view_cards_count">CARDS · %1$d</string>
+    <string name="deck_view_invalid_format">%1$d invalid card id(s) reported by API</string>
+    <string name="deck_view_copied">Deck code copied</string>
+
+    <!-- Card detail -->
+    <string name="card_detail_related">RELATED CARDS</string>
+
+    <!-- Battlegrounds -->
+    <string name="bg_title">Battlegrounds</string>
+    <string name="bg_tab_minions">Minions</string>
+    <string name="bg_tab_heroes">Heroes</string>
+    <string name="bg_empty_minions">No minions match.</string>
+    <string name="bg_empty_heroes">No heroes.</string>
+
+    <!-- Glossary -->
+    <string name="glossary_title">Glossary</string>
+    <string name="glossary_search_hint">Search keywords</string>
+    <string name="glossary_loading">Loading keyword metadata…</string>
+    <string name="glossary_empty_no_query">No keywords.</string>
+    <string name="glossary_empty_query">No keyword matches \"%1$s\".</string>
+
+    <!-- Card backs -->
+    <string name="cardbacks_title">Card backs</string>
+    <string name="cardbacks_search_hint">Search card backs</string>
+    <string name="cardbacks_empty">No card backs match.</string>
+    <string name="cardbacks_category_all">All</string>
+
+    <!-- More -->
+    <string name="more_title">More</string>
+    <string name="more_glossary">Glossary</string>
+    <string name="more_glossary_subtitle">Keywords and what they do</string>
+    <string name="more_cardbacks">Card backs</string>
+    <string name="more_cardbacks_subtitle">Browse the card-back collection</string>
+    <string name="more_settings">Settings</string>
+    <string name="more_settings_subtitle">Theme, language, cache</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_language">Language</string>
+    <string name="settings_section_data">Data</string>
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_section_about">About</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_dark">Always dark</string>
+    <string name="settings_theme_light">Always light</string>
+    <string name="settings_theme_system_subtitle">Follows your device theme</string>
+    <string name="settings_card_language">Card language</string>
+    <string name="settings_card_language_subtitle">Used on every card and deck request</string>
+    <string name="settings_refresh_metadata">Refresh metadata</string>
+    <string name="settings_refresh_metadata_subtitle">Tap to fetch the latest sets, classes and keywords.</string>
+    <string name="settings_refresh_metadata_last">Last updated: %1$s</string>
+    <string name="settings_refresh_success">Metadata refreshed</string>
+    <string name="settings_refresh_failure">Refresh failed: %1$s</string>
+    <string name="settings_crash_reports">Send crash reports</string>
+    <string name="settings_crash_reports_subtitle">Anonymous, via Firebase Crashlytics</string>
+    <string name="settings_version">Version</string>
+</resources>

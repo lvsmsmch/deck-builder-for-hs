@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Deck Builder</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_library">Карты</string>
+    <string name="nav_builder">Сбор</string>
+    <string name="nav_saved">Деки</string>
+    <string name="nav_battlegrounds">BG</string>
+    <string name="nav_more">Ещё</string>
+
+    <!-- Library -->
+    <string name="library_title">Карты</string>
+    <string name="library_search_hint">Поиск по имени или тексту…</string>
+    <string name="library_count_format">карт: %1$d</string>
+    <string name="library_empty_no_filters">Карты ещё не загружены.</string>
+    <string name="library_empty_with_filters">Под эти фильтры ничего не найдено.</string>
+    <string name="library_new_set_title">Новые карты в %1$s</string>
+    <string name="library_new_set_subtitle">Тап — отфильтровать библиотеку по этому сету.</string>
+
+    <!-- Common -->
+    <string name="action_cancel">Отмена</string>
+    <string name="action_apply">Применить</string>
+    <string name="action_close">Закрыть</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_save_deck">Сохранить деку</string>
+    <string name="action_decode">Декодировать</string>
+    <string name="action_retry">Повторить</string>
+    <string name="action_clear">Очистить</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_back">Назад</string>
+    <string name="action_share">Поделиться</string>
+    <string name="action_copy_code">Копировать код</string>
+    <string name="action_paste">Вставить</string>
+    <string name="action_reset_all">Сбросить</string>
+    <string name="action_dismiss">Скрыть</string>
+
+    <!-- Filter sheet -->
+    <string name="filters_title">Фильтры</string>
+    <string name="filters_section_mana">Стоимость</string>
+    <string name="filters_section_rarity">Редкость</string>
+    <string name="filters_section_type">Тип</string>
+    <string name="filters_section_minion_type">Тип существа</string>
+    <string name="filters_section_spell_school">Школа заклинаний</string>
+    <string name="filters_section_set">Сет (последние)</string>
+    <string name="filters_section_show_noncollectible">Показывать недоступные</string>
+    <string name="filters_collectible_only">Только доступные</string>
+    <string name="filters_all_cards">Все карты</string>
+
+    <!-- Builder -->
+    <string name="builder_new_deck">Новая дека</string>
+    <string name="builder_pick_class">Выбери класс, чтобы начать.</string>
+    <string name="builder_waiting_metadata">Загружаем список классов…</string>
+    <string name="builder_search_pool">Поиск в пуле</string>
+    <string name="builder_pool_tab">Пул</string>
+    <string name="builder_deck_tab">Дека</string>
+    <string name="builder_deck_count">%1$d / %2$d</string>
+    <string name="builder_format_standard">Без названия · Стандарт</string>
+    <string name="builder_empty_deck_title">Дека пуста.</string>
+    <string name="builder_empty_deck_body">Перейди во вкладку «Пул» и тапай по картам, чтобы добавить.</string>
+    <string name="builder_toast_wrong_class">Это карта другого класса (нужен %1$s или нейтрал)</string>
+    <string name="builder_toast_legendary_limit">Лимит легендарок (×1)</string>
+    <string name="builder_toast_card_limit">Лимит карт (×2)</string>
+    <string name="builder_toast_deck_full">Дека заполнена (%1$d/%1$d)</string>
+
+    <!-- Saved Decks -->
+    <string name="saved_title">Сохранённые деки</string>
+    <string name="saved_search_hint">Поиск по сохранённым</string>
+    <string name="saved_empty_title">Деки ещё не сохранены.</string>
+    <string name="saved_empty_body">Жми «+», чтобы импортировать деку по коду, или собери свою во вкладке «Сбор».</string>
+    <string name="saved_delete_title">Удалить деку?</string>
+    <string name="saved_delete_message">«%1$s» будет удалена из сохранённых. Код по-прежнему валиден — её можно импортировать снова в любой момент.</string>
+
+    <!-- Import sheet -->
+    <string name="import_title">Импорт деки</string>
+    <string name="import_subtitle">Вставь код деки Hearthstone. Тап «Декодировать», чтобы увидеть и сохранить.</string>
+    <string name="import_invalid">Этот код деки выглядит некорректным.</string>
+
+    <!-- Deck view -->
+    <string name="deck_view_cards_count">КАРТЫ · %1$d</string>
+    <string name="deck_view_invalid_format">API сообщил о %1$d некорректных id карт</string>
+    <string name="deck_view_copied">Код деки скопирован</string>
+
+    <!-- Card detail -->
+    <string name="card_detail_related">СВЯЗАННЫЕ КАРТЫ</string>
+
+    <!-- Battlegrounds -->
+    <string name="bg_title">Battlegrounds</string>
+    <string name="bg_tab_minions">Существа</string>
+    <string name="bg_tab_heroes">Герои</string>
+    <string name="bg_empty_minions">Существа не найдены.</string>
+    <string name="bg_empty_heroes">Героев нет.</string>
+
+    <!-- Glossary -->
+    <string name="glossary_title">Глоссарий</string>
+    <string name="glossary_search_hint">Поиск по ключевым словам</string>
+    <string name="glossary_loading">Загружаем метаданные…</string>
+    <string name="glossary_empty_no_query">Ключевых слов нет.</string>
+    <string name="glossary_empty_query">По запросу «%1$s» ничего не найдено.</string>
+
+    <!-- Card backs -->
+    <string name="cardbacks_title">Рубашки карт</string>
+    <string name="cardbacks_search_hint">Поиск по рубашкам</string>
+    <string name="cardbacks_empty">Подходящих рубашек нет.</string>
+    <string name="cardbacks_category_all">Все</string>
+
+    <!-- More -->
+    <string name="more_title">Ещё</string>
+    <string name="more_glossary">Глоссарий</string>
+    <string name="more_glossary_subtitle">Ключевые слова и что они делают</string>
+    <string name="more_cardbacks">Рубашки карт</string>
+    <string name="more_cardbacks_subtitle">Просмотр коллекции рубашек</string>
+    <string name="more_settings">Настройки</string>
+    <string name="more_settings_subtitle">Тема, язык, кэш</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_appearance">Внешний вид</string>
+    <string name="settings_section_language">Язык</string>
+    <string name="settings_section_data">Данные</string>
+    <string name="settings_section_privacy">Конфиденциальность</string>
+    <string name="settings_section_about">О приложении</string>
+    <string name="settings_theme_system">Как в системе</string>
+    <string name="settings_theme_dark">Всегда тёмная</string>
+    <string name="settings_theme_light">Всегда светлая</string>
+    <string name="settings_theme_system_subtitle">Следует теме устройства</string>
+    <string name="settings_card_language">Язык карт</string>
+    <string name="settings_card_language_subtitle">Используется во всех запросах к API</string>
+    <string name="settings_refresh_metadata">Обновить метаданные</string>
+    <string name="settings_refresh_metadata_subtitle">Тап — забрать свежие сеты, классы и ключевые слова.</string>
+    <string name="settings_refresh_metadata_last">Обновлено: %1$s</string>
+    <string name="settings_refresh_success">Метаданные обновлены</string>
+    <string name="settings_refresh_failure">Не удалось обновить: %1$s</string>
+    <string name="settings_crash_reports">Отправлять отчёты о крэшах</string>
+    <string name="settings_crash_reports_subtitle">Анонимно, через Firebase Crashlytics</string>
+    <string name="settings_version">Версия</string>
+</resources>

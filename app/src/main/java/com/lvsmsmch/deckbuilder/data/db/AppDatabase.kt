@@ -1,0 +1,32 @@
+package com.lvsmsmch.deckbuilder.data.db
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.lvsmsmch.deckbuilder.data.db.dao.MetadataDao
+import com.lvsmsmch.deckbuilder.data.db.dao.SavedDeckDao
+import com.lvsmsmch.deckbuilder.data.db.entity.MetadataBlobEntity
+import com.lvsmsmch.deckbuilder.data.db.entity.SavedDeckEntity
+
+@Database(
+    entities = [
+        MetadataBlobEntity::class,
+        SavedDeckEntity::class,
+    ],
+    version = 2,
+    exportSchema = false,
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun metadataDao(): MetadataDao
+    abstract fun savedDeckDao(): SavedDeckDao
+
+    companion object {
+        const val NAME = "deck_builder.db"
+
+        fun build(context: Context): AppDatabase =
+            Room.databaseBuilder(context, AppDatabase::class.java, NAME)
+                .fallbackToDestructiveMigration()
+                .build()
+    }
+}
