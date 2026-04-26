@@ -1,8 +1,11 @@
 package com.lvsmsmch.deckbuilder.data.auth
 
 import android.util.Base64
+import android.util.Log
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+
+private const val TAG = "DB.TokenCache"
 
 /**
  * Holds the latest OAuth bearer token plus an expiry timestamp.
@@ -40,13 +43,22 @@ class TokenCache(
         if (cur != null && cur != stale && nowMs() < expiresAtMs - safetyMarginMs) {
             return@withLock cur
         }
+        if (clientId.isBlank() || clientSecret.isBlank()) {
+            Log.e(TAG, "refresh: BLIZZARD_CLIENT_ID or _SECRET is blank — set them in local.properties or env")
+        }
         val basic = "Basic " + Base64.encodeToString(
             "$clientId:$clientSecret".toByteArray(Charsets.UTF_8),
             Base64.NO_WRAP,
         )
-        val resp = oAuthApi.token(basicAuth = basic)
-        token = resp.accessToken
-        expiresAtMs = nowMs() + resp.expiresInSeconds * 1000L
-        resp.accessToken
+        try {
+            val resp = oAuthApi.token(basicAuth = basic)
+            token = resp.accessToken
+            expiresAtMs = nowMs() + resp.expiresInSeconds * 1000L
+            Log.i(TAG, "refresh: OK expiresInSec=${resp.expiresInSeconds} (clientId='${clientId.take(6)}…')")
+            resp.accessToken
+        } catch (t: Throwable) {
+            Log.e(TAG, "refresh: FAILED (clientId='${clientId.take(6)}…' empty=${clientId.isBlank()}): ${t.message}", t)
+            throw t
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.lvsmsmch.deckbuilder.data.repository
 
+import android.util.Log
 import com.lvsmsmch.deckbuilder.data.network.HearthstoneApi
 import com.lvsmsmch.deckbuilder.data.network.mapper.toDomain
 import com.lvsmsmch.deckbuilder.data.prefs.CurrentLocaleProvider
@@ -14,6 +15,8 @@ import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+private const val TAG = "DB.CardRepo"
+
 class CardRepositoryImpl(
     private val api: HearthstoneApi,
     private val metadata: MetadataRepository,
@@ -26,6 +29,11 @@ class CardRepositoryImpl(
                 val resolved = locales.resolve(locale)
                 val meta = currentMetadataOrLoad(resolved)
                 api.card(idOrSlug = idOrSlug, locale = resolved).toDomain(meta)
+            }.also { r ->
+                when (r) {
+                    is Result.Success -> Log.i(TAG, "getCard: OK idOrSlug=$idOrSlug name='${r.data.name}'")
+                    is Result.Error -> Log.w(TAG, "getCard: FAILED idOrSlug=$idOrSlug: ${r.throwable.message}", r.throwable)
+                }
             }
         }
 
@@ -46,11 +54,30 @@ class CardRepositoryImpl(
                 pageCount = resp.pageCount,
                 totalCount = resp.cardCount,
             )
+        }.also { r ->
+            val summary = "page=$page mode=${filters.gameMode.name} " +
+                "classes=${filters.classes} sets=${filters.sets.size} " +
+                "rarities=${filters.rarities} mana=${filters.manaCosts} " +
+                "q='${filters.textQuery}'"
+            when (r) {
+                is Result.Success -> Log.i(
+                    TAG,
+                    "searchCards: OK $summary → ${r.data.items.size}/${r.data.totalCount} items, " +
+                        "pageCount=${r.data.pageCount}",
+                )
+                is Result.Error -> Log.w(TAG, "searchCards: FAILED $summary: ${r.throwable.message}", r.throwable)
+            }
         }
     }
 
-    private suspend fun currentMetadataOrLoad(locale: String): Metadata =
-        metadata.current.value ?: metadata.loadFromCache(locale) ?: Metadata.Empty
+    private suspend fun currentMetadataOrLoad(locale: String): Metadata {
+        val cur = metadata.current.value
+        if (cur != null) return cur
+        val cached = metadata.loadFromCache(locale)
+        if (cached != null) return cached
+        Log.w(TAG, "currentMetadataOrLoad: no metadata available for locale=$locale, using Metadata.Empty (card data will not be enriched)")
+        return Metadata.Empty
+    }
 
     private fun buildSearchParams(
         filters: CardFilters,

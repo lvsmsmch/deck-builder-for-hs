@@ -1,5 +1,6 @@
 package com.lvsmsmch.deckbuilder.data.prefs
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -12,6 +13,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
+private const val TAG = "DB.Prefs"
+
 class PreferencesRepositoryImpl(
     private val store: DataStore<Preferences>,
 ) : PreferencesRepository {
@@ -22,14 +25,17 @@ class PreferencesRepositoryImpl(
 
     override suspend fun setTheme(theme: ThemeMode) {
         store.edit { it[Keys.theme] = theme.name }
+        Log.i(TAG, "setTheme: $theme")
     }
 
     override suspend fun setCardLocale(locale: String) {
         store.edit { it[Keys.cardLocale] = locale }
+        Log.i(TAG, "setCardLocale: $locale")
     }
 
     override suspend fun setCrashReportingEnabled(enabled: Boolean) {
         store.edit { it[Keys.crashEnabled] = enabled }
+        Log.i(TAG, "setCrashReportingEnabled: $enabled")
     }
 
     override suspend fun setLastSeenSetSlug(slug: String?) {
@@ -37,6 +43,7 @@ class PreferencesRepositoryImpl(
             if (slug == null) it.remove(Keys.lastSeenSetSlug)
             else it[Keys.lastSeenSetSlug] = slug
         }
+        Log.d(TAG, "setLastSeenSetSlug: $slug")
     }
 
     private fun Preferences.toDomain(): AppPreferences = AppPreferences(

@@ -34,6 +34,7 @@ class DeckBuilderApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.i(TAG, "onCreate: starting Koin (debug=${BuildConfig.DEBUG})")
         startKoin {
             androidLogger(if (BuildConfig.DEBUG) Level.INFO else Level.ERROR)
             androidContext(this@DeckBuilderApp)
@@ -50,11 +51,16 @@ class DeckBuilderApp : Application() {
 
     /** Plan §10.11: hydrate from Room first, then refresh from network in the background. */
     private fun kickOffMetadataRefresh() {
+        Log.i(TAG, "kickOffMetadataRefresh: launching")
         appScope.launch {
             when (val r = refreshMetadata()) {
-                is Result.Success -> Log.i(TAG, "Metadata refreshed (${r.data.refreshedAtMs})")
+                is Result.Success -> Log.i(
+                    TAG,
+                    "kickOffMetadataRefresh: OK refreshedAtMs=${r.data.refreshedAtMs} " +
+                        "classes=${r.data.classes.size} sets=${r.data.sets.size}",
+                )
                 is Result.Error -> {
-                    Log.w(TAG, "Metadata refresh failed", r.throwable)
+                    Log.w(TAG, "kickOffMetadataRefresh: FAILED — ${r.throwable.message}", r.throwable)
                     crashReporter.log("Metadata refresh failed: ${r.throwable.message}")
                 }
             }
@@ -62,6 +68,6 @@ class DeckBuilderApp : Application() {
     }
 
     private companion object {
-        const val TAG = "DeckBuilderApp"
+        const val TAG = "DB.App"
     }
 }

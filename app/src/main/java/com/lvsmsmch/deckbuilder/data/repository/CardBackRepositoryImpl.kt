@@ -1,5 +1,6 @@
 package com.lvsmsmch.deckbuilder.data.repository
 
+import android.util.Log
 import com.lvsmsmch.deckbuilder.data.network.HearthstoneApi
 import com.lvsmsmch.deckbuilder.data.network.mapper.toDomain
 import com.lvsmsmch.deckbuilder.data.prefs.CurrentLocaleProvider
@@ -10,6 +11,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.Page
 import com.lvsmsmch.deckbuilder.domain.repositories.CardBackRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+private const val TAG = "DB.CardBackRepo"
 
 class CardBackRepositoryImpl(
     private val api: HearthstoneApi,
@@ -33,6 +36,7 @@ class CardBackRepositoryImpl(
                 if (!category.isNullOrBlank()) put("cardBackCategory", category)
                 if (textQuery.isNotBlank()) put("textFilter", textQuery.trim())
             }
+            Log.d(TAG, "search: → API params=$params")
             val resp = api.cardBacks(params)
             Page(
                 items = resp.cardBacks.map { it.toDomain() },
@@ -40,6 +44,14 @@ class CardBackRepositoryImpl(
                 pageCount = resp.pageCount,
                 totalCount = resp.cardCount,
             )
+        }.also { r ->
+            val summary = "page=$page category=$category q='$textQuery'"
+            when (r) {
+                is Result.Success -> Log.i(
+                    TAG, "search: OK $summary → ${r.data.items.size}/${r.data.totalCount} items",
+                )
+                is Result.Error -> Log.w(TAG, "search: FAILED $summary: ${r.throwable.message}", r.throwable)
+            }
         }
     }
 }
