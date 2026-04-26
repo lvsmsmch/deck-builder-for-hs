@@ -59,8 +59,8 @@ data class RarityDto(
     val id: Int,
     val name: String = "",
     val slug: String = "",
-    val craftingCost: List<Int> = emptyList(),
-    val dustValue: List<Int> = emptyList(),
+    val craftingCost: List<Int?> = emptyList(),
+    val dustValue: List<Int?> = emptyList(),
 )
 
 @Serializable

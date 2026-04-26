@@ -8,6 +8,7 @@ import com.lvsmsmch.deckbuilder.di.domainModule
 import com.lvsmsmch.deckbuilder.di.networkModule
 import com.lvsmsmch.deckbuilder.di.presentationModule
 import com.lvsmsmch.deckbuilder.domain.common.Result
+import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.RefreshMetadataUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +24,7 @@ import org.koin.core.logger.Level
 class DeckBuilderApp : Application() {
 
     private val refreshMetadata: RefreshMetadataUseCase by inject()
+    private val metadataRepository: MetadataRepository by inject()
     private val crashReporter: CrashReporter by inject()
 
     private val appScope = CoroutineScope(
@@ -53,6 +55,14 @@ class DeckBuilderApp : Application() {
     private fun kickOffMetadataRefresh() {
         Log.i(TAG, "kickOffMetadataRefresh: launching")
         appScope.launch {
+            // Prime _current from Room before any UI request so CardRepositoryImpl hits
+            // the StateFlow short-circuit instead of querying the DAO per search.
+            val cached = runCatching { metadataRepository.loadFromCache(null) }
+                .onFailure { Log.w(TAG, "kickOffMetadataRefresh: cache prime failed — ${it.message}", it) }
+                .getOrNull()
+            if (cached != null) {
+                Log.i(TAG, "kickOffMetadataRefresh: cache primed locale=${cached.locale} classes=${cached.classes.size}")
+            }
             when (val r = refreshMetadata()) {
                 is Result.Success -> Log.i(
                     TAG,

@@ -140,4 +140,31 @@ class MetadataRepositoryImplTest {
         repo.refresh(locale = null)
         coVerify { api.metadata("de_DE") }
     }
+
+    @Test
+    fun `loadFromCache survives RarityDto with null craftingCost and dustValue`() = runTest {
+        // Battle.net returns "craftingCost":[null,null] for the "free" rarity (id=2);
+        // before the fix this crashed kotlinx-serialization with JsonDecodingException.
+        val payloadWithNulls = """
+            {
+              "sets":[],"setGroups":[],"types":[],
+              "rarities":[
+                {"id":1,"name":"Common","slug":"common","craftingCost":[40,400],"dustValue":[5,50]},
+                {"id":2,"name":"Free","slug":"free","craftingCost":[null,null],"dustValue":[null,null]}
+              ],
+              "classes":[],"minionTypes":[],"keywords":[],
+              "spellSchools":[],"gameModes":[],"mercenaryRoles":[]
+            }
+        """.trimIndent()
+        coEvery { dao.getBlob("en_US") } returns
+            MetadataBlobEntity(locale = "en_US", payloadJson = payloadWithNulls, refreshedAtMs = 500L)
+        val repo = newRepo()
+
+        val meta = repo.loadFromCache(null)
+        assertNotNull(meta)
+        assertEquals(2, meta!!.rarities.size)
+        // Nulls must be filtered out at the mapper boundary so domain stays List<Int>.
+        assertEquals(emptyList<Int>(), meta.rarities[2]!!.craftingCost)
+        assertEquals(listOf(40, 400), meta.rarities[1]!!.craftingCost)
+    }
 }

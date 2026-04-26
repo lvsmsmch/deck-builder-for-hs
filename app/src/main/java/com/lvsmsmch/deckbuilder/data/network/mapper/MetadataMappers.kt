@@ -44,7 +44,7 @@ private fun SetGroupDto.toDomain() = SetGroup(
 private fun TypeDto.toDomain() = CardType(id = id, slug = slug, name = name)
 
 private fun RarityDto.toDomain() =
-    Rarity(id = id, slug = slug, name = name, craftingCost = craftingCost)
+    Rarity(id = id, slug = slug, name = name, craftingCost = craftingCost.filterNotNull())
 
 private fun ClassDto.toDomain() = ClassMeta(id = id, slug = slug, name = name, heroCardId = cardId)
 

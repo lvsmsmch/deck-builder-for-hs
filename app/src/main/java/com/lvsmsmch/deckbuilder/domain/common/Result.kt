@@ -1,5 +1,7 @@
 package com.lvsmsmch.deckbuilder.domain.common
 
+import kotlinx.coroutines.CancellationException
+
 sealed class Result<out T> {
     data class Success<T>(val data: T) : Result<T>()
     data class Error(val throwable: Throwable) : Result<Nothing>()
@@ -15,6 +17,8 @@ sealed class Result<out T> {
 inline fun <T> runCatchingResult(block: () -> T): Result<T> =
     try {
         Result.Success(block())
+    } catch (c: CancellationException) {
+        throw c
     } catch (t: Throwable) {
         Result.Error(t)
     }
