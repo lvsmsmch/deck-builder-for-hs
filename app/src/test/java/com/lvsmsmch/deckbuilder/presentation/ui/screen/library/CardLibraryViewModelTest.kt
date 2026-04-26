@@ -58,22 +58,24 @@ class CardLibraryViewModelTest {
     }
 
     @Test
-    fun `loads first page once metadata is available from cache`() = runTest(mainRule.dispatcher.scheduler) {
+    fun `loads first page immediately when metadata is already available`() = runTest(mainRule.dispatcher.scheduler) {
         val meta = fakeMetadata()
         newVm(initialMeta = meta)
         coVerify(timeout = 1000) { searchCardsUc(any(), 1, any(), any()) }
     }
 
     @Test
-    fun `does not load until metadata arrives, then loads`() = runTest(mainRule.dispatcher.scheduler) {
-        // No metadata up front, no cache.
-        coEvery { metadataRepo.loadFromCache(any()) } returns null
-        val vm = newVm(initialMeta = null)
-        // Nothing fetched yet — the VM is parked waiting for metadata.
-        coVerify(exactly = 0) { searchCardsUc(any(), any(), any(), any()) }
-        current.value = fakeMetadata()
-        coVerify(timeout = 1000) { searchCardsUc(any(), 1, any(), any()) }
-    }
+    fun `loads first page immediately even without metadata, then refetches when metadata arrives`() =
+        runTest(mainRule.dispatcher.scheduler) {
+            // VM no longer waits for metadata — Metadata.Empty fallback is fine
+            // for the first request, and a locale-change handler refetches once
+            // metadata lands.
+            coEvery { metadataRepo.loadFromCache(any()) } returns null
+            newVm(initialMeta = null)
+            coVerify(timeout = 1000, exactly = 1) { searchCardsUc(any(), 1, any(), any()) }
+            current.value = fakeMetadata()
+            coVerify(atLeast = 2, timeout = 1000) { searchCardsUc(any(), 1, any(), any()) }
+        }
 
     @Test
     fun `state mirrors metadata emissions for filter sheet`() = runTest(mainRule.dispatcher.scheduler) {

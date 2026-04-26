@@ -5,13 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
-import com.lvsmsmch.deckbuilder.domain.entities.Metadata
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.AcknowledgeNewSetUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,14 +19,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class)
 class CardLibraryViewModel(
     private val searchCards: SearchCardsUseCase,
     private val metadata: MetadataRepository,
@@ -42,6 +41,9 @@ class CardLibraryViewModel(
                 keywords = listOfNotNull(initialKeyword?.takeIf { it.isNotBlank() }).toSet(),
                 sets = listOfNotNull(initialSetSlug?.takeIf { it.isNotBlank() }).toSet(),
             ),
+            // Spinner-by-default so the screen never flashes the empty-state
+            // placeholder before the first search returns.
+            isLoadingFirstPage = true,
         ),
     )
     val state: StateFlow<CardLibraryState> = _state.asStateFlow()
@@ -63,7 +65,8 @@ class CardLibraryViewModel(
             .onEach { refreshNewSetBanner() }
             .launchIn(viewModelScope)
 
-        // Re-fetch when card locale changes (Settings → Card language).
+        // Re-fetch when the resolved card locale flips (Settings → Card language,
+        // or first metadata arrival after a fresh install).
         metadata.current
             .map { it?.locale }
             .distinctUntilChanged()
@@ -71,26 +74,23 @@ class CardLibraryViewModel(
             .onEach { loadFirstPage() }
             .launchIn(viewModelScope)
 
-        // First load: wait until metadata is available so card mappings resolve fully.
-        viewModelScope.launch {
-            val ready: Metadata? = metadata.current.value
-                ?: metadata.loadFromCache().also { /* may also be null */ }
-            if (ready != null) {
-                loadFirstPage()
-            } else {
-                metadata.current.filterNotNull().onEach { loadFirstPage() }
-                    .launchIn(viewModelScope)
-            }
-        }
-
-        // Debounce text input: refetch once user stops typing for 350ms.
+        // Single debounced pipeline for *all* filter changes (chips, sort, text,
+        // FilterSheet apply). Cancels the in-flight request and runs once after
+        // the user stops fiddling for FILTER_DEBOUNCE_MS. drop(1) skips the
+        // synthetic initial emission — the first load is kicked off explicitly
+        // below so we don't pay the debounce delay at cold start.
         _state
-            .map { it.filters.textQuery }
+            .map { it.filters }
             .distinctUntilChanged()
             .drop(1)
-            .debounce(TEXT_DEBOUNCE_MS)
+            .debounce(FILTER_DEBOUNCE_MS)
             .onEach { loadFirstPage() }
             .launchIn(viewModelScope)
+
+        // Kick off the first search immediately. CardRepositoryImpl falls back to
+        // Metadata.Empty when metadata isn't loaded yet — cards still render, and
+        // the locale-change handler above will refetch once metadata lands.
+        loadFirstPage()
     }
 
     fun setTextQuery(query: String) {
@@ -99,7 +99,6 @@ class CardLibraryViewModel(
 
     fun toggleCollectibleOnly() {
         _state.update { it.copy(filters = it.filters.copy(collectibleOnly = !it.filters.collectibleOnly)) }
-        loadFirstPage()
     }
 
     fun toggleManaCost(cost: Int) {
@@ -108,7 +107,6 @@ class CardLibraryViewModel(
             val next = if (cost in current) current - cost else current + cost
             it.copy(filters = it.filters.copy(manaCosts = next))
         }
-        loadFirstPage()
     }
 
     fun toggleClass(slug: String) {
@@ -117,26 +115,22 @@ class CardLibraryViewModel(
             val next = if (slug in current) current - slug else current + slug
             it.copy(filters = it.filters.copy(classes = next))
         }
-        loadFirstPage()
     }
 
     fun applyFilters(filters: CardFilters) {
         if (filters == _state.value.filters) return
         _state.update { it.copy(filters = filters) }
-        loadFirstPage()
     }
 
     fun resetFilters() {
         if (_state.value.filters == CardFilters()) return
         _state.update { it.copy(filters = CardFilters()) }
-        loadFirstPage()
     }
 
     fun setSort(key: SortKey, direction: SortDir = SortDir.ASC) {
         val nextSort = CardSort(key = key, direction = direction)
         if (nextSort == _state.value.filters.sort) return
         _state.update { it.copy(filters = it.filters.copy(sort = nextSort)) }
-        loadFirstPage()
     }
 
     fun loadNextPage() {
@@ -158,7 +152,6 @@ class CardLibraryViewModel(
                 newSetBanner = null,
             )
         }
-        loadFirstPage()
     }
 
     fun dismissNewSetBanner() {
@@ -220,6 +213,6 @@ class CardLibraryViewModel(
     }
 
     private companion object {
-        const val TEXT_DEBOUNCE_MS = 350L
+        const val FILTER_DEBOUNCE_MS = 200L
     }
 }

@@ -34,6 +34,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -128,20 +129,34 @@ fun CardLibraryScreen(
             onToggle = viewModel::toggleClass,
         )
 
-        when {
-            state.isLoadingFirstPage && state.cards.isEmpty() -> CenteredSpinner()
-            state.cards.isEmpty() && state.errorMessage == null -> EmptyState(
-                hasFilters = state.filters.hasFilters,
-            )
-            state.errorMessage != null && state.cards.isEmpty() -> ErrorState(
-                message = state.errorMessage!!,
-                onRetry = viewModel::retry,
-            )
-            else -> CardGrid(
-                state = state,
-                gridState = gridState,
-                onCardClick = onCardClick,
-            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            when {
+                // No cards yet: show one of the three full-screen states.
+                state.cards.isEmpty() && state.isLoadingFirstPage -> CenteredSpinner()
+                state.cards.isEmpty() && state.errorMessage != null -> ErrorState(
+                    message = state.errorMessage!!,
+                    onRetry = viewModel::retry,
+                )
+                state.cards.isEmpty() -> EmptyState(hasFilters = state.filters.hasFilters)
+
+                // We already have cards — keep them visible while a new query is
+                // in flight, with a thin progress bar across the top so the user
+                // can see that filter changes are being applied.
+                else -> CardGrid(
+                    state = state,
+                    gridState = gridState,
+                    onCardClick = onCardClick,
+                )
+            }
+            if (state.isLoadingFirstPage && state.cards.isNotEmpty()) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .fillMaxWidth(),
+                    color = DeckBuilderColors.Primary,
+                    trackColor = DeckBuilderColors.PrimarySoft,
+                )
+            }
         }
     }
 
