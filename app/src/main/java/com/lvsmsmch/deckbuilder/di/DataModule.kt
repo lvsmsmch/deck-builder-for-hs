@@ -26,10 +26,13 @@ val dataModule = module {
     singleOf(::PreferencesRepositoryImpl) { bind<PreferencesRepository>() }
     singleOf(::CurrentLocaleProvider)
 
-    singleOf(::MetadataRepositoryImpl) { bind<MetadataRepository>() }
+    // Lambda forms (not singleOf) where the constructor has defaulted params —
+    // singleOf reflects all params and ignores Kotlin defaults, which would
+    // make Koin try to resolve a Long/`() -> Long` it doesn't know about.
+    single<MetadataRepository> { MetadataRepositoryImpl(get(), get(), get(), get()) }
     singleOf(::CardRepositoryImpl) { bind<CardRepository>() }
     singleOf(::DeckRepositoryImpl) { bind<DeckRepository>() }
-    singleOf(::SavedDeckRepositoryImpl) { bind<SavedDeckRepository>() }
+    single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }
     singleOf(::CardBackRepositoryImpl) { bind<CardBackRepository>() }
 
     // Crash reporting — safe no-op when google-services.json is missing.

@@ -124,6 +124,7 @@ fun CardLibraryScreen(
 
         ClassChips(
             selected = state.filters.classes,
+            metadata = state.metadata,
             onToggle = viewModel::toggleClass,
         )
 
@@ -373,22 +374,33 @@ private fun ManaChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
 }
 
 @Composable
-private fun ClassChips(selected: Set<String>, onToggle: (String) -> Unit) {
-    val classes = remember {
-        listOf(
-            "druid" to "Druid",
-            "hunter" to "Hunter",
-            "mage" to "Mage",
-            "paladin" to "Paladin",
-            "priest" to "Priest",
-            "rogue" to "Rogue",
-            "shaman" to "Shaman",
-            "warlock" to "Warlock",
-            "warrior" to "Warrior",
-            "demonhunter" to "Demon H.",
-            "deathknight" to "Death K.",
-            "neutral" to "Neutral",
-        )
+private fun ClassChips(
+    selected: Set<String>,
+    metadata: com.lvsmsmch.deckbuilder.domain.entities.Metadata?,
+    onToggle: (String) -> Unit,
+) {
+    // Prefer metadata names so chips localise with the user's chosen card locale.
+    // Hardcoded list is the cold-start fallback before metadata lands.
+    val fallback = listOf(
+        "druid" to "Druid",
+        "hunter" to "Hunter",
+        "mage" to "Mage",
+        "paladin" to "Paladin",
+        "priest" to "Priest",
+        "rogue" to "Rogue",
+        "shaman" to "Shaman",
+        "warlock" to "Warlock",
+        "warrior" to "Warrior",
+        "demonhunter" to "Demon H.",
+        "deathknight" to "Death K.",
+        "neutral" to "Neutral",
+    )
+    val classes = remember(metadata) {
+        val fromApi = metadata?.classes?.values
+            ?.sortedBy { it.id }
+            ?.map { it.slug to it.name.ifBlank { it.slug.replaceFirstChar { c -> c.uppercase() } } }
+            .orEmpty()
+        if (fromApi.isEmpty()) fallback else fromApi
     }
     Row(
         modifier = Modifier
