@@ -47,6 +47,7 @@ app/src/main/java/com/lvsmsmch/deckbuilder/
 │   ├── db/                          Room database, entities, DAOs
 │   ├── prefs/                       DataStore + PreferencesRepository
 │   ├── repository/                  Repository implementations
+│   ├── update/                      WorkManager-driven cards + rotation refresh
 │   └── crash/                       CrashReporter wrapper
 └── presentation/
     └── ui/
@@ -67,6 +68,7 @@ UI strings live in `res/values/strings.xml` (en) and `res/values-ru/strings.xml`
 - `DeckRepositoryImpl` uses the in-tree deckstring codec (`data/deckstring/`) to decode/encode shared deck codes, resolving `dbfId → Card` via `CardRepository`.
 - `RotationRepositoryImpl` parses `STANDARD_SETS` from `python-hearthstone/enums.py` (raw GitHub), backed by DataStore. Cross-checks against the loaded card pool to detect lag after a new expansion.
 - Localized labels for class / rarity / type / race / spell school live in `strings.xml` (en + ru); slug → `@StringRes` lookup is in `presentation/ui/labels/CardLabels.kt`.
+- `data/update/UpdateRunner` is the single entry point for refreshing card data and rotation. It runs on app start, on demand from the rotation-lag banner, and once a day from a `WorkManager` job (`UpdateWorker` scheduled by `UpdateScheduler`). `UpdateNotifier` emits a one-shot snackbar event when a new build was actually applied.
 
 ## Reference
 

@@ -32,7 +32,7 @@ class BuildChecker(
     }.onFailure { Log.w(TAG, "latestBuild($hsJsonLocale) failed: ${it.message}") }
         .getOrNull()
 
-    private fun parseBuildFromUrl(url: String): String? {
+    internal fun parseBuildFromUrl(url: String): String? {
         // .../v1/{build}/{locale}/cards.collectible.json
         val segments = url.substringAfter("://").split('/')
         val v1Idx = segments.indexOf("v1")

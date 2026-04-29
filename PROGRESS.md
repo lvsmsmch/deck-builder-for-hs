@@ -76,4 +76,22 @@ Migration: Blizzard API → HearthstoneJSON. См. `PLAN.md`.
     settings_last_check, snackbar_cards_updated, library_rotation_lag_*)
   - Builder snapshot: pool already loads on screen entry via paginated
     `SearchCardsUseCase` (no live observation), so cards don't shift mid-edit
-- [ ] Phase 10 — Tests and docs cleanup
+- [x] Phase 10 — Tests and docs cleanup
+  - Existing test suite reviewed; no Blizzard-era stale tests remain (those were
+    removed in earlier phases). Deckstring codec + EnumsParser tests carried over.
+  - Added `BuildCheckerParseTest` — covers the build-segment URL parser
+    (canonical redirect, non-default locale, missing/non-numeric build, empty
+    URL). `parseBuildFromUrl` switched from `private` to `internal` so tests
+    can hit it directly without spinning up an OkHttp roundtrip.
+  - Added `HsJsonMappersTest` — DTO→entity (hot fields, leading/trailing
+    comma CSV, payload preserved as JSON, multi-class precedence, null
+    collectible defaulting) and entity→domain (slug normalisation,
+    `art.hearthstonejson.com` URL shape, fallback `unknown` card type,
+    class token resolution, domain-slug helper).
+  - Added `DeckLegalityTest` — `isStandardLegal` for cards/decks (slug
+    re-uppercasing to `BLACK_TEMPLE` token), `rotatedOut` ordering,
+    `RotationStatus.isOutdated` cross-check both ways, and the
+    `toRotationToken` helper.
+  - README: added `data/update/` to the layout tree and a paragraph in the
+    architecture notes describing `UpdateRunner` / `UpdateScheduler` /
+    `UpdateNotifier` and the daily WorkManager flow.
