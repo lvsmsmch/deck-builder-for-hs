@@ -16,7 +16,13 @@ Migration: Blizzard API → HearthstoneJSON. См. `PLAN.md`.
   - CardRepositoryImpl: in-memory predicate + sort over HsJsonRepository snapshot
   - DeckRepositoryImpl: Deckstring codec + per-dbfId resolution via CardRepository
   - Removed Blizzard searchCards/card/deck endpoints, CardDto, DeckDto, mappers, related test
-- [ ] Phase 4 — Standard rotation via python-hearthstone enums
+- [x] Phase 4 — Standard rotation via python-hearthstone enums
+  - RotationApi: raw enums.py + GitHub commits (sha + committedAt)
+  - EnumsParser: STANDARD_SETS tuple + full CardSet enum members
+  - RotationStore (DataStore) + RotationRepositoryImpl with mutex, status() cross-check
+  - DeckLegality.kt: isStandardLegal(deck/card), rotatedOut(deck)
+  - DI wiring + DeckBuilderApp.kickOffRotationRefresh background load
+  - Unit tests for EnumsParser
 - [ ] Phase 5 — HsJson tiles in deck list and saved decks
 - [ ] Phase 6 — Hardcoded localized labels, drop metadata layer
 - [ ] Phase 7 — Remove Blizzard auth and api layer

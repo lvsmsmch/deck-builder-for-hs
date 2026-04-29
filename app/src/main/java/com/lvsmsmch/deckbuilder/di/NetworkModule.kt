@@ -12,6 +12,10 @@ import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.data.network.HearthstoneApi
 import com.lvsmsmch.deckbuilder.data.network.NetworkProviders
 import com.lvsmsmch.deckbuilder.data.prefs.userPrefsStore
+import com.lvsmsmch.deckbuilder.data.rotation.RotationApi
+import com.lvsmsmch.deckbuilder.data.rotation.RotationRepositoryImpl
+import com.lvsmsmch.deckbuilder.data.rotation.RotationStore
+import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
@@ -63,6 +67,11 @@ val networkModule = module {
             json = get(),
         )
     }
+
+    // Rotation pipeline (raw GitHub) — re-uses the HsJson client, no auth needed.
+    single { RotationApi(client = get(HSJSON), json = get()) }
+    single { RotationStore(store = get()) }
+    single<RotationRepository> { RotationRepositoryImpl(api = get(), store = get()) }
 
     // Persistence
     single { AppDatabase.build(androidContext()) }

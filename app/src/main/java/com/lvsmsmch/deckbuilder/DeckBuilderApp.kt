@@ -11,6 +11,7 @@ import com.lvsmsmch.deckbuilder.di.presentationModule
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.RefreshMetadataUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,7 @@ class DeckBuilderApp : Application() {
     private val metadataRepository: MetadataRepository by inject()
     private val crashReporter: CrashReporter by inject()
     private val hsJsonRepository: HsJsonRepository by inject()
+    private val rotationRepository: RotationRepository by inject()
     private val prefs: PreferencesRepository by inject()
 
     private val appScope = CoroutineScope(
@@ -54,6 +56,32 @@ class DeckBuilderApp : Application() {
         crashReporter.bindToPreferences()
         kickOffMetadataRefresh()
         kickOffHsJsonLoad()
+        kickOffRotationRefresh()
+    }
+
+    /** Phase 4: hydrate Standard rotation snapshot from python-hearthstone. */
+    private fun kickOffRotationRefresh() {
+        Log.i(TAG, "kickOffRotationRefresh: launching")
+        appScope.launch {
+            runCatching {
+                val cached = rotationRepository.cached()
+                if (cached == null) {
+                    val fresh = rotationRepository.ensureLoaded()
+                    Log.i(
+                        TAG,
+                        "kickOffRotationRefresh: first load standard=${fresh.standardSets.size} known=${fresh.knownSets.size}",
+                    )
+                } else {
+                    val updated = rotationRepository.refresh()
+                    if (updated != null && updated.sourceSha != cached.sourceSha) {
+                        Log.i(TAG, "kickOffRotationRefresh: updated to sha=${updated.sourceSha?.take(8)}")
+                    }
+                }
+            }.onFailure {
+                Log.w(TAG, "kickOffRotationRefresh failed: ${it.message}", it)
+                crashReporter.log("Rotation refresh failed: ${it.message}")
+            }
+        }
     }
 
     /** Phase 2: hydrate HearthstoneJSON cards in the background. */
