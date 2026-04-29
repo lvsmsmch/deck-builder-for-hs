@@ -1,7 +1,5 @@
 package com.lvsmsmch.deckbuilder.util
 
-import com.lvsmsmch.deckbuilder.data.network.dto.CardDto
-import com.lvsmsmch.deckbuilder.data.network.dto.CardSearchResponseDto
 import com.lvsmsmch.deckbuilder.data.network.dto.ClassDto
 import com.lvsmsmch.deckbuilder.data.network.dto.MetadataAllDto
 import com.lvsmsmch.deckbuilder.data.network.dto.RarityDto
@@ -71,31 +69,3 @@ fun fakeMetadata(
     locale = locale,
     refreshedAtMs = refreshedAtMs,
 )
-
-fun fakeCardDto(
-    id: Int = 1,
-    name: String = "Test Card",
-    classId: Int? = 2,
-    rarityId: Int? = 1,
-    cardTypeId: Int? = 4,
-    cardSetId: Int? = 1,
-    manaCost: Int = 3,
-): CardDto = CardDto(
-    id = id,
-    slug = "card-$id",
-    name = name,
-    classId = classId,
-    rarityId = rarityId,
-    cardTypeId = cardTypeId,
-    cardSetId = cardSetId,
-    manaCost = manaCost,
-    image = "https://example.test/$id.png",
-)
-
-fun fakeSearchResponse(
-    items: List<CardDto> = listOf(fakeCardDto()),
-    page: Int = 1,
-    pageCount: Int = 1,
-    cardCount: Int = items.size,
-): CardSearchResponseDto =
-    CardSearchResponseDto(cards = items, cardCount = cardCount, pageCount = pageCount, page = page)
