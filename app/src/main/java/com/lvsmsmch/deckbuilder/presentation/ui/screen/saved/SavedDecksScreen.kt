@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CardTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
@@ -188,15 +189,24 @@ private fun SavedDeckRow(
         Spacer(Modifier.width(12.dp))
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .width(96.dp)
+                .height(32.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .background(
                     Brush.linearGradient(
                         listOf(classColor, DeckBuilderColors.SurfaceContainer),
                     ),
                 )
-                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(10.dp)),
-        )
+                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(8.dp)),
+        ) {
+            if (!deck.heroSlug.isNullOrBlank()) {
+                CardTile(
+                    slug = deck.heroSlug,
+                    contentDescription = deck.className,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

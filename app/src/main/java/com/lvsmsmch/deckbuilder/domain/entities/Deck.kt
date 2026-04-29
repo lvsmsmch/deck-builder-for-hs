@@ -29,6 +29,7 @@ data class DeckPreview(
     val classSlug: String?,
     val className: String?,
     val heroCardId: Int,
+    val heroSlug: String?,
     val format: GameFormat,
     val cardCount: Int,
     val savedAtMs: Long,

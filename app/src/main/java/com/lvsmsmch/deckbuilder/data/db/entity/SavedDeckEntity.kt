@@ -10,6 +10,7 @@ data class SavedDeckEntity(
     val classSlug: String?,
     val className: String?,
     val heroCardId: Int,
+    val heroSlug: String?,
     val format: String,
     val cardCount: Int,
     val cardIdsCsv: String,

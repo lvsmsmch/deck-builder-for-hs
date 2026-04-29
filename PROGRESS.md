@@ -23,7 +23,11 @@ Migration: Blizzard API → HearthstoneJSON. См. `PLAN.md`.
   - DeckLegality.kt: isStandardLegal(deck/card), rotatedOut(deck)
   - DI wiring + DeckBuilderApp.kickOffRotationRefresh background load
   - Unit tests for EnumsParser
-- [ ] Phase 5 — HsJson tiles in deck list and saved decks
+- [x] Phase 5 — HsJson tiles in deck list and saved decks
+  - CardTile composable (256×59 hsjson tile URL)
+  - DeckCardRow: tile-strip with rarity border, mana gem, count pill
+  - SavedDeckRow: hero tile preview (96×32) replacing gradient placeholder
+  - SavedDeckEntity.heroSlug + DeckPreview.heroSlug; AppDatabase v4 (destructive)
 - [ ] Phase 6 — Hardcoded localized labels, drop metadata layer
 - [ ] Phase 7 — Remove Blizzard auth and api layer
 - [ ] Phase 8 — Drop Battlegrounds, Card Backs, Glossary screens
