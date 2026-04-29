@@ -9,12 +9,10 @@ import kotlinx.coroutines.SupervisorJob
 import com.lvsmsmch.deckbuilder.data.repository.CardBackRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.repository.CardRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.repository.DeckRepositoryImpl
-import com.lvsmsmch.deckbuilder.data.repository.MetadataRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.repository.SavedDeckRepositoryImpl
 import com.lvsmsmch.deckbuilder.domain.repositories.CardBackRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.CardRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
-import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.SavedDeckRepository
 import org.koin.core.module.dsl.bind
@@ -29,7 +27,6 @@ val dataModule = module {
     // Lambda forms (not singleOf) where the constructor has defaulted params —
     // singleOf reflects all params and ignores Kotlin defaults, which would
     // make Koin try to resolve a Long/`() -> Long` it doesn't know about.
-    single<MetadataRepository> { MetadataRepositoryImpl(get(), get(), get(), get()) }
     single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get()) }
     single<DeckRepository> { DeckRepositoryImpl(cards = get(), locales = get()) }
     single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }

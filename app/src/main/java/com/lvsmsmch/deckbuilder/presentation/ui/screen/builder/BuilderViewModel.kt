@@ -8,7 +8,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
-import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.AssembleDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
@@ -31,7 +31,7 @@ class DeckBuilderViewModel(
     private val searchCards: SearchCardsUseCase,
     private val assembleDeck: AssembleDeckUseCase,
     private val saveDeck: SaveDeckUseCase,
-    private val metadata: MetadataRepository,
+    private val rotation: RotationRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BuilderState())
@@ -42,12 +42,9 @@ class DeckBuilderViewModel(
 
     private var poolJob: Job? = null
     private var saveJob: Job? = null
+    private var pickJob: Job? = null
 
     init {
-        metadata.current
-            .onEach { meta -> _state.update { it.copy(metadata = meta) } }
-            .launchIn(viewModelScope)
-
         // Debounce pool search.
         _state
             .map { it.pool.textQuery }
@@ -58,24 +55,40 @@ class DeckBuilderViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun pickClass(meta: ClassMeta) {
-        // Resolve from latest metadata in case the picker was passed a stale ClassMeta.
-        val resolvedMeta = state.value.metadata?.classes?.get(meta.id) ?: meta
-        _state.update {
-            it.copy(
-                phase = Phase.Editing,
-                chosenClass = resolvedMeta,
-                heroCardId = resolvedMeta.heroCardId,
-                deck = emptyMap(),
-                pool = PoolState(),
-                saveError = null,
+    /**
+     * Resolve the canonical hero card for [slug] from the HsJson pool, then
+     * commit the picked class and start the first pool fetch.
+     */
+    fun pickClassBySlug(slug: String) {
+        pickJob?.cancel()
+        pickJob = viewModelScope.launch {
+            val heroFilters = CardFilters(
+                classes = setOf(slug),
+                types = setOf("hero"),
+                collectibleOnly = true,
             )
+            val r = searchCards(filters = heroFilters, page = 1, pageSize = 1)
+            val hero: Card? = (r as? Result.Success)?.data?.items?.firstOrNull()
+            val meta = hero?.classes?.firstOrNull { it.slug.equals(slug, ignoreCase = true) }
+                ?: hero?.classes?.firstOrNull()
+                ?: ClassMeta(id = 0, slug = slug, name = slug)
+            _state.update {
+                it.copy(
+                    phase = Phase.Editing,
+                    chosenClass = meta,
+                    heroCardId = hero?.id,
+                    deck = emptyMap(),
+                    pool = PoolState(),
+                    saveError = null,
+                )
+            }
+            reloadPoolFirstPage()
         }
-        reloadPoolFirstPage()
     }
 
     fun backToPicker() {
         poolJob?.cancel()
+        pickJob?.cancel()
         _state.update {
             it.copy(
                 phase = Phase.ClassPicker,
@@ -98,10 +111,6 @@ class DeckBuilderViewModel(
         runPoolFetch(targetPage = pool.page + 1, replace = false)
     }
 
-    /**
-     * Tap-to-add. Validates against legendary singleton, ×2 cap, and class membership.
-     * If denied, surfaces a one-shot toast in state.
-     */
     fun addCard(card: Card, count: Int = 1) {
         val st = _state.value
         val clsSlug = st.chosenClass?.slug
@@ -110,7 +119,6 @@ class DeckBuilderViewModel(
             return
         }
         val existingCount = st.deck[card.id]?.count ?: 0
-        // Highlander → 1× per card; otherwise 1× legendary, 2× others.
         val cap = when {
             st.singleton -> 1
             card.isLegendary() -> 1
@@ -150,16 +158,13 @@ class DeckBuilderViewModel(
         _state.update { it.copy(deck = emptyMap()) }
     }
 
-    /** Plan §10.4 — Renathal etc. ride at 40, normal decks at 30. */
     fun toggleHighlanderSize() {
         _state.update { it.copy(maxDeckSize = if (it.maxDeckSize == 30) 40 else 30) }
     }
 
-    /** Singleton (Reno-style highlander) — 1× per card cap. */
     fun toggleSingleton() {
         _state.update {
             val next = !it.singleton
-            // Trim down anything currently at 2 to keep state consistent.
             val deck = if (next) it.deck.mapValues { (_, e) -> e.copy(count = 1) } else it.deck
             it.copy(singleton = next, deck = deck)
         }
@@ -186,10 +191,8 @@ class DeckBuilderViewModel(
             }
             when (val r = assembleDeck(ids = ids, heroCardId = st.heroCardId)) {
                 is Result.Success -> {
-                    // The API computes a format from the cards, but we honour the user's
-                    // explicit pick — Twist/Wild may share a card pool with Standard.
                     val deck = r.data.copy(format = st.format)
-                    saveDeck(deck, name = st.chosenClass?.name?.let { "Untitled $it" })
+                    saveDeck(deck, name = null)
                     _state.update { it.copy(isSaving = false) }
                     _effects.trySend(BuilderEffect.DeckSaved(deck.code))
                 }
@@ -222,14 +225,10 @@ class DeckBuilderViewModel(
         val st = _state.value
         val clsSlug = st.chosenClass?.slug ?: return
         poolJob = viewModelScope.launch {
-            // Server's `class` filter is single-value; fetch class + neutral
-            // separately and merge — page-by-page, side-by-side.
-            // Restrict pool to the chosen format's set group (if metadata knows it).
-            // Wild has no restriction; everything else uses the slug.
             val formatSets: Set<String> = when (st.format) {
-                com.lvsmsmch.deckbuilder.domain.entities.GameFormat.WILD,
-                com.lvsmsmch.deckbuilder.domain.entities.GameFormat.UNKNOWN -> emptySet()
-                else -> st.metadata?.setGroups?.get(st.format.apiSlug)?.cardSets?.toSet() ?: emptySet()
+                GameFormat.STANDARD -> rotation.cached()?.standardSets
+                    ?.map { it.lowercase() }?.toSet().orEmpty()
+                else -> emptySet()
             }
             val filters = CardFilters(
                 classes = setOf(clsSlug),
@@ -283,11 +282,10 @@ class DeckBuilderViewModel(
     }
 
     private fun Card.fitsClass(chosenSlug: String): Boolean {
-        if (classes.isEmpty()) return true // safety: unknown class metadata yet
+        if (classes.isEmpty()) return true
         return classes.any { it.slug.equals(chosenSlug, ignoreCase = true) || it.slug.equals("neutral", ignoreCase = true) }
     }
 
     private fun Card.isLegendary(): Boolean =
         rarity?.slug?.equals("legendary", ignoreCase = true) == true
-
 }

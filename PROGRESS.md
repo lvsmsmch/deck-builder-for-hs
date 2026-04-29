@@ -28,7 +28,19 @@ Migration: Blizzard API → HearthstoneJSON. См. `PLAN.md`.
   - DeckCardRow: tile-strip with rarity border, mana gem, count pill
   - SavedDeckRow: hero tile preview (96×32) replacing gradient placeholder
   - SavedDeckEntity.heroSlug + DeckPreview.heroSlug; AppDatabase v4 (destructive)
-- [ ] Phase 6 — Hardcoded localized labels, drop metadata layer
+- [x] Phase 6 — Hardcoded localized labels, drop metadata layer
+  - strings.xml en+ru: class/rarity/type/race/spell-school labels
+  - CardLabels helpers (slug → @StringRes) for class/rarity/type/race/school
+  - FilterSheet, CardLibrary ClassChips, DeckBuilder ClassPicker switched to stringResource
+  - SavedDecksScreen className → classLabel(classSlug)
+  - BuilderViewModel resolves heroCardId via hsjson hero search
+  - Builder pool format restriction now reads from RotationRepository
+  - Removed: MetadataRepository(+Impl), RefreshMetadataUseCase, Metadata entity,
+    MetadataDao/Entity/Dto/Mappers, /hearthstone/metadata endpoint
+  - DI/AppDatabase v5/DeckBuilderApp updated; metadata-related tests dropped
+  - SettingsScreen: removed Refresh metadata row + section
+  - GlossaryViewModel stubbed (full removal in phase 8)
+  - NewSetBanner removed (banner UX returns later via hsjson)
 - [ ] Phase 7 — Remove Blizzard auth and api layer
 - [ ] Phase 8 — Drop Battlegrounds, Card Backs, Glossary screens
 - [ ] Phase 9 — Background update flow and UX

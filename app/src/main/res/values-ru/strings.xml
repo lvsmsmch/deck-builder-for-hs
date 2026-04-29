@@ -50,7 +50,6 @@
     <!-- Builder -->
     <string name="builder_new_deck">Новая дека</string>
     <string name="builder_pick_class">Выбери класс, чтобы начать.</string>
-    <string name="builder_waiting_metadata">Загружаем список классов…</string>
     <string name="builder_search_pool">Поиск в пуле</string>
     <string name="builder_pool_tab">Пул</string>
     <string name="builder_deck_tab">Дека</string>
@@ -94,7 +93,6 @@
     <!-- Glossary -->
     <string name="glossary_title">Глоссарий</string>
     <string name="glossary_search_hint">Поиск по ключевым словам</string>
-    <string name="glossary_loading">Загружаем метаданные…</string>
     <string name="glossary_empty_no_query">Ключевых слов нет.</string>
     <string name="glossary_empty_query">По запросу «%1$s» ничего не найдено.</string>
 
@@ -117,7 +115,6 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_section_appearance">Внешний вид</string>
     <string name="settings_section_language">Язык</string>
-    <string name="settings_section_data">Данные</string>
     <string name="settings_section_privacy">Конфиденциальность</string>
     <string name="settings_section_about">О приложении</string>
     <string name="settings_theme_system">Как в системе</string>
@@ -126,12 +123,59 @@
     <string name="settings_theme_system_subtitle">Следует теме устройства</string>
     <string name="settings_card_language">Язык карт</string>
     <string name="settings_card_language_subtitle">Используется во всех запросах к API</string>
-    <string name="settings_refresh_metadata">Обновить метаданные</string>
-    <string name="settings_refresh_metadata_subtitle">Тап — забрать свежие сеты, классы и ключевые слова.</string>
-    <string name="settings_refresh_metadata_last">Обновлено: %1$s</string>
-    <string name="settings_refresh_success">Метаданные обновлены</string>
-    <string name="settings_refresh_failure">Не удалось обновить: %1$s</string>
     <string name="settings_crash_reports">Отправлять отчёты о крэшах</string>
     <string name="settings_crash_reports_subtitle">Анонимно, через Firebase Crashlytics</string>
     <string name="settings_version">Версия</string>
+
+    <!-- Class names -->
+    <string name="class_druid">Друид</string>
+    <string name="class_hunter">Охотник</string>
+    <string name="class_mage">Маг</string>
+    <string name="class_paladin">Паладин</string>
+    <string name="class_priest">Жрец</string>
+    <string name="class_rogue">Разбойник</string>
+    <string name="class_shaman">Шаман</string>
+    <string name="class_warlock">Чернокнижник</string>
+    <string name="class_warrior">Воин</string>
+    <string name="class_demonhunter">Охотник на демонов</string>
+    <string name="class_demonhunter_short">ОнД</string>
+    <string name="class_deathknight">Рыцарь смерти</string>
+    <string name="class_deathknight_short">РС</string>
+    <string name="class_neutral">Нейтрал</string>
+
+    <!-- Rarity names -->
+    <string name="rarity_free">Базовая</string>
+    <string name="rarity_common">Обычная</string>
+    <string name="rarity_rare">Редкая</string>
+    <string name="rarity_epic">Эпическая</string>
+    <string name="rarity_legendary">Легендарная</string>
+
+    <!-- Card type names -->
+    <string name="type_minion">Существо</string>
+    <string name="type_spell">Заклинание</string>
+    <string name="type_weapon">Оружие</string>
+    <string name="type_hero">Герой</string>
+    <string name="type_location">Локация</string>
+
+    <!-- Minion races -->
+    <string name="race_beast">Зверь</string>
+    <string name="race_demon">Демон</string>
+    <string name="race_dragon">Дракон</string>
+    <string name="race_elemental">Элементаль</string>
+    <string name="race_mech">Механизм</string>
+    <string name="race_murloc">Мурлок</string>
+    <string name="race_naga">Нага</string>
+    <string name="race_pirate">Пират</string>
+    <string name="race_quilboar">Свинобраз</string>
+    <string name="race_totem">Тотем</string>
+    <string name="race_undead">Нежить</string>
+
+    <!-- Spell schools -->
+    <string name="school_arcane">Тайная магия</string>
+    <string name="school_fire">Огонь</string>
+    <string name="school_frost">Лёд</string>
+    <string name="school_holy">Свет</string>
+    <string name="school_nature">Природа</string>
+    <string name="school_shadow">Тьма</string>
+    <string name="school_fel">Скверна</string>
 </resources>

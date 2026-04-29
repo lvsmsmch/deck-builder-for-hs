@@ -75,7 +75,6 @@ val networkModule = module {
 
     // Persistence
     single { AppDatabase.build(androidContext()) }
-    single { get<AppDatabase>().metadataDao() }
     single { get<AppDatabase>().savedDeckDao() }
     single { get<AppDatabase>().hsJsonCardDao() }
 

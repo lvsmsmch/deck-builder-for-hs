@@ -8,11 +8,8 @@ import com.lvsmsmch.deckbuilder.di.dataModule
 import com.lvsmsmch.deckbuilder.di.domainModule
 import com.lvsmsmch.deckbuilder.di.networkModule
 import com.lvsmsmch.deckbuilder.di.presentationModule
-import com.lvsmsmch.deckbuilder.domain.common.Result
-import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
-import com.lvsmsmch.deckbuilder.domain.usecases.RefreshMetadataUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,8 +23,6 @@ import org.koin.core.logger.Level
 
 class DeckBuilderApp : Application() {
 
-    private val refreshMetadata: RefreshMetadataUseCase by inject()
-    private val metadataRepository: MetadataRepository by inject()
     private val crashReporter: CrashReporter by inject()
     private val hsJsonRepository: HsJsonRepository by inject()
     private val rotationRepository: RotationRepository by inject()
@@ -54,12 +49,10 @@ class DeckBuilderApp : Application() {
             )
         }
         crashReporter.bindToPreferences()
-        kickOffMetadataRefresh()
         kickOffHsJsonLoad()
         kickOffRotationRefresh()
     }
 
-    /** Phase 4: hydrate Standard rotation snapshot from python-hearthstone. */
     private fun kickOffRotationRefresh() {
         Log.i(TAG, "kickOffRotationRefresh: launching")
         appScope.launch {
@@ -84,7 +77,6 @@ class DeckBuilderApp : Application() {
         }
     }
 
-    /** Phase 2: hydrate HearthstoneJSON cards in the background. */
     private fun kickOffHsJsonLoad() {
         Log.i(TAG, "kickOffHsJsonLoad: launching")
         appScope.launch {
@@ -100,32 +92,6 @@ class DeckBuilderApp : Application() {
                 val applied = hsJsonRepository.checkForUpdate(locale)
                 if (applied != null) Log.i(TAG, "kickOffHsJsonLoad: updated to build=$applied")
             }.onFailure { Log.w(TAG, "kickOffHsJsonLoad: checkForUpdate failed — ${it.message}") }
-        }
-    }
-
-    /** Plan §10.11: hydrate from Room first, then refresh from network in the background. */
-    private fun kickOffMetadataRefresh() {
-        Log.i(TAG, "kickOffMetadataRefresh: launching")
-        appScope.launch {
-            // Prime _current from Room before any UI request so CardRepositoryImpl hits
-            // the StateFlow short-circuit instead of querying the DAO per search.
-            val cached = runCatching { metadataRepository.loadFromCache(null) }
-                .onFailure { Log.w(TAG, "kickOffMetadataRefresh: cache prime failed — ${it.message}", it) }
-                .getOrNull()
-            if (cached != null) {
-                Log.i(TAG, "kickOffMetadataRefresh: cache primed locale=${cached.locale} classes=${cached.classes.size}")
-            }
-            when (val r = refreshMetadata()) {
-                is Result.Success -> Log.i(
-                    TAG,
-                    "kickOffMetadataRefresh: OK refreshedAtMs=${r.data.refreshedAtMs} " +
-                        "classes=${r.data.classes.size} sets=${r.data.sets.size}",
-                )
-                is Result.Error -> {
-                    Log.w(TAG, "kickOffMetadataRefresh: FAILED — ${r.throwable.message}", r.throwable)
-                    crashReporter.log("Metadata refresh failed: ${r.throwable.message}")
-                }
-            }
         }
     }
 

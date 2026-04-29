@@ -9,7 +9,6 @@ import com.lvsmsmch.deckbuilder.domain.usecases.ImportDeckByCodeUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.IsDeckSavedUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ObserveSavedDecksUseCase
-import com.lvsmsmch.deckbuilder.domain.usecases.RefreshMetadataUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardBacksUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
@@ -22,7 +21,6 @@ import org.koin.dsl.module
 val domainModule = module {
     factoryOf(::GetCardDetailsUseCase)
     factoryOf(::SearchCardsUseCase)
-    factoryOf(::RefreshMetadataUseCase)
     factoryOf(::ImportDeckByCodeUseCase)
     factoryOf(::GetDeckByCodeUseCase)
     factoryOf(::AssembleDeckUseCase)

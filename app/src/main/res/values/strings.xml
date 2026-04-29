@@ -50,7 +50,6 @@
     <!-- Builder -->
     <string name="builder_new_deck">New deck</string>
     <string name="builder_pick_class">Pick a class to begin.</string>
-    <string name="builder_waiting_metadata">Waiting for class metadata…</string>
     <string name="builder_search_pool">Search pool</string>
     <string name="builder_pool_tab">Pool</string>
     <string name="builder_deck_tab">Deck</string>
@@ -94,7 +93,6 @@
     <!-- Glossary -->
     <string name="glossary_title">Glossary</string>
     <string name="glossary_search_hint">Search keywords</string>
-    <string name="glossary_loading">Loading keyword metadata…</string>
     <string name="glossary_empty_no_query">No keywords.</string>
     <string name="glossary_empty_query">No keyword matches \"%1$s\".</string>
 
@@ -117,7 +115,6 @@
     <string name="settings_title">Settings</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_section_language">Language</string>
-    <string name="settings_section_data">Data</string>
     <string name="settings_section_privacy">Privacy</string>
     <string name="settings_section_about">About</string>
     <string name="settings_theme_system">System default</string>
@@ -126,12 +123,59 @@
     <string name="settings_theme_system_subtitle">Follows your device theme</string>
     <string name="settings_card_language">Card language</string>
     <string name="settings_card_language_subtitle">Used on every card and deck request</string>
-    <string name="settings_refresh_metadata">Refresh metadata</string>
-    <string name="settings_refresh_metadata_subtitle">Tap to fetch the latest sets, classes and keywords.</string>
-    <string name="settings_refresh_metadata_last">Last updated: %1$s</string>
-    <string name="settings_refresh_success">Metadata refreshed</string>
-    <string name="settings_refresh_failure">Refresh failed: %1$s</string>
     <string name="settings_crash_reports">Send crash reports</string>
     <string name="settings_crash_reports_subtitle">Anonymous, via Firebase Crashlytics</string>
     <string name="settings_version">Version</string>
+
+    <!-- Class names -->
+    <string name="class_druid">Druid</string>
+    <string name="class_hunter">Hunter</string>
+    <string name="class_mage">Mage</string>
+    <string name="class_paladin">Paladin</string>
+    <string name="class_priest">Priest</string>
+    <string name="class_rogue">Rogue</string>
+    <string name="class_shaman">Shaman</string>
+    <string name="class_warlock">Warlock</string>
+    <string name="class_warrior">Warrior</string>
+    <string name="class_demonhunter">Demon Hunter</string>
+    <string name="class_demonhunter_short">Demon H.</string>
+    <string name="class_deathknight">Death Knight</string>
+    <string name="class_deathknight_short">Death K.</string>
+    <string name="class_neutral">Neutral</string>
+
+    <!-- Rarity names -->
+    <string name="rarity_free">Free</string>
+    <string name="rarity_common">Common</string>
+    <string name="rarity_rare">Rare</string>
+    <string name="rarity_epic">Epic</string>
+    <string name="rarity_legendary">Legendary</string>
+
+    <!-- Card type names -->
+    <string name="type_minion">Minion</string>
+    <string name="type_spell">Spell</string>
+    <string name="type_weapon">Weapon</string>
+    <string name="type_hero">Hero</string>
+    <string name="type_location">Location</string>
+
+    <!-- Minion races -->
+    <string name="race_beast">Beast</string>
+    <string name="race_demon">Demon</string>
+    <string name="race_dragon">Dragon</string>
+    <string name="race_elemental">Elemental</string>
+    <string name="race_mech">Mech</string>
+    <string name="race_murloc">Murloc</string>
+    <string name="race_naga">Naga</string>
+    <string name="race_pirate">Pirate</string>
+    <string name="race_quilboar">Quilboar</string>
+    <string name="race_totem">Totem</string>
+    <string name="race_undead">Undead</string>
+
+    <!-- Spell schools -->
+    <string name="school_arcane">Arcane</string>
+    <string name="school_fire">Fire</string>
+    <string name="school_frost">Frost</string>
+    <string name="school_holy">Holy</string>
+    <string name="school_nature">Nature</string>
+    <string name="school_shadow">Shadow</string>
+    <string name="school_fel">Fel</string>
 </resources>

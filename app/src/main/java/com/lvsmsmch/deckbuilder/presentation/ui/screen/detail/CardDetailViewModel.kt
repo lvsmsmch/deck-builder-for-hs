@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
-import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.GetCardDetailsUseCase
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 class CardDetailViewModel(
     private val idOrSlug: String,
     private val getCardDetails: GetCardDetailsUseCase,
-    metadata: MetadataRepository,
+    prefs: PreferencesRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CardDetailState())
@@ -33,8 +33,8 @@ class CardDetailViewModel(
         load()
 
         // Auto-refetch when the user changes Card language in Settings.
-        metadata.current
-            .map { it?.locale }
+        prefs.preferences
+            .map { it.cardLocale }
             .distinctUntilChanged()
             .drop(1)
             .onEach { load() }

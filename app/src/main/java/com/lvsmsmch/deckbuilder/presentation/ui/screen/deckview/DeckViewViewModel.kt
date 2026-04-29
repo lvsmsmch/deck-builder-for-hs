@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.common.UiState
-import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.DeleteSavedDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.GetDeckByCodeUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.IsDeckSavedUseCase
@@ -26,7 +26,7 @@ class DeckViewViewModel(
     private val isSaved: IsDeckSavedUseCase,
     private val saveDeck: SaveDeckUseCase,
     private val deleteDeck: DeleteSavedDeckUseCase,
-    metadata: MetadataRepository,
+    prefs: PreferencesRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DeckViewState())
@@ -36,8 +36,8 @@ class DeckViewViewModel(
         load()
 
         // Auto-refetch when the user changes Card language in Settings.
-        metadata.current
-            .map { it?.locale }
+        prefs.preferences
+            .map { it.cardLocale }
             .distinctUntilChanged()
             .drop(1)
             .onEach { load() }

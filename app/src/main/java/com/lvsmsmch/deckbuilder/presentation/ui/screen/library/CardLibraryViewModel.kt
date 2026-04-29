@@ -7,9 +7,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
-import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
-import com.lvsmsmch.deckbuilder.domain.usecases.AcknowledgeNewSetUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -28,9 +26,7 @@ import kotlinx.coroutines.launch
 @OptIn(FlowPreview::class)
 class CardLibraryViewModel(
     private val searchCards: SearchCardsUseCase,
-    private val metadata: MetadataRepository,
     private val prefs: PreferencesRepository,
-    private val acknowledgeNewSet: AcknowledgeNewSetUseCase,
     initialKeyword: String? = null,
     initialSetSlug: String? = null,
 ) : ViewModel() {
@@ -41,8 +37,6 @@ class CardLibraryViewModel(
                 keywords = listOfNotNull(initialKeyword?.takeIf { it.isNotBlank() }).toSet(),
                 sets = listOfNotNull(initialSetSlug?.takeIf { it.isNotBlank() }).toSet(),
             ),
-            // Spinner-by-default so the screen never flashes the empty-state
-            // placeholder before the first search returns.
             isLoadingFirstPage = true,
         ),
     )
@@ -51,34 +45,15 @@ class CardLibraryViewModel(
     private var inFlight: Job? = null
 
     init {
-        // Mirror metadata into state so the filter sheet can render set/rarity lists.
-        // Also recompute the new-set banner whenever metadata or pref changes.
-        metadata.current
-            .onEach { meta ->
-                _state.update { it.copy(metadata = meta) }
-                refreshNewSetBanner()
-            }
-            .launchIn(viewModelScope)
+        // Re-fetch when the user flips Card language in Settings.
         prefs.preferences
-            .map { it.lastSeenSetSlug }
-            .distinctUntilChanged()
-            .onEach { refreshNewSetBanner() }
-            .launchIn(viewModelScope)
-
-        // Re-fetch when the resolved card locale flips (Settings → Card language,
-        // or first metadata arrival after a fresh install).
-        metadata.current
-            .map { it?.locale }
+            .map { it.cardLocale }
             .distinctUntilChanged()
             .drop(1)
             .onEach { loadFirstPage() }
             .launchIn(viewModelScope)
 
-        // Single debounced pipeline for *all* filter changes (chips, sort, text,
-        // FilterSheet apply). Cancels the in-flight request and runs once after
-        // the user stops fiddling for FILTER_DEBOUNCE_MS. drop(1) skips the
-        // synthetic initial emission — the first load is kicked off explicitly
-        // below so we don't pay the debounce delay at cold start.
+        // Single debounced pipeline for *all* filter changes.
         _state
             .map { it.filters }
             .distinctUntilChanged()
@@ -87,9 +62,6 @@ class CardLibraryViewModel(
             .onEach { loadFirstPage() }
             .launchIn(viewModelScope)
 
-        // Kick off the first search immediately. CardRepositoryImpl falls back to
-        // Metadata.Empty when metadata isn't loaded yet — cards still render, and
-        // the locale-change handler above will refetch once metadata lands.
         loadFirstPage()
     }
 
@@ -140,39 +112,6 @@ class CardLibraryViewModel(
     }
 
     fun retry() = loadFirstPage()
-
-    fun openNewSetBanner() {
-        val set = _state.value.newSetBanner ?: return
-        viewModelScope.launch {
-            acknowledgeNewSet(set.slug)
-        }
-        _state.update {
-            it.copy(
-                filters = it.filters.copy(sets = setOf(set.slug)),
-                newSetBanner = null,
-            )
-        }
-    }
-
-    fun dismissNewSetBanner() {
-        val set = _state.value.newSetBanner ?: return
-        viewModelScope.launch { acknowledgeNewSet(set.slug) }
-        _state.update { it.copy(newSetBanner = null) }
-    }
-
-    private suspend fun refreshNewSetBanner() {
-        val meta = _state.value.metadata ?: return
-        if (meta.sets.isEmpty()) return
-        val lastSeen = prefs.current().lastSeenSetSlug
-        val standardSlugs = meta.setGroups["standard"]?.cardSets?.toSet() ?: emptySet()
-        val newest = meta.sets.values
-            .filter { it.type.equals("expansion", ignoreCase = true) }
-            .filter { standardSlugs.isEmpty() || it.slug in standardSlugs }
-            .maxByOrNull { it.id }
-            ?: return
-        val showBanner = newest.slug != lastSeen
-        _state.update { it.copy(newSetBanner = newest.takeIf { _ -> showBanner }) }
-    }
 
     private fun loadFirstPage() = runSearch(targetPage = 1, replaceItems = true)
 

@@ -39,18 +39,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
-import com.lvsmsmch.deckbuilder.domain.entities.Expansion
-import com.lvsmsmch.deckbuilder.domain.entities.Metadata
-import com.lvsmsmch.deckbuilder.domain.entities.Rarity
-import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForRaritySlug
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.raceLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.spellSchoolLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterSheet(
     initial: CardFilters,
-    metadata: Metadata?,
     onDismiss: () -> Unit,
     onApply: (CardFilters) -> Unit,
 ) {
@@ -83,11 +82,10 @@ fun FilterSheet(
                     .padding(horizontal = 20.dp),
             ) {
                 item { ManaSection(draft) { draft = it } }
-                item { RaritySection(draft, metadata) { draft = it } }
+                item { RaritySection(draft) { draft = it } }
                 item { TypeSection(draft) { draft = it } }
                 item { MinionTypeSection(draft) { draft = it } }
                 item { SpellSchoolSection(draft) { draft = it } }
-                item { SetSection(draft, metadata) { draft = it } }
                 item { CollectibleSection(draft) { draft = it } }
                 item { Spacer(Modifier.height(12.dp)) }
             }
@@ -235,24 +233,19 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
     }
 }
 
+private val RaritySlugs = listOf("common", "rare", "epic", "legendary")
+
 @Composable
-private fun RaritySection(draft: CardFilters, metadata: Metadata?, onChange: (CardFilters) -> Unit) {
-    val rarities: List<Rarity> = metadata?.rarities?.values?.sortedBy { it.id }
-        ?: listOf(
-            Rarity(1, "common", "Common", emptyList()),
-            Rarity(3, "rare", "Rare", emptyList()),
-            Rarity(4, "epic", "Epic", emptyList()),
-            Rarity(5, "legendary", "Legendary", emptyList()),
-        )
+private fun RaritySection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
     SectionHeader(stringResource(R.string.filters_section_rarity))
     ChipFlow {
-        rarities.forEach { r ->
+        RaritySlugs.forEach { slug ->
             Chip(
-                label = r.name.ifBlank { r.slug.replaceFirstChar { it.uppercase() } },
-                active = r.slug in draft.rarities,
-                leading = colorForRaritySlug(r.slug),
+                label = rarityLabel(slug),
+                active = slug in draft.rarities,
+                leading = colorForRaritySlug(slug),
                 onClick = {
-                    val next = if (r.slug in draft.rarities) draft.rarities - r.slug else draft.rarities + r.slug
+                    val next = if (slug in draft.rarities) draft.rarities - slug else draft.rarities + slug
                     onChange(draft.copy(rarities = next))
                 },
             )
@@ -260,20 +253,15 @@ private fun RaritySection(draft: CardFilters, metadata: Metadata?, onChange: (Ca
     }
 }
 
+private val TypeSlugs = listOf("minion", "spell", "weapon", "hero", "location")
+
 @Composable
 private fun TypeSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    val types = listOf(
-        "minion" to "Minion",
-        "spell" to "Spell",
-        "weapon" to "Weapon",
-        "hero" to "Hero",
-        "location" to "Location",
-    )
     SectionHeader(stringResource(R.string.filters_section_type))
     ChipFlow {
-        types.forEach { (slug, label) ->
+        TypeSlugs.forEach { slug ->
             Chip(
-                label = label,
+                label = typeLabel(slug),
                 active = slug in draft.types,
                 onClick = {
                     val next = if (slug in draft.types) draft.types - slug else draft.types + slug
@@ -284,26 +272,18 @@ private fun TypeSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
     }
 }
 
+private val MinionTypeSlugs = listOf(
+    "beast", "demon", "dragon", "elemental", "mech",
+    "murloc", "naga", "pirate", "quilboar", "totem", "undead",
+)
+
 @Composable
 private fun MinionTypeSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    val minionTypes = listOf(
-        "beast" to "Beast",
-        "demon" to "Demon",
-        "dragon" to "Dragon",
-        "elemental" to "Elemental",
-        "mech" to "Mech",
-        "murloc" to "Murloc",
-        "naga" to "Naga",
-        "pirate" to "Pirate",
-        "quilboar" to "Quilboar",
-        "totem" to "Totem",
-        "undead" to "Undead",
-    )
     SectionHeader(stringResource(R.string.filters_section_minion_type))
     ChipFlow {
-        minionTypes.forEach { (slug, label) ->
+        MinionTypeSlugs.forEach { slug ->
             Chip(
-                label = label,
+                label = raceLabel(slug),
                 active = slug in draft.minionTypes,
                 onClick = {
                     val next = if (slug in draft.minionTypes) draft.minionTypes - slug else draft.minionTypes + slug
@@ -314,46 +294,19 @@ private fun MinionTypeSection(draft: CardFilters, onChange: (CardFilters) -> Uni
     }
 }
 
+private val SpellSchoolSlugs = listOf("arcane", "fire", "frost", "holy", "nature", "shadow", "fel")
+
 @Composable
 private fun SpellSchoolSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    val schools = listOf(
-        "arcane" to "Arcane",
-        "fire" to "Fire",
-        "frost" to "Frost",
-        "holy" to "Holy",
-        "nature" to "Nature",
-        "shadow" to "Shadow",
-        "fel" to "Fel",
-    )
     SectionHeader(stringResource(R.string.filters_section_spell_school))
     ChipFlow {
-        schools.forEach { (slug, label) ->
+        SpellSchoolSlugs.forEach { slug ->
             Chip(
-                label = label,
+                label = spellSchoolLabel(slug),
                 active = slug in draft.spellSchools,
                 onClick = {
                     val next = if (slug in draft.spellSchools) draft.spellSchools - slug else draft.spellSchools + slug
                     onChange(draft.copy(spellSchools = next))
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun SetSection(draft: CardFilters, metadata: Metadata?, onChange: (CardFilters) -> Unit) {
-    val sets: List<Expansion> = metadata?.sets?.values?.sortedByDescending { it.id }
-        ?.take(20).orEmpty()
-    if (sets.isEmpty()) return
-    SectionHeader(stringResource(R.string.filters_section_set))
-    ChipFlow {
-        sets.forEach { s ->
-            Chip(
-                label = s.name.ifBlank { s.slug },
-                active = s.slug in draft.sets,
-                onClick = {
-                    val next = if (s.slug in draft.sets) draft.sets - s.slug else draft.sets + s.slug
-                    onChange(draft.copy(sets = next))
                 },
             )
         }
@@ -374,7 +327,6 @@ private fun CollectibleSection(draft: CardFilters, onChange: (CardFilters) -> Un
     }
 }
 
-/** Tiny wrapper around Compose Foundation's `FlowRow` so spacing lives in one place. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ChipFlow(content: @Composable () -> Unit) {

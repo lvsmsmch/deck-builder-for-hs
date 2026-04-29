@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,8 +48,6 @@ import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
-import java.text.DateFormat
-import java.util.Date
 
 @Composable
 fun SettingsScreen(
@@ -121,17 +118,6 @@ fun SettingsScreen(
                                 color = DeckBuilderColors.OnSurfaceDimmer,
                             )
                         }
-                    }
-                }
-
-                item { SectionHeader(stringResource(R.string.settings_section_data)) }
-                item {
-                    GroupCard {
-                        RefreshRow(
-                            isRefreshing = state.isRefreshingMetadata,
-                            refreshedAtMs = state.metadataRefreshedAtMs,
-                            onClick = viewModel::refreshMetadataNow,
-                        )
                     }
                 }
 
@@ -296,48 +282,6 @@ private fun ThemeRow(current: ThemeMode, onChange: (ThemeMode) -> Unit) {
 }
 
 @Composable
-private fun RefreshRow(
-    isRefreshing: Boolean,
-    refreshedAtMs: Long?,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = !isRefreshing, onClick = onClick)
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.settings_refresh_metadata),
-                style = MaterialTheme.typography.titleMedium,
-                color = DeckBuilderColors.OnSurface,
-            )
-            Text(
-                text = refreshedAtMs?.let { stringResource(R.string.settings_refresh_metadata_last, formatDate(it)) }
-                    ?: stringResource(R.string.settings_refresh_metadata_subtitle),
-                style = MaterialTheme.typography.bodySmall,
-                color = DeckBuilderColors.OnSurfaceDim,
-            )
-        }
-        if (isRefreshing) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(18.dp),
-                color = DeckBuilderColors.Primary,
-                strokeWidth = 2.dp,
-            )
-        } else {
-            Text(
-                text = "›",
-                style = MaterialTheme.typography.titleLarge,
-                color = DeckBuilderColors.OnSurfaceDimmer,
-            )
-        }
-    }
-}
-
-@Composable
 private fun ToggleRow(
     title: String,
     subtitle: String,
@@ -432,5 +376,3 @@ private fun LocalePickerDialog(
     )
 }
 
-private fun formatDate(ms: Long): String =
-    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(ms))

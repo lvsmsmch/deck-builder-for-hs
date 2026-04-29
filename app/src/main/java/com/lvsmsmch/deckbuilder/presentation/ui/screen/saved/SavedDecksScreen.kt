@@ -47,6 +47,7 @@ import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -222,7 +223,7 @@ private fun SavedDeckRow(
                 FormatChip(deck.format.displayName)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "${deck.className ?: "—"} · ${deck.cardCount}/30",
+                    text = "${classLabel(deck.classSlug)} · ${deck.cardCount}/30",
                     style = MaterialTheme.typography.bodySmall,
                     color = DeckBuilderColors.OnSurfaceDim,
                 )

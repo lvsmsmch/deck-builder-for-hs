@@ -17,9 +17,7 @@ val presentationModule = module {
     viewModel { (initialKeyword: String?, initialSetSlug: String?) ->
         CardLibraryViewModel(
             searchCards = get(),
-            metadata = get(),
             prefs = get(),
-            acknowledgeNewSet = get(),
             initialKeyword = initialKeyword,
             initialSetSlug = initialSetSlug,
         )
@@ -35,7 +33,7 @@ val presentationModule = module {
         CardDetailViewModel(
             idOrSlug = idOrSlug,
             getCardDetails = get(),
-            metadata = get(),
+            prefs = get(),
         )
     }
 
@@ -46,7 +44,7 @@ val presentationModule = module {
             isSaved = get(),
             saveDeck = get(),
             deleteDeck = get(),
-            metadata = get(),
+            prefs = get(),
         )
     }
 }

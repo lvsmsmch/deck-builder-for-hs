@@ -62,6 +62,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.classShortLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.viewmodel.koinViewModel
@@ -105,14 +107,6 @@ fun CardLibraryScreen(
             activeFilterCount = state.filters.activeFilterCount(),
         )
 
-        state.newSetBanner?.let { newSet ->
-            NewSetBanner(
-                set = newSet,
-                onOpen = viewModel::openNewSetBanner,
-                onDismiss = viewModel::dismissNewSetBanner,
-            )
-        }
-
         SearchField(
             query = state.filters.textQuery,
             onQueryChange = viewModel::setTextQuery,
@@ -125,7 +119,6 @@ fun CardLibraryScreen(
 
         ClassChips(
             selected = state.filters.classes,
-            metadata = state.metadata,
             onToggle = viewModel::toggleClass,
         )
 
@@ -163,7 +156,6 @@ fun CardLibraryScreen(
     if (showFilterSheet) {
         FilterSheet(
             initial = state.filters,
-            metadata = state.metadata,
             onDismiss = { showFilterSheet = false },
             onApply = viewModel::applyFilters,
         )
@@ -391,32 +383,9 @@ private fun ManaChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
 @Composable
 private fun ClassChips(
     selected: Set<String>,
-    metadata: com.lvsmsmch.deckbuilder.domain.entities.Metadata?,
     onToggle: (String) -> Unit,
 ) {
-    // Prefer metadata names so chips localise with the user's chosen card locale.
-    // Hardcoded list is the cold-start fallback before metadata lands.
-    val fallback = listOf(
-        "druid" to "Druid",
-        "hunter" to "Hunter",
-        "mage" to "Mage",
-        "paladin" to "Paladin",
-        "priest" to "Priest",
-        "rogue" to "Rogue",
-        "shaman" to "Shaman",
-        "warlock" to "Warlock",
-        "warrior" to "Warrior",
-        "demonhunter" to "Demon H.",
-        "deathknight" to "Death K.",
-        "neutral" to "Neutral",
-    )
-    val classes = remember(metadata) {
-        val fromApi = metadata?.classes?.values
-            ?.sortedBy { it.id }
-            ?.map { it.slug to it.name.ifBlank { it.slug.replaceFirstChar { c -> c.uppercase() } } }
-            .orEmpty()
-        if (fromApi.isEmpty()) fallback else fromApi
-    }
+    val slugs = remember { CardLabels.ClassOrder + "neutral" }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -424,7 +393,8 @@ private fun ClassChips(
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        classes.forEach { (slug, label) ->
+        slugs.forEach { slug ->
+            val label = classShortLabel(slug)
             val active = slug in selected
             val color = colorForClassSlug(slug)
             Row(

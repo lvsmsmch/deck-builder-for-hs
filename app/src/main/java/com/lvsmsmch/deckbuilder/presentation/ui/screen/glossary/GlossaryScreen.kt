@@ -55,7 +55,6 @@ fun GlossaryScreen(
         SearchField(state.query, viewModel::setQuery)
 
         when {
-            !state.isMetadataReady -> CenteredSpinnerWithHint(stringResource(R.string.glossary_loading))
             state.groups.isEmpty() -> EmptyState(state.query)
             else -> LazyColumn(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
@@ -167,19 +166,6 @@ private fun SearchField(query: String, onChange: (String) -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
     )
-}
-
-@Composable
-private fun CenteredSpinnerWithHint(hint: String) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        CircularProgressIndicator(color = DeckBuilderColors.Primary, strokeWidth = 2.dp)
-        Spacer(Modifier.height(12.dp))
-        Text(hint, color = DeckBuilderColors.OnSurfaceDim, style = MaterialTheme.typography.bodyMedium)
-    }
 }
 
 @Composable

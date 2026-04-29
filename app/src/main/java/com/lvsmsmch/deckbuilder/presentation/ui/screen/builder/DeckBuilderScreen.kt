@@ -67,6 +67,8 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.viewmodel.koinViewModel
@@ -96,11 +98,8 @@ fun DeckBuilderScreen(
     Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
         when (state.phase) {
             Phase.ClassPicker -> ClassPickerView(
-                classes = state.metadata?.classes?.values
-                    ?.filter { it.slug.lowercase() != "neutral" }
-                    ?.sortedBy { it.name }
-                    ?: emptyList(),
-                onPick = viewModel::pickClass,
+                slugs = CardLabels.ClassOrder,
+                onPick = viewModel::pickClassBySlug,
             )
             Phase.Editing -> EditingView(
                 state = state,
@@ -132,8 +131,8 @@ fun DeckBuilderScreen(
 
 @Composable
 private fun ClassPickerView(
-    classes: List<ClassMeta>,
-    onPick: (ClassMeta) -> Unit,
+    slugs: List<String>,
+    onPick: (String) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
@@ -149,42 +148,22 @@ private fun ClassPickerView(
             modifier = Modifier.padding(start = 20.dp, top = 4.dp, bottom = 12.dp),
         )
 
-        if (classes.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = DeckBuilderColors.Primary, strokeWidth = 2.dp)
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        text = stringResource(R.string.builder_waiting_metadata),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = DeckBuilderColors.OnSurfaceDim,
-                    )
-                }
-            }
-            return
-        }
-
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             contentPadding = PaddingValues(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(classes, key = { it.id }) { meta ->
-                ClassTile(meta = meta, onClick = { onPick(meta) })
+            items(slugs, key = { it }) { slug ->
+                ClassTile(slug = slug, onClick = { onPick(slug) })
             }
         }
     }
 }
 
 @Composable
-private fun ClassTile(meta: ClassMeta, onClick: () -> Unit) {
-    val color = colorForClassSlug(meta.slug)
+private fun ClassTile(slug: String, onClick: () -> Unit) {
+    val color = colorForClassSlug(slug)
     Box(
         modifier = Modifier
             .aspectRatio(1f)
@@ -198,7 +177,7 @@ private fun ClassTile(meta: ClassMeta, onClick: () -> Unit) {
         contentAlignment = Alignment.BottomStart,
     ) {
         Text(
-            text = meta.name,
+            text = classLabel(slug),
             style = MaterialTheme.typography.titleSmall,
             color = DeckBuilderColors.OnSurface,
             fontWeight = FontWeight.SemiBold,
@@ -310,7 +289,7 @@ private fun Header(
         Spacer(Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = chosenClass?.name ?: "Deck",
+                text = if (chosenClass != null) classLabel(chosenClass.slug) else "Deck",
                 style = MaterialTheme.typography.titleMedium,
                 color = DeckBuilderColors.OnSurface,
             )

@@ -4,7 +4,6 @@ import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
-import com.lvsmsmch.deckbuilder.domain.entities.Metadata
 
 data class BuilderState(
     val phase: Phase = Phase.ClassPicker,
@@ -16,7 +15,6 @@ data class BuilderState(
     val isSaving: Boolean = false,
     val saveError: String? = null,
     val toast: String? = null,
-    val metadata: Metadata? = null,
     val maxDeckSize: Int = 30,
     val singleton: Boolean = false,
 ) {
