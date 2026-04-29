@@ -5,6 +5,7 @@ data class AppPreferences(
     val cardLocale: String = "en_US",
     val crashReportingEnabled: Boolean = true,
     val lastSeenSetSlug: String? = null,
+    val lastUpdateCheckAtMs: Long? = null,
 )
 
 enum class ThemeMode { System, Dark, Light }

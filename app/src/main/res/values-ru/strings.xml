@@ -103,6 +103,17 @@
     <string name="settings_crash_reports_subtitle">Анонимно, через Firebase Crashlytics</string>
     <string name="settings_version">Версия</string>
 
+    <!-- Updates -->
+    <string name="settings_section_updates">Данные карт</string>
+    <string name="settings_cards_build">Билд карт</string>
+    <string name="settings_cards_build_unknown">ещё не загружен</string>
+    <string name="settings_last_check">Последняя проверка</string>
+    <string name="settings_last_check_never">никогда</string>
+    <string name="snackbar_cards_updated">Карты обновлены до билда %1$s</string>
+    <string name="library_rotation_lag_title">Standard-ротация может быть устаревшей</string>
+    <string name="library_rotation_lag_body">%1$d сет(ов) c карт ещё не известны python-hearthstone.</string>
+    <string name="library_rotation_lag_action">Проверить ещё раз</string>
+
     <!-- Class names -->
     <string name="class_druid">Друид</string>
     <string name="class_hunter">Охотник</string>

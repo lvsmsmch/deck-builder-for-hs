@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
@@ -46,12 +47,17 @@ class PreferencesRepositoryImpl(
         Log.d(TAG, "setLastSeenSetSlug: $slug")
     }
 
+    override suspend fun setLastUpdateCheckAt(epochMs: Long) {
+        store.edit { it[Keys.lastUpdateCheckAt] = epochMs }
+    }
+
     private fun Preferences.toDomain(): AppPreferences = AppPreferences(
         theme = this[Keys.theme]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
             ?: ThemeMode.System,
         cardLocale = this[Keys.cardLocale] ?: "en_US",
         crashReportingEnabled = this[Keys.crashEnabled] ?: true,
         lastSeenSetSlug = this[Keys.lastSeenSetSlug],
+        lastUpdateCheckAtMs = this[Keys.lastUpdateCheckAt],
     )
 
     private object Keys {
@@ -59,5 +65,6 @@ class PreferencesRepositoryImpl(
         val cardLocale = stringPreferencesKey("card_locale")
         val crashEnabled = booleanPreferencesKey("crash_enabled")
         val lastSeenSetSlug = stringPreferencesKey("last_seen_set_slug")
+        val lastUpdateCheckAt = longPreferencesKey("last_update_check_at_ms")
     }
 }

@@ -58,5 +58,22 @@ Migration: Blizzard API → HearthstoneJSON. См. `PLAN.md`.
   - Stripped `BattlegroundsMeta` field/class from `Card`, dropped `gameMode`/`tiers`/`GameMode` from `CardFilters`
   - DI: pruned vm/usecase/repo bindings across Presentation/Domain/Data modules
   - strings.xml (en+ru): removed `nav_battlegrounds`, `bg_*`, `glossary_*`, `cardbacks_*`, `more_glossary*`, `more_cardbacks*`
-- [ ] Phase 9 — Background update flow and UX
+- [x] Phase 9 — Background update flow and UX
+  - WorkManager `androidx.work:work-runtime-ktx` added; `UpdateWorker` (CoroutineWorker
+    via Koin) scheduled daily by `UpdateScheduler.scheduleDaily()` from `DeckBuilderApp`
+  - `data/update/`: `UpdateNotifier` (SharedFlow events + StateFlow rotation status),
+    `UpdateRunner` (single entry-point used both at app start and from the worker —
+    runs ensureLoaded + checkForUpdate + rotation refresh + cross-check, persists
+    `lastUpdateCheckAtMs` pref)
+  - Global `SnackbarHost` in `AppNavGraph` Scaffold; `CardsUpdated` event renders
+    `snackbar_cards_updated` on every screen
+  - `CardLibraryScreen` rotation-lag banner subscribes to `notifier.rotationStatus`,
+    "Check again" button re-runs the runner
+  - `SettingsScreen`: new "Card data" section showing current build + last check
+    timestamp (formatted via `DateFormat.MEDIUM/SHORT`)
+  - `AppPreferences.lastUpdateCheckAtMs` + DataStore key + `setLastUpdateCheckAt`
+  - en + ru strings (settings_section_updates, settings_cards_build,
+    settings_last_check, snackbar_cards_updated, library_rotation_lag_*)
+  - Builder snapshot: pool already loads on screen entry via paginated
+    `SearchCardsUseCase` (no live observation), so cards don't shift mid-edit
 - [ ] Phase 10 — Tests and docs cleanup

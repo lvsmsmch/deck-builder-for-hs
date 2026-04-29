@@ -10,6 +10,8 @@ import com.lvsmsmch.deckbuilder.data.prefs.userPrefsStore
 import com.lvsmsmch.deckbuilder.data.rotation.RotationApi
 import com.lvsmsmch.deckbuilder.data.rotation.RotationRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.rotation.RotationStore
+import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
+import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -94,4 +96,16 @@ val networkModule = module {
 
     // DataStore for prefs
     single { androidContext().userPrefsStore }
+
+    // Background update plumbing.
+    single { UpdateNotifier() }
+    single {
+        UpdateRunner(
+            prefs = get(),
+            hsJson = get(),
+            rotation = get(),
+            notifier = get(),
+            crash = get(),
+        )
+    }
 }

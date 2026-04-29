@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCardLocaleUseCase
@@ -10,6 +11,7 @@ import com.lvsmsmch.deckbuilder.domain.usecases.SetThemeUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -20,6 +22,7 @@ class SettingsViewModel(
     private val setThemeUseCase: SetThemeUseCase,
     private val setCardLocale: SetCardLocaleUseCase,
     private val setCrashReporting: SetCrashReportingEnabledUseCase,
+    private val hsJson: HsJsonRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
@@ -27,7 +30,14 @@ class SettingsViewModel(
 
     init {
         observePrefs()
-            .onEach { prefs -> _state.update { it.copy(prefs = prefs) } }
+            .onEach { prefs ->
+                _state.update { it.copy(prefs = prefs) }
+            }
+            .distinctUntilChangedBy { it.cardLocale }
+            .onEach { prefs ->
+                val build = runCatching { hsJson.currentBuild(prefs.cardLocale) }.getOrNull()
+                _state.update { it.copy(cardsBuild = build) }
+            }
             .launchIn(viewModelScope)
     }
 

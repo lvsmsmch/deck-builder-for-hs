@@ -103,6 +103,17 @@
     <string name="settings_crash_reports_subtitle">Anonymous, via Firebase Crashlytics</string>
     <string name="settings_version">Version</string>
 
+    <!-- Updates -->
+    <string name="settings_section_updates">Card data</string>
+    <string name="settings_cards_build">Cards build</string>
+    <string name="settings_cards_build_unknown">not loaded yet</string>
+    <string name="settings_last_check">Last checked</string>
+    <string name="settings_last_check_never">never</string>
+    <string name="snackbar_cards_updated">Cards updated to build %1$s</string>
+    <string name="library_rotation_lag_title">Standard rotation may be out of date</string>
+    <string name="library_rotation_lag_body">%1$d set(s) on cards aren\'t recognised yet by python-hearthstone.</string>
+    <string name="library_rotation_lag_action">Check again</string>
+
     <!-- Class names -->
     <string name="class_druid">Druid</string>
     <string name="class_hunter">Hunter</string>

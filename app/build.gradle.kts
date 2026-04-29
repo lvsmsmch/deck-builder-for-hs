@@ -110,6 +110,7 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(libs.datastore.preferences)
+    implementation(libs.androidx.work.runtime)
 
     // Firebase Crashlytics (active only when google-services.json is present;
     // CrashReporter wraps every call in a try-catch so the app stays functional).

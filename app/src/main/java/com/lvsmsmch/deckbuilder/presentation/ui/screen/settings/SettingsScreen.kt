@@ -133,6 +133,21 @@ fun SettingsScreen(
                     }
                 }
 
+                item { SectionHeader(stringResource(R.string.settings_section_updates)) }
+                item {
+                    GroupCard {
+                        InfoRow(
+                            title = stringResource(R.string.settings_cards_build),
+                            value = state.cardsBuild
+                                ?: stringResource(R.string.settings_cards_build_unknown),
+                        )
+                        InfoRow(
+                            title = stringResource(R.string.settings_last_check),
+                            value = formatLastCheck(state.prefs.lastUpdateCheckAtMs),
+                        )
+                    }
+                }
+
                 item { SectionHeader(stringResource(R.string.settings_section_about)) }
                 item {
                     GroupCard {
@@ -315,6 +330,38 @@ private fun ToggleRow(
             ),
         )
     }
+}
+
+@Composable
+private fun InfoRow(title: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = DeckBuilderColors.OnSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = DeckBuilderColors.OnSurfaceDim,
+        )
+    }
+}
+
+@Composable
+private fun formatLastCheck(epochMs: Long?): String {
+    if (epochMs == null) return stringResource(R.string.settings_last_check_never)
+    val fmt = java.text.DateFormat.getDateTimeInstance(
+        java.text.DateFormat.MEDIUM,
+        java.text.DateFormat.SHORT,
+    )
+    return fmt.format(java.util.Date(epochMs))
 }
 
 @Composable

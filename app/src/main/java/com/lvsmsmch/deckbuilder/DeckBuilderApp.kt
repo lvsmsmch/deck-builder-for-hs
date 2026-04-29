@@ -3,13 +3,12 @@ package com.lvsmsmch.deckbuilder
 import android.app.Application
 import android.util.Log
 import com.lvsmsmch.deckbuilder.data.crash.CrashReporter
-import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
+import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
+import com.lvsmsmch.deckbuilder.data.update.UpdateScheduler
 import com.lvsmsmch.deckbuilder.di.dataModule
 import com.lvsmsmch.deckbuilder.di.domainModule
 import com.lvsmsmch.deckbuilder.di.networkModule
 import com.lvsmsmch.deckbuilder.di.presentationModule
-import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
-import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,9 +23,7 @@ import org.koin.core.logger.Level
 class DeckBuilderApp : Application() {
 
     private val crashReporter: CrashReporter by inject()
-    private val hsJsonRepository: HsJsonRepository by inject()
-    private val rotationRepository: RotationRepository by inject()
-    private val prefs: PreferencesRepository by inject()
+    private val updateRunner: UpdateRunner by inject()
 
     private val appScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, t ->
@@ -49,50 +46,10 @@ class DeckBuilderApp : Application() {
             )
         }
         crashReporter.bindToPreferences()
-        kickOffHsJsonLoad()
-        kickOffRotationRefresh()
-    }
 
-    private fun kickOffRotationRefresh() {
-        Log.i(TAG, "kickOffRotationRefresh: launching")
-        appScope.launch {
-            runCatching {
-                val cached = rotationRepository.cached()
-                if (cached == null) {
-                    val fresh = rotationRepository.ensureLoaded()
-                    Log.i(
-                        TAG,
-                        "kickOffRotationRefresh: first load standard=${fresh.standardSets.size} known=${fresh.knownSets.size}",
-                    )
-                } else {
-                    val updated = rotationRepository.refresh()
-                    if (updated != null && updated.sourceSha != cached.sourceSha) {
-                        Log.i(TAG, "kickOffRotationRefresh: updated to sha=${updated.sourceSha?.take(8)}")
-                    }
-                }
-            }.onFailure {
-                Log.w(TAG, "kickOffRotationRefresh failed: ${it.message}", it)
-                crashReporter.log("Rotation refresh failed: ${it.message}")
-            }
-        }
-    }
-
-    private fun kickOffHsJsonLoad() {
-        Log.i(TAG, "kickOffHsJsonLoad: launching")
-        appScope.launch {
-            val locale = runCatching { prefs.current().cardLocale }.getOrDefault("en_US")
-            runCatching {
-                val snap = hsJsonRepository.ensureLoaded(locale)
-                Log.i(TAG, "kickOffHsJsonLoad: ensured locale=${snap.locale} build=${snap.build} cards=${snap.cards.size}")
-            }.onFailure {
-                Log.w(TAG, "kickOffHsJsonLoad: ensureLoaded failed — ${it.message}", it)
-                crashReporter.log("HsJson ensureLoaded failed: ${it.message}")
-            }
-            runCatching {
-                val applied = hsJsonRepository.checkForUpdate(locale)
-                if (applied != null) Log.i(TAG, "kickOffHsJsonLoad: updated to build=$applied")
-            }.onFailure { Log.w(TAG, "kickOffHsJsonLoad: checkForUpdate failed — ${it.message}") }
-        }
+        // One-shot kick on startup; daily WorkManager keeps it fresh later.
+        appScope.launch { updateRunner.runOnce(reason = "app start") }
+        UpdateScheduler.scheduleDaily(this)
     }
 
     private companion object {

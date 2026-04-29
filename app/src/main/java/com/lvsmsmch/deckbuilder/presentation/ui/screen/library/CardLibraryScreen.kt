@@ -56,6 +56,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
+import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
@@ -66,6 +68,8 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classShortLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -80,6 +84,12 @@ fun CardLibraryScreen(
     val state by viewModel.state.collectAsState()
     val gridState = rememberLazyGridState()
     var showFilterSheet by remember { mutableStateOf(false) }
+
+    val notifier: UpdateNotifier = koinInject()
+    val updateRunner: UpdateRunner = koinInject()
+    val rotationStatus by notifier.rotationStatus.collectAsState()
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    var rechecking by remember { mutableStateOf(false) }
 
     val nearEnd by remember {
         derivedStateOf {
@@ -106,6 +116,21 @@ fun CardLibraryScreen(
             onOpenFilters = { showFilterSheet = true },
             activeFilterCount = state.filters.activeFilterCount(),
         )
+
+        rotationStatus?.takeIf { it.isOutdated }?.let { status ->
+            RotationLagBanner(
+                unknownCount = status.unknownSets.size,
+                rechecking = rechecking,
+                onRecheck = {
+                    if (rechecking) return@RotationLagBanner
+                    rechecking = true
+                    coroutineScope.launch {
+                        runCatching { updateRunner.runOnce(reason = "library banner") }
+                        rechecking = false
+                    }
+                },
+            )
+        }
 
         SearchField(
             query = state.filters.textQuery,
@@ -473,6 +498,59 @@ private fun CenteredSpinner() {
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(color = DeckBuilderColors.Primary, strokeWidth = 2.dp)
+    }
+}
+
+@Composable
+private fun RotationLagBanner(
+    unknownCount: Int,
+    rechecking: Boolean,
+    onRecheck: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.library_rotation_lag_title),
+                style = MaterialTheme.typography.titleSmall,
+                color = DeckBuilderColors.OnSurface,
+            )
+            Text(
+                text = stringResource(R.string.library_rotation_lag_body, unknownCount),
+                style = MaterialTheme.typography.bodySmall,
+                color = DeckBuilderColors.OnSurfaceDim,
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(DeckBuilderColors.Primary)
+                .clickable(enabled = !rechecking) { onRecheck() }
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+        ) {
+            if (rechecking) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = DeckBuilderColors.OnPrimary,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.library_rotation_lag_action),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = DeckBuilderColors.OnPrimary,
+                )
+            }
+        }
     }
 }
 
