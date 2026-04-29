@@ -10,7 +10,6 @@ import com.lvsmsmch.deckbuilder.domain.usecases.IsDeckSavedUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ObserveSavedDecksUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
-import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardBacksUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCardLocaleUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCrashReportingEnabledUseCase
@@ -28,7 +27,6 @@ val domainModule = module {
     factoryOf(::SaveDeckUseCase)
     factoryOf(::DeleteSavedDeckUseCase)
     factoryOf(::IsDeckSavedUseCase)
-    factoryOf(::SearchCardBacksUseCase)
 
     factoryOf(::ObservePreferencesUseCase)
     factoryOf(::SetThemeUseCase)

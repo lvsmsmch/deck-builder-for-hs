@@ -13,9 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,8 +29,6 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 @Composable
 fun MoreScreen(
-    onOpenGlossary: () -> Unit,
-    onOpenCardBacks: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     Column(
@@ -49,25 +45,11 @@ fun MoreScreen(
 
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             HubRow(
-                icon = Icons.Outlined.MenuBook,
-                title = stringResource(R.string.more_glossary),
-                subtitle = stringResource(R.string.more_glossary_subtitle),
-                onClick = onOpenGlossary,
-                position = HubPosition.Top,
-            )
-            HubRow(
-                icon = Icons.Outlined.Style,
-                title = stringResource(R.string.more_cardbacks),
-                subtitle = stringResource(R.string.more_cardbacks_subtitle),
-                onClick = onOpenCardBacks,
-                position = HubPosition.Middle,
-            )
-            HubRow(
                 icon = Icons.Outlined.Settings,
                 title = stringResource(R.string.more_settings),
                 subtitle = stringResource(R.string.more_settings_subtitle),
                 onClick = onOpenSettings,
-                position = HubPosition.Bottom,
+                position = HubPosition.Single,
             )
         }
     }

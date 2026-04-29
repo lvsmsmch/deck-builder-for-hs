@@ -16,12 +16,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.lvsmsmch.deckbuilder.presentation.ui.components.BottomBar
-import com.lvsmsmch.deckbuilder.presentation.ui.screen.battlegrounds.BattlegroundsScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.builder.DeckBuilderScreen
-import com.lvsmsmch.deckbuilder.presentation.ui.screen.cardbacks.CardBacksScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.deckview.DeckViewScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.detail.CardDetailScreen
-import com.lvsmsmch.deckbuilder.presentation.ui.screen.glossary.GlossaryScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.CardLibraryScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.more.MoreScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.SavedDecksScreen
@@ -71,17 +68,8 @@ fun AppNavGraph() {
                     },
                 )
             }
-            composable<Battlegrounds> {
-                BattlegroundsScreen(
-                    onCardClick = { card ->
-                        navController.navigate(CardDetail(idOrSlug = card.id.toString()))
-                    },
-                )
-            }
             composable<More> {
                 MoreScreen(
-                    onOpenGlossary = { navController.navigate(Glossary) },
-                    onOpenCardBacks = { navController.navigate(CardBacks) },
                     onOpenSettings = { navController.navigate(Settings) },
                 )
             }
@@ -108,21 +96,6 @@ fun AppNavGraph() {
                 )
             }
 
-            composable<Glossary> {
-                GlossaryScreen(
-                    onBack = { navController.navigateUp() },
-                    onKeywordClick = { slug ->
-                        navController.navigate(Library(initialKeyword = slug)) {
-                            // Drop everything down to Library start so the back stack stays sane.
-                            popUpTo(Library()) { saveState = true }
-                            launchSingleTop = false
-                        }
-                    },
-                )
-            }
-            composable<CardBacks> {
-                CardBacksScreen(onBack = { navController.navigateUp() })
-            }
             composable<Settings> {
                 SettingsScreen(onBack = { navController.navigateUp() })
             }
@@ -135,6 +108,5 @@ private fun androidx.navigation.NavDestination.isTopLevel(): Boolean =
         d.hasRoute(Library::class) ||
             d.hasRoute(Builder::class) ||
             d.hasRoute(Saved::class) ||
-            d.hasRoute(Battlegrounds::class) ||
             d.hasRoute(More::class)
     }

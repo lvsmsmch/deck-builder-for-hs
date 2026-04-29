@@ -23,13 +23,6 @@ data class Card(
     val keywords: List<Keyword>,
     val collectible: Boolean,
     val childIds: List<Int>,
-    val battlegrounds: BattlegroundsMeta? = null,
-)
-
-data class BattlegroundsMeta(
-    val tier: Int?,
-    val isHero: Boolean,
-    val upgradeId: Int?,
 )
 
 data class ClassMeta(

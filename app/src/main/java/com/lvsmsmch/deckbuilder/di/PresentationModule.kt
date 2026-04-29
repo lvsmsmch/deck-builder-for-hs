@@ -1,11 +1,8 @@
 package com.lvsmsmch.deckbuilder.di
 
-import com.lvsmsmch.deckbuilder.presentation.ui.screen.battlegrounds.BattlegroundsViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.builder.DeckBuilderViewModel
-import com.lvsmsmch.deckbuilder.presentation.ui.screen.cardbacks.CardBacksViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.deckview.DeckViewViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.detail.CardDetailViewModel
-import com.lvsmsmch.deckbuilder.presentation.ui.screen.glossary.GlossaryViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.CardLibraryViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.SavedDecksViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.SettingsViewModel
@@ -24,9 +21,6 @@ val presentationModule = module {
     }
     viewModelOf(::SavedDecksViewModel)
     viewModelOf(::DeckBuilderViewModel)
-    viewModelOf(::BattlegroundsViewModel)
-    viewModelOf(::GlossaryViewModel)
-    viewModelOf(::CardBacksViewModel)
     viewModelOf(::SettingsViewModel)
 
     viewModel { (idOrSlug: String) ->

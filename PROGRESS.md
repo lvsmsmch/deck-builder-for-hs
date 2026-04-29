@@ -49,6 +49,14 @@ Migration: Blizzard API → HearthstoneJSON. См. `PLAN.md`.
   - app/build.gradle.kts: dropped BLIZZARD_* buildConfig fields, Properties helper
   - proguard-rules.pro: keep rule retargeted to `data.hsjson.dto` + `data.rotation`
   - README: rewrote intro, dropped credentials section, refreshed layout + architecture notes
-- [ ] Phase 8 — Drop Battlegrounds, Card Backs, Glossary screens
+- [x] Phase 8 — Drop Battlegrounds, Card Backs, Glossary screens
+  - Deleted `presentation/ui/screen/{battlegrounds,cardbacks,glossary}/` entirely
+  - Removed Battlegrounds/CardBacks/Glossary routes from `Routes.kt`, `AppNavGraph.kt`
+  - BottomBar: dropped BG tab + Shield icon
+  - MoreScreen: only Settings row remains (Glossary + Card backs entries gone)
+  - Domain/Data: deleted `CardBackRepository(+Impl)`, `CardBack` entity, `SearchCardBacksUseCase`
+  - Stripped `BattlegroundsMeta` field/class from `Card`, dropped `gameMode`/`tiers`/`GameMode` from `CardFilters`
+  - DI: pruned vm/usecase/repo bindings across Presentation/Domain/Data modules
+  - strings.xml (en+ru): removed `nav_battlegrounds`, `bg_*`, `glossary_*`, `cardbacks_*`, `more_glossary*`, `more_cardbacks*`
 - [ ] Phase 9 — Background update flow and UX
 - [ ] Phase 10 — Tests and docs cleanup

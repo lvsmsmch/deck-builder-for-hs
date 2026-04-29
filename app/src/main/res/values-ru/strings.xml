@@ -6,7 +6,6 @@
     <string name="nav_library">Карты</string>
     <string name="nav_builder">Сбор</string>
     <string name="nav_saved">Деки</string>
-    <string name="nav_battlegrounds">BG</string>
     <string name="nav_more">Ещё</string>
 
     <!-- Library -->
@@ -83,31 +82,8 @@
     <!-- Card detail -->
     <string name="card_detail_related">СВЯЗАННЫЕ КАРТЫ</string>
 
-    <!-- Battlegrounds -->
-    <string name="bg_title">Battlegrounds</string>
-    <string name="bg_tab_minions">Существа</string>
-    <string name="bg_tab_heroes">Герои</string>
-    <string name="bg_empty_minions">Существа не найдены.</string>
-    <string name="bg_empty_heroes">Героев нет.</string>
-
-    <!-- Glossary -->
-    <string name="glossary_title">Глоссарий</string>
-    <string name="glossary_search_hint">Поиск по ключевым словам</string>
-    <string name="glossary_empty_no_query">Ключевых слов нет.</string>
-    <string name="glossary_empty_query">По запросу «%1$s» ничего не найдено.</string>
-
-    <!-- Card backs -->
-    <string name="cardbacks_title">Рубашки карт</string>
-    <string name="cardbacks_search_hint">Поиск по рубашкам</string>
-    <string name="cardbacks_empty">Подходящих рубашек нет.</string>
-    <string name="cardbacks_category_all">Все</string>
-
     <!-- More -->
     <string name="more_title">Ещё</string>
-    <string name="more_glossary">Глоссарий</string>
-    <string name="more_glossary_subtitle">Ключевые слова и что они делают</string>
-    <string name="more_cardbacks">Рубашки карт</string>
-    <string name="more_cardbacks_subtitle">Просмотр коллекции рубашек</string>
     <string name="more_settings">Настройки</string>
     <string name="more_settings_subtitle">Тема, язык, кэш</string>
 

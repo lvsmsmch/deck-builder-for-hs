@@ -10,22 +10,10 @@ data class CardFilters(
     val keywords: Set<String> = emptySet(),
     val spellSchools: Set<String> = emptySet(),
     val manaCosts: Set<Int> = emptySet(),
-    /**
-     * Battlegrounds tier filter. Values are CSV-friendly tokens — "1".."6"
-     * for the regular tiers and "hero" for hero portraits. Only used when
-     * [gameMode] = BATTLEGROUNDS; ignored for constructed search.
-     */
-    val tiers: Set<String> = emptySet(),
-    val gameMode: GameMode = GameMode.CONSTRUCTED,
     val collectibleOnly: Boolean = true,
     val textQuery: String = "",
     val sort: CardSort = CardSort(),
 ) {
-    enum class GameMode(val apiSlug: String) {
-        CONSTRUCTED("constructed"),
-        BATTLEGROUNDS("battlegrounds"),
-    }
-
     val hasFilters: Boolean
         get() = classes.isNotEmpty() ||
             sets.isNotEmpty() ||

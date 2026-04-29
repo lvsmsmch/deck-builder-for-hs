@@ -6,11 +6,9 @@ import com.lvsmsmch.deckbuilder.data.prefs.PreferencesRepositoryImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import com.lvsmsmch.deckbuilder.data.repository.CardBackRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.repository.CardRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.repository.DeckRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.repository.SavedDeckRepositoryImpl
-import com.lvsmsmch.deckbuilder.domain.repositories.CardBackRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.CardRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
@@ -30,7 +28,6 @@ val dataModule = module {
     single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get()) }
     single<DeckRepository> { DeckRepositoryImpl(cards = get(), locales = get()) }
     single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }
-    single<CardBackRepository> { CardBackRepositoryImpl() }
 
     // Crash reporting — safe no-op when google-services.json is missing.
     single { CoroutineScope(SupervisorJob() + Dispatchers.Default) }

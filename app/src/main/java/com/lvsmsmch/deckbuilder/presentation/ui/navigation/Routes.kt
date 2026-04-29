@@ -13,12 +13,9 @@ data class Library(
 
 @Serializable data object Builder : Route
 @Serializable data object Saved : Route
-@Serializable data object Battlegrounds : Route
 @Serializable data object More : Route
 
 @Serializable data class CardDetail(val idOrSlug: String) : Route
 @Serializable data class DeckView(val code: String) : Route
 
-@Serializable data object Glossary : Route
-@Serializable data object CardBacks : Route
 @Serializable data object Settings : Route

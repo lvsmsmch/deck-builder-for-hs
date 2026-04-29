@@ -6,7 +6,6 @@ import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,7 +22,6 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lvsmsmch.deckbuilder.R
-import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Battlegrounds
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Builder
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Library
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.More
@@ -40,7 +38,6 @@ fun BottomBar(navController: NavController) {
         TabItem(navController, destination, Library(), Icons.Outlined.GridView, R.string.nav_library)
         TabItem(navController, destination, Builder, Icons.Outlined.Build, R.string.nav_builder)
         TabItem(navController, destination, Saved, Icons.Outlined.Bookmark, R.string.nav_saved)
-        TabItem(navController, destination, Battlegrounds, Icons.Outlined.Shield, R.string.nav_battlegrounds)
         TabItem(navController, destination, More, Icons.Outlined.MoreHoriz, R.string.nav_more)
     }
 }
