@@ -30,7 +30,7 @@ val dataModule = module {
     single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get()) }
     single<DeckRepository> { DeckRepositoryImpl(cards = get(), locales = get()) }
     single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }
-    singleOf(::CardBackRepositoryImpl) { bind<CardBackRepository>() }
+    single<CardBackRepository> { CardBackRepositoryImpl() }
 
     // Crash reporting — safe no-op when google-services.json is missing.
     single { CoroutineScope(SupervisorJob() + Dispatchers.Default) }

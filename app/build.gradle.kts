@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,14 +14,6 @@ if (hasGoogleServices) {
     apply(plugin = "com.google.firebase.crashlytics")
 }
 
-val localProps: Properties = Properties().apply {
-    val f = rootProject.file("local.properties")
-    if (f.exists()) f.inputStream().use { load(it) }
-}
-
-fun localOrEnv(key: String): String =
-    localProps.getProperty(key) ?: System.getenv(key) ?: ""
-
 android {
     namespace = "com.lvsmsmch.deckbuilder"
     compileSdk = 35
@@ -35,14 +25,6 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        buildConfigField("String", "BLIZZARD_CLIENT_ID",
-            "\"${localOrEnv("BLIZZARD_CLIENT_ID")}\"")
-        buildConfigField("String", "BLIZZARD_CLIENT_SECRET",
-            "\"${localOrEnv("BLIZZARD_CLIENT_SECRET")}\"")
-        buildConfigField("String", "BLIZZARD_API_URL",
-            "\"https://eu.api.blizzard.com/\"")
-        buildConfigField("String", "BLIZZARD_OAUTH_URL",
-            "\"https://oauth.battle.net/\"")
     }
 
     buildFeatures {

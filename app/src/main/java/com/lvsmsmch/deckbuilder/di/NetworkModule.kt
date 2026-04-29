@@ -1,60 +1,74 @@
 package com.lvsmsmch.deckbuilder.di
 
 import com.lvsmsmch.deckbuilder.BuildConfig
-import com.lvsmsmch.deckbuilder.data.auth.AuthInterceptor
-import com.lvsmsmch.deckbuilder.data.auth.OAuthApi
-import com.lvsmsmch.deckbuilder.data.auth.TokenCache
 import com.lvsmsmch.deckbuilder.data.db.AppDatabase
 import com.lvsmsmch.deckbuilder.data.hsjson.BuildChecker
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonApi
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonBuildStore
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
-import com.lvsmsmch.deckbuilder.data.network.HearthstoneApi
-import com.lvsmsmch.deckbuilder.data.network.NetworkProviders
 import com.lvsmsmch.deckbuilder.data.prefs.userPrefsStore
 import com.lvsmsmch.deckbuilder.data.rotation.RotationApi
 import com.lvsmsmch.deckbuilder.data.rotation.RotationRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.rotation.RotationStore
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import java.util.concurrent.TimeUnit
 
-private val OAUTH = named("oauth")
-private val API = named("api")
+private const val HSJSON_BASE_URL = "https://api.hearthstonejson.com/"
+
 private val HSJSON = named("hsjson")
 private val HSJSON_BUILD = named("hsjson_build")
 
+private fun loggingInterceptor() = HttpLoggingInterceptor().apply {
+    level = HttpLoggingInterceptor.Level.BASIC
+}
+
 val networkModule = module {
 
-    // OAuth pipeline (no AuthInterceptor — we'd recurse).
-    single<OkHttpClient>(OAUTH) { NetworkProviders.oAuthClient() }
-    single<Retrofit>(OAUTH) { NetworkProviders.oAuthRetrofit(get(OAUTH)) }
-    single<OAuthApi> { get<Retrofit>(OAUTH).create(OAuthApi::class.java) }
-
     single {
-        TokenCache(
-            oAuthApi = get(),
-            clientId = BuildConfig.BLIZZARD_CLIENT_ID,
-            clientSecret = BuildConfig.BLIZZARD_CLIENT_SECRET,
-        )
+        Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            coerceInputValues = true
+        }
     }
 
-    single { AuthInterceptor(tokens = get()) }
+    // HearthstoneJSON CDN client — no auth, follows redirects normally.
+    single<OkHttpClient>(HSJSON) {
+        OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .apply { if (BuildConfig.DEBUG) addInterceptor(loggingInterceptor()) }
+            .build()
+    }
 
-    // Authenticated API pipeline
-    single<OkHttpClient>(API) { NetworkProviders.apiClient(authInterceptor = get()) }
-    single<Retrofit>(API) { NetworkProviders.apiRetrofit(get(API)) }
-    single<HearthstoneApi> { get<Retrofit>(API).create(HearthstoneApi::class.java) }
+    // HEAD-only client for resolving build numbers from the `latest` redirect.
+    single<OkHttpClient>(HSJSON_BUILD) {
+        OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .build()
+    }
 
-    single { NetworkProviders.json }
+    single<Retrofit>(HSJSON) {
+        val converter = get<Json>().asConverterFactory("application/json".toMediaType())
+        Retrofit.Builder()
+            .baseUrl(HSJSON_BASE_URL)
+            .client(get(HSJSON))
+            .addConverterFactory(converter)
+            .build()
+    }
 
-    // HearthstoneJSON pipeline (no auth).
-    single<OkHttpClient>(HSJSON) { NetworkProviders.hsJsonClient() }
-    single<OkHttpClient>(HSJSON_BUILD) { NetworkProviders.hsJsonBuildClient() }
-    single<Retrofit>(HSJSON) { NetworkProviders.hsJsonRetrofit(get(HSJSON)) }
     single<HsJsonApi> { get<Retrofit>(HSJSON).create(HsJsonApi::class.java) }
     single { BuildChecker(client = get(HSJSON_BUILD)) }
     single { HsJsonBuildStore(store = get()) }

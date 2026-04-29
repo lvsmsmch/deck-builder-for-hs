@@ -10,7 +10,8 @@
 }
 
 # DTOs accessed reflectively by Retrofit / Serialization
--keep class com.lvsmsmch.deckbuilder.data.network.dto.** { *; }
+-keep class com.lvsmsmch.deckbuilder.data.hsjson.dto.** { *; }
+-keep class com.lvsmsmch.deckbuilder.data.rotation.** { *; }
 
 # OkHttp
 -dontwarn okhttp3.**

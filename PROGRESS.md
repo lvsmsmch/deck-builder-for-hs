@@ -41,7 +41,14 @@ Migration: Blizzard API → HearthstoneJSON. См. `PLAN.md`.
   - SettingsScreen: removed Refresh metadata row + section
   - GlossaryViewModel stubbed (full removal in phase 8)
   - NewSetBanner removed (banner UX returns later via hsjson)
-- [ ] Phase 7 — Remove Blizzard auth and api layer
+- [x] Phase 7 — Remove Blizzard auth and api layer
+  - Deleted `data/auth/` (OAuthApi, TokenCache, AuthInterceptor) and `data/network/`
+    (HearthstoneApi, NetworkProviders, CardBackDto/TokenDto, CardBackMappers)
+  - NetworkModule now creates HsJson OkHttp/Retrofit/Json directly; no OAuth/API qualifiers
+  - CardBackRepositoryImpl stubbed to empty Page (full removal in phase 8)
+  - app/build.gradle.kts: dropped BLIZZARD_* buildConfig fields, Properties helper
+  - proguard-rules.pro: keep rule retargeted to `data.hsjson.dto` + `data.rotation`
+  - README: rewrote intro, dropped credentials section, refreshed layout + architecture notes
 - [ ] Phase 8 — Drop Battlegrounds, Card Backs, Glossary screens
 - [ ] Phase 9 — Background update flow and UX
 - [ ] Phase 10 — Tests and docs cleanup
