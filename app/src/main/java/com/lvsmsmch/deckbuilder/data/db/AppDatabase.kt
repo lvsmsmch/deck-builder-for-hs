@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.lvsmsmch.deckbuilder.data.db.dao.HsJsonCardDao
 import com.lvsmsmch.deckbuilder.data.db.dao.MetadataDao
 import com.lvsmsmch.deckbuilder.data.db.dao.SavedDeckDao
+import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 import com.lvsmsmch.deckbuilder.data.db.entity.MetadataBlobEntity
 import com.lvsmsmch.deckbuilder.data.db.entity.SavedDeckEntity
 
@@ -13,13 +15,15 @@ import com.lvsmsmch.deckbuilder.data.db.entity.SavedDeckEntity
     entities = [
         MetadataBlobEntity::class,
         SavedDeckEntity::class,
+        HsJsonCardEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun metadataDao(): MetadataDao
     abstract fun savedDeckDao(): SavedDeckDao
+    abstract fun hsJsonCardDao(): HsJsonCardDao
 
     companion object {
         const val NAME = "deck_builder.db"

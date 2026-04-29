@@ -3,12 +3,14 @@ package com.lvsmsmch.deckbuilder
 import android.app.Application
 import android.util.Log
 import com.lvsmsmch.deckbuilder.data.crash.CrashReporter
+import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.di.dataModule
 import com.lvsmsmch.deckbuilder.di.domainModule
 import com.lvsmsmch.deckbuilder.di.networkModule
 import com.lvsmsmch.deckbuilder.di.presentationModule
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.repositories.MetadataRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.RefreshMetadataUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +28,8 @@ class DeckBuilderApp : Application() {
     private val refreshMetadata: RefreshMetadataUseCase by inject()
     private val metadataRepository: MetadataRepository by inject()
     private val crashReporter: CrashReporter by inject()
+    private val hsJsonRepository: HsJsonRepository by inject()
+    private val prefs: PreferencesRepository by inject()
 
     private val appScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, t ->
@@ -49,6 +53,26 @@ class DeckBuilderApp : Application() {
         }
         crashReporter.bindToPreferences()
         kickOffMetadataRefresh()
+        kickOffHsJsonLoad()
+    }
+
+    /** Phase 2: hydrate HearthstoneJSON cards in the background. */
+    private fun kickOffHsJsonLoad() {
+        Log.i(TAG, "kickOffHsJsonLoad: launching")
+        appScope.launch {
+            val locale = runCatching { prefs.current().cardLocale }.getOrDefault("en_US")
+            runCatching {
+                val snap = hsJsonRepository.ensureLoaded(locale)
+                Log.i(TAG, "kickOffHsJsonLoad: ensured locale=${snap.locale} build=${snap.build} cards=${snap.cards.size}")
+            }.onFailure {
+                Log.w(TAG, "kickOffHsJsonLoad: ensureLoaded failed — ${it.message}", it)
+                crashReporter.log("HsJson ensureLoaded failed: ${it.message}")
+            }
+            runCatching {
+                val applied = hsJsonRepository.checkForUpdate(locale)
+                if (applied != null) Log.i(TAG, "kickOffHsJsonLoad: updated to build=$applied")
+            }.onFailure { Log.w(TAG, "kickOffHsJsonLoad: checkForUpdate failed — ${it.message}") }
+        }
     }
 
     /** Plan §10.11: hydrate from Room first, then refresh from network in the background. */

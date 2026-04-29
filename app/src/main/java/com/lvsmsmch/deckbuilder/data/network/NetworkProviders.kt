@@ -15,6 +15,8 @@ object NetworkProviders {
     private const val OAUTH_CLIENT_KEY = "oauth"
     private const val API_CLIENT_KEY = "api"
 
+    const val HSJSON_BASE_URL = "https://api.hearthstonejson.com/"
+
     val json: Json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
@@ -43,6 +45,30 @@ object NetworkProviders {
     fun oAuthRetrofit(client: OkHttpClient): Retrofit =
         Retrofit.Builder()
             .baseUrl(BuildConfig.BLIZZARD_OAUTH_URL)
+            .client(client)
+            .addConverterFactory(converter)
+            .build()
+
+    /** Plain client for HearthstoneJSON CDN — no auth, follows redirects normally. */
+    fun hsJsonClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .apply { if (BuildConfig.DEBUG) addInterceptor(loggingInterceptor()) }
+            .build()
+
+    /** HEAD-only client for resolving build numbers from the `latest` redirect. */
+    fun hsJsonBuildClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .build()
+
+    fun hsJsonRetrofit(client: OkHttpClient): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(HSJSON_BASE_URL)
             .client(client)
             .addConverterFactory(converter)
             .build()
