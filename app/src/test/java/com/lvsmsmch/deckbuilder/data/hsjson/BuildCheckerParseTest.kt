@@ -10,31 +10,49 @@ class BuildCheckerParseTest {
     private val checker = BuildChecker(OkHttpClient())
 
     @Test
-    fun `parses build segment from canonical redirect target`() {
-        val url = "https://api.hearthstonejson.com/v1/231075/enUS/cards.collectible.json"
-        assertEquals("231075", checker.parseBuildFromUrl(url))
+    fun `parses first build link from tree-style index`() {
+        val html = """
+            <html><body>
+            <h1>HearthstoneJSON</h1><p>
+            <a href="/v1/241135">/v1/241135</a><br>
+            ├── <a href="/v1/241135/all/">all</a><br>
+            │   ├── <a href="/v1/241135/all/cards.collectible.json">cards.collectible.json</a><br>
+            </body></html>
+        """.trimIndent()
+        assertEquals("241135", checker.parseBuildFromIndex(html))
     }
 
     @Test
-    fun `parses build with non-default locale`() {
-        val url = "https://api.hearthstonejson.com/v1/200000/ruRU/cards.collectible.json"
-        assertEquals("200000", checker.parseBuildFromUrl(url))
+    fun `picks the first numeric build even when older ones are listed`() {
+        // The /v1/ root index lists every build; latest must come first.
+        val html = """
+            <a href="/v1/241135">latest</a>
+            <a href="/v1/240000">prev</a>
+            <a href="/v1/190920">old</a>
+        """.trimIndent()
+        assertEquals("241135", checker.parseBuildFromIndex(html))
     }
 
     @Test
-    fun `returns null for non-numeric build segment`() {
-        val url = "https://api.hearthstonejson.com/v1/latest/enUS/cards.collectible.json"
-        assertNull(checker.parseBuildFromUrl(url))
+    fun `tolerates trailing slash on build link`() {
+        val html = """<a href="/v1/241135/">latest</a>"""
+        assertEquals("241135", checker.parseBuildFromIndex(html))
     }
 
     @Test
-    fun `returns null when v1 segment missing`() {
-        val url = "https://api.hearthstonejson.com/cards/231075/enUS/cards.collectible.json"
-        assertNull(checker.parseBuildFromUrl(url))
+    fun `returns null when no build link present`() {
+        val html = "<html><body>nothing here</body></html>"
+        assertNull(checker.parseBuildFromIndex(html))
     }
 
     @Test
-    fun `returns null for empty url`() {
-        assertNull(checker.parseBuildFromUrl(""))
+    fun `ignores non-numeric segment after v1`() {
+        val html = """<a href="/v1/latest/">latest</a>"""
+        assertNull(checker.parseBuildFromIndex(html))
+    }
+
+    @Test
+    fun `returns null for empty html`() {
+        assertNull(checker.parseBuildFromIndex(""))
     }
 }

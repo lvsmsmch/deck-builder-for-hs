@@ -7,37 +7,36 @@ import okhttp3.Request
 private const val TAG = "DB.HsJson.Build"
 
 /**
- * Resolves the latest HearthstoneJSON build for a locale by following the redirect
- * on `/v1/latest/{locale}/cards.collectible.json` and parsing the build segment
- * out of the final URL.
+ * Resolves the latest HearthstoneJSON build by parsing the directory index at
+ * `/v1/latest/`. The historical HEAD-redirect trick on
+ * `/v1/latest/{locale}/cards.collectible.json` no longer works — Cloudflare
+ * serves the JSON directly with HTTP 200, so `Location` is never set and the
+ * final URL still contains the literal segment `latest`.
  *
- * We use a dedicated client with `followRedirects = false`; the redirect's
- * `Location` header carries the build number. If the server stops issuing a
- * redirect (returns 200 directly), we fall back to a HEAD on the same URL
- * after re-enabling redirects and inspect `request.url`.
+ * The index is a tree-style HTML listing; its first `/v1/{digits}` link points
+ * to the current build directory, which is the same for every locale. The
+ * `hsJsonLocale` parameter is accepted for API compatibility but unused.
  */
 class BuildChecker(
     private val client: OkHttpClient,
     private val baseUrl: String = "https://api.hearthstonejson.com/v1/",
 ) {
-    suspend fun latestBuild(hsJsonLocale: String): String? = runCatching {
-        val url = "${baseUrl}latest/$hsJsonLocale/cards.collectible.json"
-        val request = Request.Builder().url(url).head().build()
-        client.newCall(request).execute().use { resp ->
-            // followRedirects=false on the client → 30x with Location header.
-            val location = resp.header("Location")
-            if (resp.isRedirect && location != null) parseBuildFromUrl(location)
-            else parseBuildFromUrl(resp.request.url.toString())
-        }
-    }.onFailure { Log.w(TAG, "latestBuild($hsJsonLocale) failed: ${it.message}") }
-        .getOrNull()
+    suspend fun latestBuild(@Suppress("UNUSED_PARAMETER") hsJsonLocale: String): String? =
+        runCatching {
+            val url = "${baseUrl}latest/"
+            val request = Request.Builder().url(url).get().build()
+            client.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) error("HTTP ${resp.code}")
+                val body = resp.body?.string() ?: error("empty index body")
+                parseBuildFromIndex(body)
+            }
+        }.onFailure { Log.w(TAG, "latestBuild failed: ${it.message}") }
+            .getOrNull()
 
-    internal fun parseBuildFromUrl(url: String): String? {
-        // .../v1/{build}/{locale}/cards.collectible.json
-        val segments = url.substringAfter("://").split('/')
-        val v1Idx = segments.indexOf("v1")
-        if (v1Idx < 0 || v1Idx + 1 >= segments.size) return null
-        val build = segments[v1Idx + 1]
-        return build.takeIf { it.all(Char::isDigit) }
+    internal fun parseBuildFromIndex(html: String): String? =
+        BUILD_LINK_REGEX.find(html)?.groupValues?.get(1)
+
+    companion object {
+        private val BUILD_LINK_REGEX = Regex("""href="/v1/(\d+)/?"""")
     }
 }
