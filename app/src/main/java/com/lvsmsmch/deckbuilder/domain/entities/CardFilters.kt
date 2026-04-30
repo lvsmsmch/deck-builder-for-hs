@@ -37,8 +37,6 @@ data class CardSort(
 
 enum class SortKey(val api: String) {
     MANA_COST("manaCost"),
-    ATTACK("attack"),
-    HEALTH("health"),
     NAME("name"),
     DATE_ADDED("dateAdded"),
     GROUP_BY_CLASS("groupByClass"),

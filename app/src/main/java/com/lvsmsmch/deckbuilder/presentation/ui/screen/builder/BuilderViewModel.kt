@@ -12,6 +12,8 @@ import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.AssembleDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class)
 class DeckBuilderViewModel(
     private val searchCards: SearchCardsUseCase,
     private val assembleDeck: AssembleDeckUseCase,
@@ -56,19 +59,26 @@ class DeckBuilderViewModel(
     }
 
     /**
-     * Resolve the canonical hero card for [slug] from the HsJson pool, then
-     * commit the picked class and start the first pool fetch.
+     * Resolve the canonical default hero for [slug] and commit the picked
+     * class. We hard-code the canonical `HERO_0X` IDs (see [DefaultHeroes]) —
+     * the previous "first hero with cardClass=druid" heuristic surfaced random
+     * skins like Wildheart Guff instead of Malfurion. The HsJson pool is still
+     * queried so we can carry the rich `ClassMeta` through.
      */
     fun pickClassBySlug(slug: String) {
         pickJob?.cancel()
         pickJob = viewModelScope.launch {
+            val canonical = DefaultHeroes.cardIdFor(slug)
+            val canonicalDbf = DefaultHeroes.dbfIdFor(slug)
             val heroFilters = CardFilters(
                 classes = setOf(slug),
                 types = setOf("hero"),
                 collectibleOnly = true,
             )
-            val r = searchCards(filters = heroFilters, page = 1, pageSize = 1)
-            val hero: Card? = (r as? Result.Success)?.data?.items?.firstOrNull()
+            val pool = (searchCards(filters = heroFilters, page = 1, pageSize = 50) as? Result.Success)
+                ?.data?.items.orEmpty()
+            val hero: Card? = canonical?.let { id -> pool.firstOrNull { it.slug == id } }
+                ?: pool.firstOrNull()
             val meta = hero?.classes?.firstOrNull { it.slug.equals(slug, ignoreCase = true) }
                 ?: hero?.classes?.firstOrNull()
                 ?: ClassMeta(id = 0, slug = slug, name = slug)
@@ -76,7 +86,7 @@ class DeckBuilderViewModel(
                 it.copy(
                     phase = Phase.Editing,
                     chosenClass = meta,
-                    heroCardId = hero?.id,
+                    heroCardId = hero?.id ?: canonicalDbf,
                     deck = emptyMap(),
                     pool = PoolState(),
                     saveError = null,

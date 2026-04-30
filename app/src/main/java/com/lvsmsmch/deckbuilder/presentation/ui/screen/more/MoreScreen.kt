@@ -3,6 +3,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.more
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +32,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 @Composable
 fun MoreScreen(
     onOpenSettings: () -> Unit,
+    onOpenCardData: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -40,22 +43,28 @@ fun MoreScreen(
             text = stringResource(R.string.more_title),
             style = MaterialTheme.typography.titleLarge,
             color = DeckBuilderColors.OnSurface,
-            modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
         )
 
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             HubRow(
                 icon = Icons.Outlined.Settings,
                 title = stringResource(R.string.more_settings),
                 subtitle = stringResource(R.string.more_settings_subtitle),
                 onClick = onOpenSettings,
-                position = HubPosition.Single,
+            )
+            HubRow(
+                icon = Icons.Outlined.DataObject,
+                title = stringResource(R.string.more_card_data),
+                subtitle = stringResource(R.string.more_card_data_subtitle),
+                onClick = onOpenCardData,
             )
         }
     }
 }
-
-private enum class HubPosition { Top, Middle, Bottom, Single }
 
 @Composable
 private fun HubRow(
@@ -63,14 +72,8 @@ private fun HubRow(
     title: String,
     subtitle: String,
     onClick: () -> Unit,
-    position: HubPosition,
 ) {
-    val shape = when (position) {
-        HubPosition.Single -> RoundedCornerShape(14.dp)
-        HubPosition.Top -> RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
-        HubPosition.Middle -> RoundedCornerShape(0.dp)
-        HubPosition.Bottom -> RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 14.dp, bottomEnd = 14.dp)
-    }
+    val shape = RoundedCornerShape(14.dp)
     Row(
         modifier = Modifier
             .fillMaxWidth()

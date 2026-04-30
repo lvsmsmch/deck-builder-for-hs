@@ -7,6 +7,7 @@ import com.lvsmsmch.deckbuilder.domain.usecases.DeleteSavedDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ImportDeckByCodeUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.InvalidDeckCodeException
 import com.lvsmsmch.deckbuilder.domain.usecases.ObserveSavedDecksUseCase
+import com.lvsmsmch.deckbuilder.domain.usecases.RenameSavedDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -24,6 +25,7 @@ class SavedDecksViewModel(
     private val importByCode: ImportDeckByCodeUseCase,
     private val saveDeck: SaveDeckUseCase,
     private val deleteSaved: DeleteSavedDeckUseCase,
+    private val renameSaved: RenameSavedDeckUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SavedDecksState())
@@ -62,6 +64,12 @@ class SavedDecksViewModel(
 
     fun delete(code: String) {
         viewModelScope.launch { deleteSaved(code) }
+    }
+
+    fun rename(code: String, name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        viewModelScope.launch { renameSaved(code, trimmed) }
     }
 
     fun clearImportError() {

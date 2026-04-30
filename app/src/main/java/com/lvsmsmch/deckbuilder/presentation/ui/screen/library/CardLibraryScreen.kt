@@ -180,9 +180,9 @@ fun CardLibraryScreen(
 
     if (showFilterSheet) {
         FilterSheet(
-            initial = state.filters,
+            current = state.filters,
+            onChange = viewModel::applyFilters,
             onDismiss = { showFilterSheet = false },
-            onApply = viewModel::applyFilters,
         )
     }
 }
@@ -215,7 +215,7 @@ private fun Header(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
+            .padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -224,7 +224,8 @@ private fun Header(
             modifier = Modifier.weight(1f),
         )
 
-        // Sort pill — opens dropdown.
+        // Sort pill — opens dropdown. No direction arrow: each direction has
+        // its own labelled entry ("Mana asc" / "Mana desc" / "Newest" / "Oldest").
         Box {
             Row(
                 modifier = Modifier
@@ -236,24 +237,18 @@ private fun Header(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = sort.label(),
+                    text = stringResource(currentSortLabelRes(sort)),
                     style = MaterialTheme.typography.labelMedium,
                     color = DeckBuilderColors.OnSurface,
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = if (sort.direction == SortDir.ASC) "↑" else "↓",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = DeckBuilderColors.OnSurfaceDim,
                 )
             }
             DropdownMenu(
                 expanded = sortMenuOpen,
                 onDismissRequest = { sortMenuOpen = false },
             ) {
-                SortOptions.forEach { opt ->
+                SortChoices.forEach { opt ->
                     DropdownMenuItem(
-                        text = { Text(opt.label) },
+                        text = { Text(stringResource(opt.labelRes)) },
                         onClick = {
                             onSortChange(opt.sort)
                             sortMenuOpen = false
@@ -303,26 +298,19 @@ private fun Header(
     }
 }
 
-private data class SortOption(val label: String, val sort: CardSort)
+private data class SortChoice(val labelRes: Int, val sort: CardSort)
 
-private val SortOptions = listOf(
-    SortOption("Mana ascending", CardSort(SortKey.MANA_COST, SortDir.ASC)),
-    SortOption("Mana descending", CardSort(SortKey.MANA_COST, SortDir.DESC)),
-    SortOption("Name", CardSort(SortKey.NAME, SortDir.ASC)),
-    SortOption("Newest", CardSort(SortKey.DATE_ADDED, SortDir.DESC)),
-    SortOption("Group by class", CardSort(SortKey.GROUP_BY_CLASS, SortDir.ASC)),
-    SortOption("Attack", CardSort(SortKey.ATTACK, SortDir.DESC)),
-    SortOption("Health", CardSort(SortKey.HEALTH, SortDir.DESC)),
+private val SortChoices = listOf(
+    SortChoice(R.string.sort_mana_asc, CardSort(SortKey.MANA_COST, SortDir.ASC)),
+    SortChoice(R.string.sort_mana_desc, CardSort(SortKey.MANA_COST, SortDir.DESC)),
+    SortChoice(R.string.sort_name, CardSort(SortKey.NAME, SortDir.ASC)),
+    SortChoice(R.string.sort_newest, CardSort(SortKey.DATE_ADDED, SortDir.DESC)),
+    SortChoice(R.string.sort_oldest, CardSort(SortKey.DATE_ADDED, SortDir.ASC)),
+    SortChoice(R.string.sort_group_by_class, CardSort(SortKey.GROUP_BY_CLASS, SortDir.ASC)),
 )
 
-private fun CardSort.label(): String = when (key) {
-    SortKey.MANA_COST -> "Mana"
-    SortKey.NAME -> "Name"
-    SortKey.DATE_ADDED -> "Newest"
-    SortKey.GROUP_BY_CLASS -> "By class"
-    SortKey.ATTACK -> "Attack"
-    SortKey.HEALTH -> "Health"
-}
+private fun currentSortLabelRes(current: CardSort): Int =
+    SortChoices.firstOrNull { it.sort == current }?.labelRes ?: R.string.sort_mana_asc
 
 @Composable
 private fun SearchField(query: String, onQueryChange: (String) -> Unit) {

@@ -21,7 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,7 +47,10 @@ import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CrossedDaggers
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaGem
+import com.lvsmsmch.deckbuilder.presentation.ui.components.StatGem
+import com.lvsmsmch.deckbuilder.presentation.ui.components.StatGemPalette
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.components.rarityColor
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
@@ -101,7 +104,7 @@ private fun TopBar(title: String, onBack: () -> Unit) {
     ) {
         IconButton(onClick = onBack) {
             Icon(
-                Icons.Outlined.ArrowBack,
+                Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = stringResource(R.string.action_back),
                 tint = DeckBuilderColors.OnSurface,
             )
@@ -146,7 +149,11 @@ private fun Body(
                 )
                 .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(18.dp)),
         ) {
-            val img = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
+            // Mapper produces a 256x render for grid thumbs; for the hero
+            // we want the sharper 512x version.
+            val img = card.image.takeIf { it.isNotBlank() }
+                ?.replace("/256x/", "/512x/")
+                ?: card.cropImage
             if (!img.isNullOrBlank()) {
                 AsyncImage(
                     model = img,
@@ -243,16 +250,64 @@ private fun SubtitleRow(card: Card) {
 @Composable
 private fun StatsRow(card: Card) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        StatPill("Mana", card.manaCost.toString(), modifier = Modifier.weight(1f))
-        card.attack?.let { StatPill("Attack", it.toString(), modifier = Modifier.weight(1f)) }
-        card.health?.let { StatPill("Health", it.toString(), modifier = Modifier.weight(1f)) }
-        card.durability?.let { StatPill("Durability", it.toString(), modifier = Modifier.weight(1f)) }
-        card.armor?.let { StatPill("Armor", it.toString(), modifier = Modifier.weight(1f)) }
+        ManaPill(card.manaCost, modifier = Modifier.weight(1f))
+        card.attack?.let { AttackPill(it, modifier = Modifier.weight(1f)) }
+        card.health?.let { HealthPill(it, modifier = Modifier.weight(1f)) }
+        card.durability?.let { WeaponPill(it, modifier = Modifier.weight(1f)) }
+        card.armor?.let { ArmorPill(it, modifier = Modifier.weight(1f)) }
     }
 }
 
 @Composable
-private fun StatPill(label: String, value: String, modifier: Modifier = Modifier) {
+private fun ManaPill(value: Int, modifier: Modifier = Modifier) {
+    StatPill(modifier = modifier) {
+        // ManaGem already carries the cost number; reuse it as-is.
+        ManaGem(cost = value, size = 28.dp)
+        Spacer(Modifier.height(4.dp))
+        StatLabel(value.toString())
+    }
+}
+
+@Composable
+private fun AttackPill(value: Int, modifier: Modifier = Modifier) {
+    StatPill(modifier = modifier) {
+        StatGem(fill = StatGemPalette.Attack, size = 28.dp) {
+            CrossedDaggers(color = Color.White, size = 16.dp)
+        }
+        Spacer(Modifier.height(4.dp))
+        StatLabel(value.toString())
+    }
+}
+
+@Composable
+private fun HealthPill(value: Int, modifier: Modifier = Modifier) {
+    StatPill(modifier = modifier) {
+        StatGem(fill = StatGemPalette.Health, size = 28.dp)
+        Spacer(Modifier.height(4.dp))
+        StatLabel(value.toString())
+    }
+}
+
+@Composable
+private fun ArmorPill(value: Int, modifier: Modifier = Modifier) {
+    StatPill(modifier = modifier) {
+        StatGem(fill = StatGemPalette.Armor, size = 28.dp)
+        Spacer(Modifier.height(4.dp))
+        StatLabel(value.toString())
+    }
+}
+
+@Composable
+private fun WeaponPill(value: Int, modifier: Modifier = Modifier) {
+    StatPill(modifier = modifier) {
+        StatGem(fill = StatGemPalette.Weapon, size = 28.dp)
+        Spacer(Modifier.height(4.dp))
+        StatLabel(value.toString())
+    }
+}
+
+@Composable
+private fun StatPill(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
@@ -261,18 +316,16 @@ private fun StatPill(label: String, value: String, modifier: Modifier = Modifier
             .padding(vertical = 10.dp, horizontal = 8.dp)
             .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.headlineMedium,
-            color = DeckBuilderColors.OnSurface,
-        )
-        Text(
-            text = label.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = DeckBuilderColors.OnSurfaceDim,
-        )
-    }
+    ) { content() }
+}
+
+@Composable
+private fun StatLabel(value: String) {
+    Text(
+        text = value,
+        style = MaterialTheme.typography.headlineMedium,
+        color = DeckBuilderColors.OnSurface,
+    )
 }
 
 @Composable

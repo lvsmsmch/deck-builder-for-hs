@@ -23,4 +23,7 @@ interface SavedDeckDao {
 
     @Query("DELETE FROM saved_decks WHERE code = :code")
     suspend fun delete(code: String)
+
+    @Query("UPDATE saved_decks SET name = :name, updatedAtMs = :updatedAtMs WHERE code = :code")
+    suspend fun rename(code: String, name: String, updatedAtMs: Long)
 }

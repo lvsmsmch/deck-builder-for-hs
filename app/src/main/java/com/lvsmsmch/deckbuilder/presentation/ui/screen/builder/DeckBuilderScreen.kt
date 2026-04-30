@@ -26,7 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -65,6 +65,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
+import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroPortrait
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
@@ -168,19 +170,34 @@ private fun ClassTile(slug: String, onClick: () -> Unit) {
         modifier = Modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(14.dp))
-            .background(
-                Brush.linearGradient(listOf(color, DeckBuilderColors.SurfaceContainer)),
-            )
             .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-            .padding(8.dp),
-        contentAlignment = Alignment.BottomStart,
+            .clickable(onClick = onClick),
     ) {
+        HeroPortrait(
+            cardId = DefaultHeroes.cardIdFor(slug),
+            fallbackTint = Brush.linearGradient(listOf(color, DeckBuilderColors.SurfaceContainer)),
+            contentDescription = classLabel(slug),
+            modifier = Modifier.matchParentSize(),
+        )
+        // Bottom dim gradient so the class label always reads against bright art.
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        0.5f to androidx.compose.ui.graphics.Color.Transparent,
+                        1f to androidx.compose.ui.graphics.Color(0xCC000000),
+                    ),
+                ),
+        )
         Text(
             text = classLabel(slug),
             style = MaterialTheme.typography.titleSmall,
-            color = DeckBuilderColors.OnSurface,
+            color = androidx.compose.ui.graphics.Color.White,
             fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(10.dp),
         )
     }
 }
@@ -274,7 +291,7 @@ private fun Header(
     ) {
         IconButton(onClick = onBack) {
             Icon(
-                Icons.Outlined.ArrowBack,
+                Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = stringResource(R.string.action_back),
                 tint = DeckBuilderColors.OnSurface,
             )

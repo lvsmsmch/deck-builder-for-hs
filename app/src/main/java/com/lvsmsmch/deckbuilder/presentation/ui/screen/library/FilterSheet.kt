@@ -18,19 +18,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,15 +39,20 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.spellSchoolLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
+/**
+ * Live-update filter sheet: every chip toggle is committed to [onChange]
+ * immediately, the underlying screen re-runs its query, and the user closes
+ * the sheet whenever they're satisfied. No Apply/Cancel buttons — that pattern
+ * forced an extra confirm step for what's effectively a live-tunable view.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterSheet(
-    initial: CardFilters,
+    current: CardFilters,
+    onChange: (CardFilters) -> Unit,
     onDismiss: () -> Unit,
-    onApply: (CardFilters) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var draft by remember { mutableStateOf(initial) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -72,8 +70,8 @@ fun FilterSheet(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Header(
-                hasFilters = draft.hasFilters,
-                onReset = { draft = CardFilters() },
+                hasFilters = current.hasFilters,
+                onReset = { onChange(CardFilters()) },
             )
 
             LazyColumn(
@@ -81,22 +79,14 @@ fun FilterSheet(
                     .heightIn(max = 560.dp)
                     .padding(horizontal = 20.dp),
             ) {
-                item { ManaSection(draft) { draft = it } }
-                item { RaritySection(draft) { draft = it } }
-                item { TypeSection(draft) { draft = it } }
-                item { MinionTypeSection(draft) { draft = it } }
-                item { SpellSchoolSection(draft) { draft = it } }
-                item { CollectibleSection(draft) { draft = it } }
-                item { Spacer(Modifier.height(12.dp)) }
+                item { ManaSection(current, onChange) }
+                item { RaritySection(current, onChange) }
+                item { TypeSection(current, onChange) }
+                item { MinionTypeSection(current, onChange) }
+                item { SpellSchoolSection(current, onChange) }
+                item { CollectibleSection(current, onChange) }
+                item { Spacer(Modifier.height(20.dp)) }
             }
-
-            Footer(
-                onCancel = onDismiss,
-                onApply = {
-                    onApply(draft)
-                    onDismiss()
-                },
-            )
         }
     }
 }
@@ -120,31 +110,6 @@ private fun Header(hasFilters: Boolean, onReset: () -> Unit) {
             color = if (hasFilters) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDimmer,
             modifier = Modifier.clickable(enabled = hasFilters, onClick = onReset),
         )
-    }
-}
-
-@Composable
-private fun Footer(onCancel: () -> Unit, onApply: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        OutlinedButton(
-            onClick = onCancel,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.weight(1f),
-        ) { Text(stringResource(R.string.action_cancel)) }
-        Button(
-            onClick = onApply,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = DeckBuilderColors.Primary,
-                contentColor = DeckBuilderColors.OnPrimary,
-            ),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.weight(1f),
-        ) { Text(stringResource(R.string.action_apply)) }
     }
 }
 

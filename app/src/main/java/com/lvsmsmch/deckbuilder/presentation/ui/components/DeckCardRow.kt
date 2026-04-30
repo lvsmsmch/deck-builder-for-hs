@@ -1,7 +1,6 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,10 +18,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
+/**
+ * Single row in a deck listing: mana gem, horizontal art tile, card name,
+ * count badge. The tile uses [ContentScale.Crop] (HsJson tiles are 256×59,
+ * we render them at the row height while letting the tile crop horizontally
+ * rather than stretch — earlier `FillBounds` made art look squished).
+ */
 @Composable
 fun DeckCardRow(
     entry: DeckCardEntry,
@@ -31,37 +38,56 @@ fun DeckCardRow(
     modifier: Modifier = Modifier,
 ) {
     val card = entry.card
-    val rarityColor = rarityColor(card.rarity)
     val isLegendary = card.rarity?.slug?.equals("legendary", ignoreCase = true) == true
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(44.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 6.dp),
+            .height(40.dp)
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ManaGem(cost = card.manaCost, size = 26.dp)
+        ManaGem(cost = card.manaCost, size = 24.dp)
 
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(34.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .border(0.5.dp, rarityColor, RoundedCornerShape(6.dp)),
+                .height(36.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(DeckBuilderColors.SurfaceContainer),
         ) {
             CardTile(
                 slug = card.slug,
                 contentDescription = card.name,
                 modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+            // Subtle dark gradient at the left side so the name overlay reads
+            // cleanly against any card art.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            0f to androidx.compose.ui.graphics.Color(0xCC000000),
+                            0.55f to androidx.compose.ui.graphics.Color.Transparent,
+                        ),
+                    ),
+            )
+            Text(
+                text = card.name,
+                style = MaterialTheme.typography.titleSmall,
+                color = DeckBuilderColors.OnSurface,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 10.dp, end = 8.dp),
+                maxLines = 1,
             )
         }
 
         CountPill(count = entry.count, isLegendary = isLegendary)
-
         Spacer(Modifier.width(2.dp))
     }
 }

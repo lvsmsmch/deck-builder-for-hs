@@ -38,6 +38,8 @@ val presentationModule = module {
             isSaved = get(),
             saveDeck = get(),
             deleteDeck = get(),
+            renameDeck = get(),
+            savedRepo = get(),
             prefs = get(),
         )
     }

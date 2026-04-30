@@ -76,6 +76,18 @@ class SavedDeckRepositoryImpl(
         }
     }
 
+    override suspend fun rename(code: String, name: String): Unit = withContext(Dispatchers.IO) {
+        require(code.isNotBlank()) { "Deck code is empty — cannot rename" }
+        val trimmed = name.trim()
+        require(trimmed.isNotEmpty()) { "Deck name cannot be empty" }
+        dao.rename(code, trimmed, nowMs())
+        Log.i(TAG, "rename: OK code='${code.take(12)}…' → '$trimmed'")
+    }
+
+    override suspend fun get(code: String): DeckPreview? = withContext(Dispatchers.IO) {
+        dao.get(code)?.let(::toPreview)
+    }
+
     private fun toPreview(row: SavedDeckEntity): DeckPreview = DeckPreview(
         code = row.code,
         name = row.name,

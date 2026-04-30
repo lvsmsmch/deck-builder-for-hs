@@ -4,7 +4,6 @@
 
     <!-- Bottom nav -->
     <string name="nav_library">Карты</string>
-    <string name="nav_builder">Сбор</string>
     <string name="nav_saved">Деки</string>
     <string name="nav_more">Ещё</string>
 
@@ -33,6 +32,17 @@
     <string name="action_paste">Вставить</string>
     <string name="action_reset_all">Сбросить</string>
     <string name="action_dismiss">Скрыть</string>
+    <string name="action_rename">Переименовать</string>
+    <string name="action_more">Ещё</string>
+    <string name="action_edit">Редактировать</string>
+
+    <!-- Sort options -->
+    <string name="sort_mana_asc">Мана \u2191</string>
+    <string name="sort_mana_desc">Мана \u2193</string>
+    <string name="sort_name">Имя</string>
+    <string name="sort_newest">Сначала новые</string>
+    <string name="sort_oldest">Сначала старые</string>
+    <string name="sort_group_by_class">По классу</string>
 
     <!-- Filter sheet -->
     <string name="filters_title">Фильтры</string>
@@ -65,7 +75,14 @@
     <string name="saved_title">Сохранённые деки</string>
     <string name="saved_search_hint">Поиск по сохранённым</string>
     <string name="saved_empty_title">Деки ещё не сохранены.</string>
-    <string name="saved_empty_body">Жми «+», чтобы импортировать деку по коду, или собери свою во вкладке «Сбор».</string>
+    <string name="saved_empty_body">Жми «+», чтобы создать новую деку или вставить код.</string>
+
+    <!-- New deck chooser -->
+    <string name="new_deck_title">Новая дека</string>
+    <string name="new_deck_from_scratch">Создать с нуля</string>
+    <string name="new_deck_from_scratch_subtitle">Выбери класс и собери деку карта за картой.</string>
+    <string name="new_deck_paste_code">Вставить код</string>
+    <string name="new_deck_paste_code_subtitle">Импортируй готовую деку Hearthstone по коду.</string>
     <string name="saved_delete_title">Удалить деку?</string>
     <string name="saved_delete_message">«%1$s» будет удалена из сохранённых. Код по-прежнему валиден — её можно импортировать снова в любой момент.</string>
 
@@ -85,7 +102,21 @@
     <!-- More -->
     <string name="more_title">Ещё</string>
     <string name="more_settings">Настройки</string>
-    <string name="more_settings_subtitle">Тема, язык, кэш</string>
+    <string name="more_settings_subtitle">Тема, язык, приватность</string>
+    <string name="more_card_data">Данные карт</string>
+    <string name="more_card_data_subtitle">Билд, последняя проверка</string>
+
+    <!-- Privacy -->
+    <string name="settings_privacy_policy">Политика конфиденциальности</string>
+    <string name="settings_privacy_policy_subtitle">Откроется в браузере</string>
+
+    <!-- Deck warnings -->
+    <string name="deck_warning_incomplete">В колоде только %1$d/%2$d карт.</string>
+    <string name="deck_warning_rotated">%1$d карт(ы) недопустимы в Стандарте.</string>
+
+    <!-- Rename dialog -->
+    <string name="rename_deck_title">Переименовать колоду</string>
+    <string name="rename_deck_hint">Имя колоды</string>
 
     <!-- Settings -->
     <string name="settings_title">Настройки</string>
@@ -93,6 +124,8 @@
     <string name="settings_section_language">Язык</string>
     <string name="settings_section_privacy">Конфиденциальность</string>
     <string name="settings_section_about">О приложении</string>
+    <string name="settings_theme_title">Тема</string>
+    <string name="settings_theme_subtitle">Системная, тёмная или светлая</string>
     <string name="settings_theme_system">Как в системе</string>
     <string name="settings_theme_dark">Всегда тёмная</string>
     <string name="settings_theme_light">Всегда светлая</string>

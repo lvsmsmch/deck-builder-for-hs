@@ -1,8 +1,7 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.navigation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -32,6 +31,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.screen.detail.CardDetailScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.CardLibraryScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.more.MoreScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.SavedDecksScreen
+import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.CardDataScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.SettingsScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.koinInject
@@ -57,9 +57,11 @@ fun AppNavGraph() {
 
     Scaffold(
         bottomBar = {
-            AnimatedVisibility(visible = onTopLevel, enter = fadeIn(), exit = fadeOut()) {
-                BottomBar(navController = navController)
-            }
+            // Bottom bar shows only on top-level destinations. We render it
+            // unconditionally and rely on the `onTopLevel` flag below to skip it
+            // — animating visibility caused the bar to occasionally lag a frame
+            // behind navigation transitions.
+            if (onTopLevel) BottomBar(navController = navController)
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) { data ->
@@ -74,6 +76,12 @@ fun AppNavGraph() {
             navController = navController,
             startDestination = Library(),
             modifier = Modifier.padding(padding),
+            // Drop transitions: fadeIn/Out caused two cards to open back-to-back
+            // when the user double-tapped quickly across cards. Instant swap.
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
         ) {
             composable<Library> { entry ->
                 val args = entry.toRoute<Library>()
@@ -89,7 +97,7 @@ fun AppNavGraph() {
                 DeckBuilderScreen(
                     onDeckSaved = { code ->
                         navController.navigate(DeckView(code = code)) {
-                            popUpTo(Builder) { inclusive = false }
+                            popUpTo(Builder) { inclusive = true }
                         }
                     },
                 )
@@ -99,11 +107,13 @@ fun AppNavGraph() {
                     onOpenDeck = { code ->
                         navController.navigate(DeckView(code = code))
                     },
+                    onCreateFromScratch = { navController.navigate(Builder) },
                 )
             }
             composable<More> {
                 MoreScreen(
                     onOpenSettings = { navController.navigate(Settings) },
+                    onOpenCardData = { navController.navigate(CardData) },
                 )
             }
 
@@ -132,6 +142,10 @@ fun AppNavGraph() {
             composable<Settings> {
                 SettingsScreen(onBack = { navController.navigateUp() })
             }
+
+            composable<CardData> {
+                CardDataScreen(onBack = { navController.navigateUp() })
+            }
         }
     }
 }
@@ -139,7 +153,6 @@ fun AppNavGraph() {
 private fun androidx.navigation.NavDestination.isTopLevel(): Boolean =
     hierarchy.any { d ->
         d.hasRoute(Library::class) ||
-            d.hasRoute(Builder::class) ||
             d.hasRoute(Saved::class) ||
             d.hasRoute(More::class)
     }

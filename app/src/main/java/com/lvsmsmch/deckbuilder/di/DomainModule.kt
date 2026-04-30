@@ -9,6 +9,7 @@ import com.lvsmsmch.deckbuilder.domain.usecases.ImportDeckByCodeUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.IsDeckSavedUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ObserveSavedDecksUseCase
+import com.lvsmsmch.deckbuilder.domain.usecases.RenameSavedDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCardLocaleUseCase
@@ -26,6 +27,7 @@ val domainModule = module {
     factoryOf(::ObserveSavedDecksUseCase)
     factoryOf(::SaveDeckUseCase)
     factoryOf(::DeleteSavedDeckUseCase)
+    factoryOf(::RenameSavedDeckUseCase)
     factoryOf(::IsDeckSavedUseCase)
 
     factoryOf(::ObservePreferencesUseCase)

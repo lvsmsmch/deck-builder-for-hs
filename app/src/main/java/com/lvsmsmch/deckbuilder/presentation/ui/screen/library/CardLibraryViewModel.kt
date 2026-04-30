@@ -129,7 +129,8 @@ class CardLibraryViewModel(
             val r = searchCards(filters = filters, page = targetPage)
             when (r) {
                 is Result.Success -> _state.update { prev ->
-                    val merged = if (replaceItems) r.data.items else prev.cards + r.data.items
+                    val visible = r.data.items.filterNot(::isDefaultHeroAvatar)
+                    val merged = if (replaceItems) visible else prev.cards + visible
                     prev.copy(
                         cards = merged,
                         page = r.data.pageNumber,
@@ -151,7 +152,24 @@ class CardLibraryViewModel(
         }
     }
 
+    /**
+     * The default hero avatars (Malfurion, Jaina, …) are technically collectible
+     * with `type=HERO`, so an unfiltered library search returns them. They show
+     * up most awkwardly when the user picks a high-mana filter and gets random
+     * "Hero" cards mixed into the spell results. We hide them here unless the
+     * library is opened in a context that explicitly asks for heroes.
+     */
+    private fun isDefaultHeroAvatar(card: com.lvsmsmch.deckbuilder.domain.entities.Card): Boolean {
+        if (!card.cardType.slug.equals("hero", ignoreCase = true)) return false
+        // Default hero card IDs are `HERO_01`..`HERO_11` (no skin suffix). DK
+        // hero cards (Bloodreaver Gul'dan etc.) have IDs like `ICC_481` and
+        // come with real card text — we keep those.
+        if (card.text?.isNotBlank() == true) return false
+        return CanonicalHeroId.matches(card.slug)
+    }
+
     private companion object {
         const val FILTER_DEBOUNCE_MS = 200L
+        val CanonicalHeroId = Regex("""^HERO_\d+[a-z]*$""")
     }
 }

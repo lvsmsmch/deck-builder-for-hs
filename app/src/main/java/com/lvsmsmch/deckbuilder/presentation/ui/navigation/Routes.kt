@@ -19,3 +19,4 @@ data class Library(
 @Serializable data class DeckView(val code: String) : Route
 
 @Serializable data object Settings : Route
+@Serializable data object CardData : Route
