@@ -11,7 +11,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
@@ -19,7 +18,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Library
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.More
@@ -28,10 +26,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Saved
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 @Composable
-fun BottomBar(navController: NavController) {
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val destination = backStackEntry?.destination
-
+fun BottomBar(navController: NavController, destination: NavDestination?) {
     NavigationBar(containerColor = DeckBuilderColors.SurfaceContainer) {
         TabItem(navController, destination, Library(), Icons.Outlined.GridView, R.string.nav_library)
         TabItem(navController, destination, Saved, Icons.Outlined.Bookmark, R.string.nav_saved)
@@ -39,7 +34,6 @@ fun BottomBar(navController: NavController) {
     }
 }
 
-/** Reified-typed item — required because `navigate<T>(...)` and `hasRoute<T>()` need a concrete `T`. */
 @Composable
 private inline fun <reified T : Route> RowScope.TabItem(
     navController: NavController,

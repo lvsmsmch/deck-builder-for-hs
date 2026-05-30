@@ -6,6 +6,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.screen.detail.CardDetailViewMode
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.CardLibraryViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.SavedDecksViewModel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.SettingsViewModel
+import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -21,7 +22,17 @@ val presentationModule = module {
     }
     viewModelOf(::SavedDecksViewModel)
     viewModelOf(::DeckBuilderViewModel)
-    viewModelOf(::SettingsViewModel)
+    viewModel { (initialPreferences: AppPreferences) ->
+        SettingsViewModel(
+            observePrefs = get(),
+            setThemeUseCase = get(),
+            setCardLocale = get(),
+            setCrashReporting = get(),
+            hsJson = get(),
+            updateRunner = get(),
+            initialPreferences = initialPreferences,
+        )
+    }
 
     viewModel { (idOrSlug: String) ->
         CardDetailViewModel(

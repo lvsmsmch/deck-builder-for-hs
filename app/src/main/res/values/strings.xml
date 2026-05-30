@@ -132,8 +132,10 @@
     <string name="settings_theme_system_subtitle">Follows your device theme</string>
     <string name="settings_card_language">Card language</string>
     <string name="settings_card_language_subtitle">Used on every card and deck request</string>
-    <string name="settings_crash_reports">Send crash reports</string>
+    <string name="settings_crash_reports">Send error reports</string>
     <string name="settings_crash_reports_subtitle">Anonymous, via Firebase Crashlytics</string>
+    <string name="settings_contact_developer">Contact developer</string>
+    <string name="settings_contact_developer_subtitle">Send an email with feedback or a bug report</string>
     <string name="settings_version">Version</string>
 
     <!-- Updates -->
@@ -142,6 +144,8 @@
     <string name="settings_cards_build_unknown">not loaded yet</string>
     <string name="settings_last_check">Last checked</string>
     <string name="settings_last_check_never">never</string>
+    <string name="settings_refresh_card_data">Refresh card data</string>
+    <string name="settings_refresh_card_data_subtitle">Check for the latest cards and rotation data now.</string>
     <string name="snackbar_cards_updated">Cards updated to build %1$s</string>
     <string name="library_rotation_lag_title">Standard rotation may be out of date</string>
     <string name="library_rotation_lag_body">%1$d set(s) on cards aren\'t recognised yet by python-hearthstone.</string>

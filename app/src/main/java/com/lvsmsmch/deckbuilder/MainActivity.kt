@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.AppNavGraph
@@ -23,7 +24,7 @@ class MainActivity : ComponentActivity() {
             val current by prefs.preferences.collectAsState(initial = null)
             val themeMode = current?.theme ?: ThemeMode.System
             DeckBuilderTheme(themeMode = themeMode) {
-                AppNavGraph()
+                AppNavGraph(currentPreferences = current ?: AppPreferences())
             }
         }
     }

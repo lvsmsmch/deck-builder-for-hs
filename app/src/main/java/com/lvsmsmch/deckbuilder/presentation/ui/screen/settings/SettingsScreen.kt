@@ -48,17 +48,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.BuildConfig
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 private const val PRIVACY_POLICY_URL = "https://www.google.com"
 
 @Composable
 fun SettingsScreen(
+    initialPreferences: AppPreferences,
     onBack: () -> Unit,
-    viewModel: SettingsViewModel = koinViewModel(),
+    viewModel: SettingsViewModel = koinViewModel(parameters = { parametersOf(initialPreferences) }),
 ) {
     val state by viewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
@@ -128,6 +131,13 @@ fun SettingsScreen(
                 item { SectionHeader(stringResource(R.string.settings_section_about)) }
                 item {
                     GroupCard {
+                        DialogRow(
+                            title = stringResource(R.string.settings_contact_developer),
+                            subtitle = stringResource(R.string.settings_contact_developer_subtitle),
+                            value = "iamajavagod@gmail.com",
+                            onClick = { context.openEmail("iamajavagod@gmail.com") },
+                        )
+                        Divider()
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -249,7 +259,6 @@ private fun Divider() {
     )
 }
 
-/** Generic "tap to open dialog/external" row with optional value badge. */
 @Composable
 private fun DialogRow(
     title: String,
@@ -287,7 +296,7 @@ private fun DialogRow(
             Spacer(Modifier.size(6.dp))
         }
         Text(
-            text = "›",
+            text = ">",
             style = MaterialTheme.typography.titleLarge,
             color = DeckBuilderColors.OnSurfaceDimmer,
         )
@@ -455,5 +464,13 @@ private fun android.content.Context.openInBrowser(url: String) {
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
-    startActivity(intent)
+    runCatching { startActivity(intent) }
+}
+
+private fun android.content.Context.openEmail(email: String) {
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:$email")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+    }
+    runCatching { startActivity(intent) }
 }

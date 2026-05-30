@@ -6,4 +6,5 @@ data class SettingsState(
     val prefs: AppPreferences = AppPreferences(),
     val message: String? = null,
     val cardsBuild: String? = null,
+    val isRefreshingCardData: Boolean = false,
 )

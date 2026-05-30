@@ -3,6 +3,8 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
+import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
+import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCardLocaleUseCase
@@ -23,9 +25,11 @@ class SettingsViewModel(
     private val setCardLocale: SetCardLocaleUseCase,
     private val setCrashReporting: SetCrashReportingEnabledUseCase,
     private val hsJson: HsJsonRepository,
+    private val updateRunner: UpdateRunner,
+    initialPreferences: AppPreferences = AppPreferences(),
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(SettingsState())
+    private val _state = MutableStateFlow(SettingsState(prefs = initialPreferences))
     val state: StateFlow<SettingsState> = _state.asStateFlow()
 
     init {
@@ -35,8 +39,7 @@ class SettingsViewModel(
             }
             .distinctUntilChangedBy { it.cardLocale }
             .onEach { prefs ->
-                val build = runCatching { hsJson.currentBuild(prefs.cardLocale) }.getOrNull()
-                _state.update { it.copy(cardsBuild = build) }
+                refreshBuildLabel(prefs.cardLocale)
             }
             .launchIn(viewModelScope)
     }
@@ -53,7 +56,26 @@ class SettingsViewModel(
         viewModelScope.launch { setCrashReporting(enabled) }
     }
 
+    fun refreshCardDataNow() {
+        viewModelScope.launch {
+            _state.update { it.copy(isRefreshingCardData = true, message = null) }
+            val result = runCatching { updateRunner.runOnce(reason = "card data screen") }
+            refreshBuildLabel(_state.value.prefs.cardLocale)
+            _state.update {
+                it.copy(
+                    isRefreshingCardData = false,
+                    message = if (result.isSuccess) "Card data checked" else "Refresh failed",
+                )
+            }
+        }
+    }
+
     fun dismissMessage() {
         _state.update { it.copy(message = null) }
+    }
+
+    private suspend fun refreshBuildLabel(locale: String) {
+        val build = runCatching { hsJson.currentBuild(locale) }.getOrNull()
+        _state.update { it.copy(cardsBuild = build) }
     }
 }
