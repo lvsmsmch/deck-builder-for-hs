@@ -1,9 +1,12 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.builder
 
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import com.lvsmsmch.deckbuilder.domain.entities.SortDir
+import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 
 data class BuilderState(
     val phase: Phase = Phase.ClassPicker,
@@ -32,11 +35,14 @@ data class PoolState(
     val pageCount: Int = 0,
     val totalCount: Int = 0,
     val textQuery: String = "",
+    val sort: CardSort = CardSort(SortKey.MANA_COST, SortDir.ASC),
+    val manaCosts: Set<Int> = emptySet(),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val errorMessage: String? = null,
 ) {
     val hasMore: Boolean get() = page < pageCount
+    val activeFilterCount: Int get() = if (manaCosts.isEmpty()) 0 else 1
 }
 
 sealed interface BuilderEffect {
