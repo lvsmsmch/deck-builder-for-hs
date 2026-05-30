@@ -6,6 +6,8 @@ local.properties
 .claude/
 .DS_Store
 build/
+codex/*
+!codex/.gitkeep
 captures/
 .externalNativeBuild/
 .cxx/
