@@ -199,9 +199,9 @@ class DeckBuilderViewModel(
             val ids = st.deckEntries.flatMap { entry ->
                 List(entry.count) { entry.card.id }
             }
-            when (val r = assembleDeck(ids = ids, heroCardId = st.heroCardId)) {
+            when (val r = assembleDeck(ids = ids, heroCardId = st.heroCardId, format = st.format)) {
                 is Result.Success -> {
-                    val deck = r.data.copy(format = st.format)
+                    val deck = r.data
                     saveDeck(deck, name = null)
                     _state.update { it.copy(isSaving = false) }
                     _effects.trySend(BuilderEffect.DeckSaved(deck.code))

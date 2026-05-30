@@ -5,6 +5,8 @@ import com.lvsmsmch.deckbuilder.data.deckstring.Deckstring
 import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringCard
 import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringFormat
 import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringPayload
+import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
+import com.lvsmsmch.deckbuilder.data.hsjson.toDomain
 import com.lvsmsmch.deckbuilder.data.prefs.CurrentLocaleProvider
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.common.runCatchingResult
@@ -14,7 +16,6 @@ import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.DeckSideboard
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
-import com.lvsmsmch.deckbuilder.domain.repositories.CardRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -22,7 +23,7 @@ import kotlinx.coroutines.withContext
 private const val TAG = "DB.DeckRepo"
 
 class DeckRepositoryImpl(
-    private val cards: CardRepository,
+    private val hsJson: HsJsonRepository,
     private val locales: CurrentLocaleProvider,
 ) : DeckRepository {
 
@@ -50,6 +51,7 @@ class DeckRepositoryImpl(
         ids: List<Int>,
         heroCardId: Int?,
         locale: String?,
+        format: GameFormat,
     ): Result<Deck> = withContext(Dispatchers.IO) {
         runCatchingResult {
             require(ids.isNotEmpty()) { "Deck must have at least one card" }
@@ -58,7 +60,7 @@ class DeckRepositoryImpl(
             val grouped = ids.groupingBy { it }.eachCount()
             val cardEntries = grouped.entries.map { (dbf, count) -> DeckstringCard(dbf, count) }
             val payload = DeckstringPayload(
-                format = DeckstringFormat.WILD,
+                format = format.toDeckstringFormat(),
                 heroes = listOf(heroCardId),
                 cards = cardEntries,
             )
@@ -85,11 +87,13 @@ class DeckRepositoryImpl(
             payload.cards.forEach { add(it.dbfId) }
             payload.sideboards.forEach { add(it.dbfId); add(it.ownerDbfId) }
         }
+        val rowsByDbf = hsJson.ensureLoaded(locale).cards
+            .asSequence()
+            .filter { it.dbfId in allDbfIds }
+            .associateBy { it.dbfId }
         for (dbf in allDbfIds) {
-            when (val r = cards.getCard(dbf.toString(), locale)) {
-                is Result.Success -> resolved[dbf] = r.data
-                is Result.Error -> invalid += dbf
-            }
+            val row = rowsByDbf[dbf]
+            if (row != null) resolved[dbf] = row.toDomain() else invalid += dbf
         }
 
         val hero = payload.heroes.firstOrNull()?.let { resolved[it] }
@@ -136,4 +140,12 @@ private fun DeckstringFormat.toGameFormat(): GameFormat = when (this) {
     DeckstringFormat.STANDARD -> GameFormat.STANDARD
     DeckstringFormat.CLASSIC -> GameFormat.CLASSIC
     DeckstringFormat.TWIST -> GameFormat.TWIST
+}
+
+private fun GameFormat.toDeckstringFormat(): DeckstringFormat = when (this) {
+    GameFormat.STANDARD -> DeckstringFormat.STANDARD
+    GameFormat.WILD -> DeckstringFormat.WILD
+    GameFormat.CLASSIC -> DeckstringFormat.CLASSIC
+    GameFormat.TWIST -> DeckstringFormat.TWIST
+    GameFormat.UNKNOWN -> DeckstringFormat.WILD
 }

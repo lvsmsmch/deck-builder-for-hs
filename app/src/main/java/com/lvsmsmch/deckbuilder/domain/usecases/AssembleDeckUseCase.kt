@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.domain.usecases
 
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
+import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
 
 class AssembleDeckUseCase(
@@ -11,5 +12,6 @@ class AssembleDeckUseCase(
         ids: List<Int>,
         heroCardId: Int?,
         locale: String? = null,
-    ): Result<Deck> = decks.assembleByIds(ids, heroCardId, locale)
+        format: GameFormat = GameFormat.WILD,
+    ): Result<Deck> = decks.assembleByIds(ids, heroCardId, locale, format)
 }

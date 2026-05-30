@@ -49,7 +49,9 @@ class DeckViewViewModel(
     }
 
     fun load() {
-        _state.update { it.copy(deck = UiState.Loading) }
+        _state.update { current ->
+            if (current.deck is UiState.Loaded) current else current.copy(deck = UiState.Loading)
+        }
         viewModelScope.launch {
             val saved = isSaved(code)
             val savedName = if (saved) savedRepo.get(code)?.name else null
