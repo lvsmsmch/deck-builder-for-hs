@@ -2,6 +2,8 @@ package com.lvsmsmch.deckbuilder.presentation.ui.navigation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -12,10 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -40,8 +41,6 @@ import org.koin.compose.koinInject
 @Composable
 fun AppNavGraph(currentPreferences: AppPreferences) {
     val navController = rememberNavController()
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val onTopLevel = backStackEntry?.destination?.isTopLevel() ?: true
     val notifier: UpdateNotifier = koinInject()
     val snackbarHostState = remember { SnackbarHostState() }
     val cardsUpdatedTemplate = stringResource(R.string.snackbar_cards_updated)
@@ -56,36 +55,23 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
         }
     }
 
-    Scaffold(
-        bottomBar = {
-            if (onTopLevel) BottomBar(navController = navController, destination = backStackEntry?.destination)
-        },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState) { data ->
-                Snackbar(
-                    containerColor = DeckBuilderColors.SurfaceContainerHigh,
-                    contentColor = DeckBuilderColors.OnSurface,
-                ) { Text(data.visuals.message) }
-            }
-        },
-    ) { padding ->
+    Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = Library(),
-            modifier = Modifier.padding(padding),
+            startDestination = Home,
+            modifier = Modifier.fillMaxSize(),
             enterTransition = { EnterTransition.None },
             exitTransition = { ExitTransition.None },
             popEnterTransition = { EnterTransition.None },
             popExitTransition = { ExitTransition.None },
         ) {
-            composable<Library> { entry ->
-                val args = entry.toRoute<Library>()
-                CardLibraryScreen(
-                    initialKeyword = args.initialKeyword,
-                    initialSetSlug = args.initialSetSlug,
-                    onCardClick = { card ->
-                        navController.navigate(CardDetail(idOrSlug = card.id.toString()))
-                    },
+            composable<Home> {
+                HomeScreen(
+                    onOpenCard = { cardId -> navController.navigate(CardDetail(idOrSlug = cardId)) },
+                    onOpenDeck = { code -> navController.navigate(DeckView(code = code)) },
+                    onCreateDeck = { navController.navigate(Builder) },
+                    onOpenSettings = { navController.navigate(Settings) },
+                    onOpenCardData = { navController.navigate(CardData) },
                 )
             }
             composable<Builder> {
@@ -97,21 +83,6 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                     },
                 )
             }
-            composable<Saved> {
-                SavedDecksScreen(
-                    onOpenDeck = { code ->
-                        navController.navigate(DeckView(code = code))
-                    },
-                    onCreateFromScratch = { navController.navigate(Builder) },
-                )
-            }
-            composable<More> {
-                MoreScreen(
-                    onOpenSettings = { navController.navigate(Settings) },
-                    onOpenCardData = { navController.navigate(CardData) },
-                )
-            }
-
             composable<CardDetail> { entry ->
                 val args = entry.toRoute<CardDetail>()
                 CardDetailScreen(
@@ -148,12 +119,64 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                 )
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        ) { data ->
+            Snackbar(
+                containerColor = DeckBuilderColors.SurfaceContainerHigh,
+                contentColor = DeckBuilderColors.OnSurface,
+            ) { Text(data.visuals.message) }
+        }
     }
 }
 
-private fun androidx.navigation.NavDestination.isTopLevel(): Boolean =
-    hierarchy.any { d ->
-        d.hasRoute(Library::class) ||
-            d.hasRoute(Saved::class) ||
-            d.hasRoute(More::class)
+@Composable
+private fun HomeScreen(
+    onOpenCard: (String) -> Unit,
+    onOpenDeck: (String) -> Unit,
+    onCreateDeck: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenCardData: () -> Unit,
+) {
+    val navController = rememberNavController()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+
+    Scaffold(
+        bottomBar = {
+            BottomBar(navController = navController, destination = backStackEntry?.destination)
+        },
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = Library(),
+            modifier = Modifier.padding(padding),
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
+        ) {
+            composable<Library> { entry ->
+                val args = entry.toRoute<Library>()
+                CardLibraryScreen(
+                    initialKeyword = args.initialKeyword,
+                    initialSetSlug = args.initialSetSlug,
+                    onCardClick = { card -> onOpenCard(card.id.toString()) },
+                )
+            }
+            composable<Saved> {
+                SavedDecksScreen(
+                    onOpenDeck = onOpenDeck,
+                    onCreateFromScratch = onCreateDeck,
+                )
+            }
+            composable<More> {
+                MoreScreen(
+                    onOpenSettings = onOpenSettings,
+                    onOpenCardData = onOpenCardData,
+                )
+            }
+        }
     }
+}

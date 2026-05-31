@@ -5,6 +5,8 @@ import kotlinx.serialization.Serializable
 /** Type-safe Compose Navigation routes (Navigation 2.8+). */
 sealed interface Route
 
+@Serializable data object Home : Route
+
 @Serializable
 data class Library(
     val initialKeyword: String? = null,
