@@ -26,7 +26,7 @@ val dataModule = module {
     // singleOf reflects all params and ignores Kotlin defaults, which would
     // make Koin try to resolve a Long/`() -> Long` it doesn't know about.
     single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get()) }
-    single<DeckRepository> { DeckRepositoryImpl(cards = get(), locales = get()) }
+    single<DeckRepository> { DeckRepositoryImpl(hsJson = get(), locales = get()) }
     single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }
 
     // Crash reporting — safe no-op when google-services.json is missing.

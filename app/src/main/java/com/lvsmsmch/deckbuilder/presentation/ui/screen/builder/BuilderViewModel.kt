@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
+import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import com.lvsmsmch.deckbuilder.domain.entities.SortDir
+import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.AssembleDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
@@ -48,7 +51,6 @@ class DeckBuilderViewModel(
     private var pickJob: Job? = null
 
     init {
-        // Debounce pool search.
         _state
             .map { it.pool.textQuery }
             .distinctUntilChanged()
@@ -113,6 +115,22 @@ class DeckBuilderViewModel(
 
     fun setPoolQuery(query: String) {
         _state.update { it.copy(pool = it.pool.copy(textQuery = query)) }
+    }
+
+    fun setPoolSort(key: SortKey, direction: SortDir) {
+        val nextSort = CardSort(key = key, direction = direction)
+        if (nextSort == _state.value.pool.sort) return
+        _state.update { it.copy(pool = it.pool.copy(sort = nextSort)) }
+        reloadPoolFirstPage()
+    }
+
+    fun togglePoolManaCost(cost: Int) {
+        _state.update {
+            val current = it.pool.manaCosts
+            val next = if (cost in current) current - cost else current + cost
+            it.copy(pool = it.pool.copy(manaCosts = next))
+        }
+        reloadPoolFirstPage()
     }
 
     fun loadNextPoolPage() {
@@ -199,9 +217,9 @@ class DeckBuilderViewModel(
             val ids = st.deckEntries.flatMap { entry ->
                 List(entry.count) { entry.card.id }
             }
-            when (val r = assembleDeck(ids = ids, heroCardId = st.heroCardId)) {
+            when (val r = assembleDeck(ids = ids, heroCardId = st.heroCardId, format = st.format)) {
                 is Result.Success -> {
-                    val deck = r.data.copy(format = st.format)
+                    val deck = r.data
                     saveDeck(deck, name = null)
                     _state.update { it.copy(isSaving = false) }
                     _effects.trySend(BuilderEffect.DeckSaved(deck.code))
@@ -241,44 +259,39 @@ class DeckBuilderViewModel(
                 else -> emptySet()
             }
             val filters = CardFilters(
-                classes = setOf(clsSlug),
+                classes = setOf(clsSlug, "neutral"),
                 textQuery = st.pool.textQuery,
                 collectibleOnly = true,
                 sets = formatSets,
+                manaCosts = st.pool.manaCosts,
+                sort = st.pool.sort,
             )
-            val neutralFilters = filters.copy(classes = setOf("neutral"))
-            val classResult = searchCards(filters, page = targetPage)
-            val neutralResult = searchCards(neutralFilters, page = targetPage)
+            val result = searchCards(filters, page = targetPage)
 
-            if (classResult is Result.Error) {
+            if (result is Result.Error) {
                 _state.update {
                     it.copy(
                         pool = it.pool.copy(
                             isLoading = false,
                             isLoadingMore = false,
-                            errorMessage = classResult.throwable.message,
+                            errorMessage = result.throwable.message,
                         ),
                     )
                 }
                 return@launch
             }
-            classResult as Result.Success
-            val classPage = classResult.data
-            val neutralPage = (neutralResult as? Result.Success)?.data
-
-            val merged = (classPage.items + (neutralPage?.items ?: emptyList()))
-                .sortedWith(compareBy({ it.manaCost }, { it.name }))
+            result as Result.Success
+            val page = result.data
+            val visible = page.items.filterNot(::isDefaultHeroAvatar)
 
             _state.update {
-                val newCards = if (replace) merged else it.pool.cards + merged
-                val pageCount = maxOf(classPage.pageCount, neutralPage?.pageCount ?: 0)
-                val totalCount = classPage.totalCount + (neutralPage?.totalCount ?: 0)
+                val newCards = if (replace) visible else it.pool.cards + visible
                 it.copy(
                     pool = it.pool.copy(
                         cards = newCards,
-                        page = classPage.pageNumber,
-                        pageCount = pageCount,
-                        totalCount = totalCount,
+                        page = page.pageNumber,
+                        pageCount = page.pageCount,
+                        totalCount = page.totalCount,
                         isLoading = false,
                         isLoadingMore = false,
                     ),
@@ -298,4 +311,14 @@ class DeckBuilderViewModel(
 
     private fun Card.isLegendary(): Boolean =
         rarity?.slug?.equals("legendary", ignoreCase = true) == true
+
+    private fun isDefaultHeroAvatar(card: Card): Boolean {
+        if (!card.cardType.slug.equals("hero", ignoreCase = true)) return false
+        if (card.text?.isNotBlank() == true) return false
+        return CanonicalHeroId.matches(card.slug)
+    }
+
+    private companion object {
+        val CanonicalHeroId = Regex("""^HERO_\d+[a-z]*$""")
+    }
 }

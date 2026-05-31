@@ -77,7 +77,7 @@ fun CardDetailScreen(
         )
 
         when (val cardState = state.card) {
-            UiState.Idle, UiState.Loading -> CenteredSpinner()
+            UiState.Idle, UiState.Loading -> Box(modifier = Modifier.fillMaxSize())
 
             is UiState.Failed -> ErrorState(
                 message = cardState.throwable.message ?: cardState.throwable.javaClass.simpleName,
@@ -137,7 +137,6 @@ private fun Body(
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp),
     ) {
-        // Hero art
         Box(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -149,8 +148,6 @@ private fun Body(
                 )
                 .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(18.dp)),
         ) {
-            // Mapper produces a 256x render for grid thumbs; for the hero
-            // we want the sharper 512x version.
             val img = card.image.takeIf { it.isNotBlank() }
                 ?.replace("/256x/", "/512x/")
                 ?: card.cropImage
@@ -182,7 +179,6 @@ private fun Body(
             }
         }
 
-        // Name + rarity
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -425,18 +421,6 @@ private fun RelatedCardsSection(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun CenteredSpinner() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator(color = DeckBuilderColors.Primary, strokeWidth = 2.dp)
     }
 }
 

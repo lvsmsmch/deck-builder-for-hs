@@ -3,6 +3,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.library
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +52,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -83,6 +86,7 @@ fun CardLibraryScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val gridState = rememberLazyGridState()
+    val focusManager = LocalFocusManager.current
     var showFilterSheet by remember { mutableStateOf(false) }
 
     val notifier: UpdateNotifier = koinInject()
@@ -103,18 +107,36 @@ fun CardLibraryScreen(
             if (atEnd) viewModel.loadNextPage()
         }
     }
+    LaunchedEffect(state.filters) {
+        gridState.scrollToItem(0)
+    }
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.isScrollInProgress }.distinctUntilChanged().collect { scrolling ->
+            if (scrolling) focusManager.clearFocus()
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeckBuilderColors.Surface),
+            .background(DeckBuilderColors.Surface)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { focusManager.clearFocus() })
+            },
     ) {
         Header(
             totalCount = state.totalCount,
             sort = state.filters.sort,
-            onSortChange = { viewModel.setSort(it.key, it.direction) },
-            onOpenFilters = { showFilterSheet = true },
+            onSortChange = {
+                focusManager.clearFocus()
+                viewModel.setSort(it.key, it.direction)
+            },
+            onOpenFilters = {
+                focusManager.clearFocus()
+                showFilterSheet = true
+            },
             activeFilterCount = state.filters.activeFilterCount(),
+            onInteraction = { focusManager.clearFocus() },
         )
 
         rotationStatus?.takeIf { it.isOutdated }?.let { status ->
@@ -139,12 +161,18 @@ fun CardLibraryScreen(
 
         ManaChips(
             selected = state.filters.manaCosts,
-            onToggle = viewModel::toggleManaCost,
+            onToggle = {
+                focusManager.clearFocus()
+                viewModel.toggleManaCost(it)
+            },
         )
 
         ClassChips(
             selected = state.filters.classes,
-            onToggle = viewModel::toggleClass,
+            onToggle = {
+                focusManager.clearFocus()
+                viewModel.toggleClass(it)
+            },
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -163,7 +191,10 @@ fun CardLibraryScreen(
                 else -> CardGrid(
                     state = state,
                     gridState = gridState,
-                    onCardClick = onCardClick,
+                    onCardClick = {
+                        focusManager.clearFocus()
+                        onCardClick(it)
+                    },
                 )
             }
             if (state.isLoadingFirstPage && state.cards.isNotEmpty()) {
@@ -209,6 +240,7 @@ private fun Header(
     onSortChange: (CardSort) -> Unit,
     onOpenFilters: () -> Unit,
     activeFilterCount: Int,
+    onInteraction: () -> Unit,
 ) {
     var sortMenuOpen by remember { mutableStateOf(false) }
 
@@ -232,7 +264,10 @@ private fun Header(
                     .clip(RoundedCornerShape(8.dp))
                     .background(DeckBuilderColors.SurfaceContainer)
                     .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
-                    .clickable { sortMenuOpen = true }
+                    .clickable {
+                        onInteraction()
+                        sortMenuOpen = true
+                    }
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -288,14 +323,12 @@ private fun Header(
         }
     }
 
-    if (totalCount > 0) {
-        Text(
-            text = stringResource(R.string.library_count_format, totalCount),
-            style = MaterialTheme.typography.bodySmall,
-            color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.padding(start = 20.dp, bottom = 8.dp),
-        )
-    }
+    Text(
+        text = stringResource(R.string.library_count_format, totalCount),
+        style = MaterialTheme.typography.bodySmall,
+        color = DeckBuilderColors.OnSurfaceDim,
+        modifier = Modifier.padding(start = 20.dp, bottom = 8.dp),
+    )
 }
 
 private data class SortChoice(val labelRes: Int, val sort: CardSort)
@@ -304,8 +337,8 @@ private val SortChoices = listOf(
     SortChoice(R.string.sort_mana_asc, CardSort(SortKey.MANA_COST, SortDir.ASC)),
     SortChoice(R.string.sort_mana_desc, CardSort(SortKey.MANA_COST, SortDir.DESC)),
     SortChoice(R.string.sort_name, CardSort(SortKey.NAME, SortDir.ASC)),
-    SortChoice(R.string.sort_newest, CardSort(SortKey.DATE_ADDED, SortDir.DESC)),
-    SortChoice(R.string.sort_oldest, CardSort(SortKey.DATE_ADDED, SortDir.ASC)),
+    SortChoice(R.string.sort_newest, CardSort(SortKey.DATE_ADDED, SortDir.ASC)),
+    SortChoice(R.string.sort_oldest, CardSort(SortKey.DATE_ADDED, SortDir.DESC)),
     SortChoice(R.string.sort_group_by_class, CardSort(SortKey.GROUP_BY_CLASS, SortDir.ASC)),
 )
 
@@ -403,7 +436,7 @@ private fun ClassChips(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         slugs.forEach { slug ->

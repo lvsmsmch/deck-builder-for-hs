@@ -27,15 +27,11 @@ import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
-/**
- * Mana-curve histogram for [entries]. Buckets 0..6 are exact mana costs;
- * bucket "7+" sums everything ≥ 7.
- */
 @Composable
 fun ManaCurve(
     entries: List<DeckCardEntry>,
     modifier: Modifier = Modifier,
-    height: androidx.compose.ui.unit.Dp = 84.dp,
+    height: androidx.compose.ui.unit.Dp = 112.dp,
 ) {
     val buckets = remember(entries) { bucketize(entries) }
     val maxValue = (buckets.maxOrNull() ?: 0).coerceAtLeast(1)
@@ -65,7 +61,7 @@ fun ManaCurve(
                     fraction = count.toFloat() / maxValue.toFloat(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(height - 32.dp),
+                        .height(height - 54.dp),
                 )
                 Text(
                     text = if (index == 7) "7+" else index.toString(),

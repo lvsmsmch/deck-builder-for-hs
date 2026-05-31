@@ -132,8 +132,10 @@
     <string name="settings_theme_system_subtitle">Следует теме устройства</string>
     <string name="settings_card_language">Язык карт</string>
     <string name="settings_card_language_subtitle">Используется во всех запросах к API</string>
-    <string name="settings_crash_reports">Отправлять отчёты о крэшах</string>
+    <string name="settings_crash_reports">Отправлять отчёты об ошибках</string>
     <string name="settings_crash_reports_subtitle">Анонимно, через Firebase Crashlytics</string>
+    <string name="settings_contact_developer">Связаться с разработчиком</string>
+    <string name="settings_contact_developer_subtitle">Отправить письмо с отзывом или ошибкой</string>
     <string name="settings_version">Версия</string>
 
     <!-- Updates -->
@@ -142,6 +144,8 @@
     <string name="settings_cards_build_unknown">ещё не загружен</string>
     <string name="settings_last_check">Последняя проверка</string>
     <string name="settings_last_check_never">никогда</string>
+    <string name="settings_refresh_card_data">Обновить данные карт</string>
+    <string name="settings_refresh_card_data_subtitle">Проверить свежие карты и ротацию сейчас.</string>
     <string name="snackbar_cards_updated">Карты обновлены до билда %1$s</string>
     <string name="library_rotation_lag_title">Standard-ротация может быть устаревшей</string>
     <string name="library_rotation_lag_body">%1$d сет(ов) c карт ещё не известны python-hearthstone.</string>

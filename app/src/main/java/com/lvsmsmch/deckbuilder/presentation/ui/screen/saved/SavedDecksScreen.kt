@@ -1,6 +1,10 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.saved
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
@@ -119,6 +124,7 @@ fun SavedDecksScreen(
                             deck = deck,
                             onClick = { onOpenDeck(deck.code) },
                             onShare = { shareDeckCode(context, deck) },
+                            onCopyCode = { copyDeckCode(context, deck.code) },
                             onRename = { pendingRename = deck },
                             onDelete = { pendingDelete = deck },
                         )
@@ -210,6 +216,7 @@ private fun SavedDeckRow(
     deck: DeckPreview,
     onClick: () -> Unit,
     onShare: () -> Unit,
+    onCopyCode: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -282,6 +289,7 @@ private fun SavedDeckRow(
                     expanded = menuOpen,
                     onDismiss = { menuOpen = false },
                     onShare = onShare,
+                    onCopyCode = onCopyCode,
                     onRename = onRename,
                     onDelete = onDelete,
                 )
@@ -291,7 +299,7 @@ private fun SavedDeckRow(
             Spacer(Modifier.height(6.dp))
             DeckWarning(
                 text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, 30),
-                modifier = Modifier.padding(start = 39.dp), // align under tile
+                modifier = Modifier.padding(start = 39.dp),
             )
         }
     }
@@ -302,6 +310,7 @@ private fun DeckActionsMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
     onShare: () -> Unit,
+    onCopyCode: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -310,6 +319,11 @@ private fun DeckActionsMenu(
             leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
             text = { Text(stringResource(R.string.action_share)) },
             onClick = { onDismiss(); onShare() },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
+            text = { Text(stringResource(R.string.action_copy_code)) },
+            onClick = { onDismiss(); onCopyCode() },
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
@@ -453,4 +467,10 @@ private fun shareDeckCode(context: android.content.Context, deck: DeckPreview) {
         putExtra(Intent.EXTRA_TEXT, "${deck.name}\n\n${deck.code}")
     }
     context.startActivity(Intent.createChooser(intent, deck.name))
+}
+
+private fun copyDeckCode(context: Context, code: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText("Hearthstone deck code", code))
+    Toast.makeText(context, context.getString(R.string.deck_view_copied), Toast.LENGTH_SHORT).show()
 }

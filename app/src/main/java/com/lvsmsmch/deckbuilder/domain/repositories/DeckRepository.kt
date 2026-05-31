@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.domain.repositories
 
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
+import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 
 interface DeckRepository {
 
@@ -11,5 +12,6 @@ interface DeckRepository {
         ids: List<Int>,
         heroCardId: Int? = null,
         locale: String? = null,
+        format: GameFormat = GameFormat.WILD,
     ): Result<Deck>
 }

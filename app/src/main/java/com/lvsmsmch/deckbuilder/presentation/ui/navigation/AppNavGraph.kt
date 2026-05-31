@@ -24,6 +24,7 @@ import androidx.navigation.toRoute
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.data.update.UpdateEvent
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
+import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.presentation.ui.components.BottomBar
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.builder.DeckBuilderScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.deckview.DeckViewScreen
@@ -37,7 +38,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.koinInject
 
 @Composable
-fun AppNavGraph() {
+fun AppNavGraph(currentPreferences: AppPreferences) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val onTopLevel = backStackEntry?.destination?.isTopLevel() ?: true
@@ -57,11 +58,7 @@ fun AppNavGraph() {
 
     Scaffold(
         bottomBar = {
-            // Bottom bar shows only on top-level destinations. We render it
-            // unconditionally and rely on the `onTopLevel` flag below to skip it
-            // — animating visibility caused the bar to occasionally lag a frame
-            // behind navigation transitions.
-            if (onTopLevel) BottomBar(navController = navController)
+            if (onTopLevel) BottomBar(navController = navController, destination = backStackEntry?.destination)
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) { data ->
@@ -76,8 +73,6 @@ fun AppNavGraph() {
             navController = navController,
             startDestination = Library(),
             modifier = Modifier.padding(padding),
-            // Drop transitions: fadeIn/Out caused two cards to open back-to-back
-            // when the user double-tapped quickly across cards. Instant swap.
             enterTransition = { EnterTransition.None },
             exitTransition = { ExitTransition.None },
             popEnterTransition = { EnterTransition.None },
@@ -140,11 +135,17 @@ fun AppNavGraph() {
             }
 
             composable<Settings> {
-                SettingsScreen(onBack = { navController.navigateUp() })
+                SettingsScreen(
+                    initialPreferences = currentPreferences,
+                    onBack = { navController.navigateUp() },
+                )
             }
 
             composable<CardData> {
-                CardDataScreen(onBack = { navController.navigateUp() })
+                CardDataScreen(
+                    initialPreferences = currentPreferences,
+                    onBack = { navController.navigateUp() },
+                )
             }
         }
     }

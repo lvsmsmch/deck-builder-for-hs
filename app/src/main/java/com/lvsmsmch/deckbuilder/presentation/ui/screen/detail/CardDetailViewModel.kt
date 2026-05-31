@@ -42,7 +42,9 @@ class CardDetailViewModel(
     }
 
     fun load() {
-        _state.update { it.copy(card = UiState.Loading) }
+        _state.update { current ->
+            if (current.card is UiState.Loaded) current else current.copy(card = UiState.Loading)
+        }
         viewModelScope.launch {
             when (val r = getCardDetails(idOrSlug)) {
                 is Result.Success -> {

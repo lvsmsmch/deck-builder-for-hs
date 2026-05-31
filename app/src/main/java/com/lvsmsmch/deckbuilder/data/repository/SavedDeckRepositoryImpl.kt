@@ -3,6 +3,8 @@ package com.lvsmsmch.deckbuilder.data.repository
 import android.util.Log
 import com.lvsmsmch.deckbuilder.data.db.dao.SavedDeckDao
 import com.lvsmsmch.deckbuilder.data.db.entity.SavedDeckEntity
+import com.lvsmsmch.deckbuilder.data.deckstring.Deckstring
+import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringFormat
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
@@ -95,7 +97,7 @@ class SavedDeckRepositoryImpl(
         className = row.className,
         heroCardId = row.heroCardId,
         heroSlug = row.heroSlug,
-        format = GameFormat.fromApi(row.format),
+        format = row.formatFromCode(),
         cardCount = row.cardCount,
         savedAtMs = row.updatedAtMs,
     )
@@ -104,4 +106,15 @@ class SavedDeckRepositoryImpl(
         val cls = deck.heroClass?.name?.ifBlank { null }
         return cls?.let { "$it deck" } ?: "Untitled deck"
     }
+}
+
+private fun SavedDeckEntity.formatFromCode(): GameFormat =
+    runCatching { Deckstring.decode(code).format.toGameFormat() }
+        .getOrElse { GameFormat.fromApi(format) }
+
+private fun DeckstringFormat.toGameFormat(): GameFormat = when (this) {
+    DeckstringFormat.WILD -> GameFormat.WILD
+    DeckstringFormat.STANDARD -> GameFormat.STANDARD
+    DeckstringFormat.CLASSIC -> GameFormat.CLASSIC
+    DeckstringFormat.TWIST -> GameFormat.TWIST
 }

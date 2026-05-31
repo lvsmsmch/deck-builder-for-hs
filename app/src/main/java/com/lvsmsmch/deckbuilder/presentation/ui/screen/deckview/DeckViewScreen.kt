@@ -3,7 +3,6 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.deckview
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,12 +27,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Bookmark
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,9 +50,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
@@ -93,13 +90,11 @@ fun DeckViewScreen(
     ) {
         TopBar(
             title = (state.deck as? UiState.Loaded)?.data?.let { it.heroClass?.name ?: "Deck" } ?: "",
-            isSaved = state.isSaved,
             onBack = onBack,
-            onToggleSave = viewModel::toggleSave,
         )
 
         when (val deckState = state.deck) {
-            UiState.Idle, UiState.Loading -> CenteredSpinner()
+            UiState.Idle, UiState.Loading -> Box(modifier = Modifier.fillMaxSize())
 
             is UiState.Failed -> ErrorState(
                 message = deckState.throwable.message ?: deckState.throwable.javaClass.simpleName,
@@ -113,7 +108,6 @@ fun DeckViewScreen(
                 onRename = viewModel::rename,
                 onCardClick = onCardClick,
                 onCopyCode = { copyToClipboard(context, deckState.data.code) },
-                onShare = { shareCode(context, deckState.data, state.savedName) },
             )
         }
     }
@@ -122,9 +116,7 @@ fun DeckViewScreen(
 @Composable
 private fun TopBar(
     title: String,
-    isSaved: Boolean,
     onBack: () -> Unit,
-    onToggleSave: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -147,13 +139,6 @@ private fun TopBar(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
-        IconButton(onClick = onToggleSave) {
-            Icon(
-                imageVector = if (isSaved) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                contentDescription = if (isSaved) "Remove from saved" else "Save deck",
-                tint = if (isSaved) DeckBuilderColors.Primary else DeckBuilderColors.OnSurface,
-            )
-        }
     }
 }
 
@@ -165,7 +150,6 @@ private fun Body(
     onRename: (String) -> Unit,
     onCardClick: (Card) -> Unit,
     onCopyCode: () -> Unit,
-    onShare: () -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(bottom = 24.dp),
@@ -181,7 +165,7 @@ private fun Body(
         }
 
         item {
-            ActionsRow(onCopyCode = onCopyCode, onShare = onShare)
+            ActionsRow(onCopyCode = onCopyCode)
         }
 
         item { DeckWarnings(deck) }
@@ -295,11 +279,6 @@ private fun HeroHeader(
     }
 }
 
-/**
- * Title that flips between a static [Text] and a [BasicTextField] in place
- * when the pencil icon is tapped. Pressing IME-Done or Enter commits the new
- * value via [onCommit]; clicking outside discards.
- */
 @Composable
 private fun EditableTitle(
     text: String,
@@ -307,7 +286,9 @@ private fun EditableTitle(
     onCommit: (String) -> Unit,
 ) {
     var editing by remember(text) { mutableStateOf(false) }
-    var draft by remember(text) { mutableStateOf(text) }
+    var draft by remember(text) {
+        mutableStateOf(TextFieldValue(text, selection = TextRange(text.length)))
+    }
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
 
@@ -320,7 +301,8 @@ private fun EditableTitle(
             BasicTextField(
                 value = draft,
                 onValueChange = { draft = it },
-                singleLine = true,
+                singleLine = false,
+                maxLines = 3,
                 textStyle = TextStyle(
                     color = DeckBuilderColors.OnSurface,
                     fontSize = MaterialTheme.typography.titleLarge.fontSize,
@@ -331,7 +313,7 @@ private fun EditableTitle(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         keyboard?.hide()
-                        onCommit(draft)
+                        onCommit(draft.text)
                         editing = false
                     },
                 ),
@@ -346,8 +328,8 @@ private fun EditableTitle(
                 text = text,
                 style = MaterialTheme.typography.titleLarge,
                 color = DeckBuilderColors.OnSurface,
-                modifier = Modifier.weight(1f, fill = false),
-                maxLines = 1,
+                modifier = Modifier.weight(1f),
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
             )
             if (editable) {
@@ -366,7 +348,7 @@ private fun EditableTitle(
 }
 
 @Composable
-private fun ActionsRow(onCopyCode: () -> Unit, onShare: () -> Unit) {
+private fun ActionsRow(onCopyCode: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -386,27 +368,9 @@ private fun ActionsRow(onCopyCode: () -> Unit, onShare: () -> Unit) {
             Spacer(Modifier.width(8.dp))
             Text(stringResource(R.string.action_copy_code))
         }
-        OutlinedButton(
-            onClick = onShare,
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.weight(1f),
-        ) {
-            Icon(
-                Icons.Outlined.Share,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_share))
-        }
     }
 }
 
-/**
- * Stack of yellow warning rows — currently only "deck below 30 cards", but the
- * idea generalises to e.g. rotated-out cards in Standard once that signal is
- * threaded through the ViewModel.
- */
 @Composable
 private fun DeckWarnings(deck: Deck) {
     val incomplete = (FULL_DECK_SIZE - deck.cardCount).takeIf { it > 0 }
@@ -419,18 +383,6 @@ private fun DeckWarnings(deck: Deck) {
         DeckWarning(
             text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, FULL_DECK_SIZE),
         )
-    }
-}
-
-@Composable
-private fun CenteredSpinner() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator(color = DeckBuilderColors.Primary, strokeWidth = 2.dp)
     }
 }
 
@@ -461,14 +413,4 @@ private fun copyToClipboard(context: Context, code: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     clipboard.setPrimaryClip(ClipData.newPlainText("Hearthstone deck code", code))
     Toast.makeText(context, context.getString(R.string.deck_view_copied), Toast.LENGTH_SHORT).show()
-}
-
-private fun shareCode(context: Context, deck: Deck, savedName: String?) {
-    val title = savedName ?: deck.heroClass?.name?.let { "$it deck" } ?: "Hearthstone deck"
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, title)
-        putExtra(Intent.EXTRA_TEXT, "${title}\n\n${deck.code}")
-    }
-    context.startActivity(Intent.createChooser(intent, "Share deck code"))
 }
