@@ -70,12 +70,11 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.DeckWarning
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-
-private const val FULL_DECK_SIZE = 30
 
 @Composable
 fun DeckViewScreen(
@@ -102,7 +101,7 @@ fun DeckViewScreen(
         )
 
         when (val deckState = state.deck) {
-            UiState.Idle, UiState.Loading -> Box(modifier = Modifier.fillMaxSize())
+            UiState.Idle, UiState.Loading -> DeckLoadingShell()
 
             is UiState.Failed -> ErrorState(
                 message = deckState.throwable.message ?: deckState.throwable.javaClass.simpleName,
@@ -118,6 +117,39 @@ fun DeckViewScreen(
                 onCopyCode = { copyToClipboard(context, deckState.data.code) },
             )
         }
+    }
+}
+
+@Composable
+private fun DeckLoadingShell() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(DeckBuilderColors.SurfaceContainer),
+        )
+        Spacer(Modifier.height(10.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(104.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(DeckBuilderColors.SurfaceContainer),
+        )
+        Spacer(Modifier.height(10.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(112.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(DeckBuilderColors.SurfaceContainer),
+        )
     }
 }
 
@@ -237,6 +269,7 @@ private fun HeroHeader(
     val heroCardId = deck.hero?.slug?.takeIf { it.startsWith("HERO_") }
         ?: DefaultHeroes.cardIdFor(classSlug)
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
+    val heroClassLabel = classLabel(deck.heroClass?.slug)
 
     Row(
         modifier = Modifier
@@ -278,7 +311,7 @@ private fun HeroHeader(
                 }
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "${deck.heroClass?.name ?: "Neutral"} · ${deck.cardCount}/$FULL_DECK_SIZE",
+                    text = "$heroClassLabel · ${deck.cardCount}/${deck.maxCardCount}",
                     style = MaterialTheme.typography.bodySmall,
                     color = DeckBuilderColors.OnSurfaceDim,
                 )
@@ -391,7 +424,7 @@ private fun ActionsRow(onCopyCode: () -> Unit) {
 
 @Composable
 private fun DeckWarnings(deck: Deck) {
-    val incomplete = (FULL_DECK_SIZE - deck.cardCount).takeIf { it > 0 }
+    val incomplete = (deck.maxCardCount - deck.cardCount).takeIf { it > 0 }
     if (incomplete == null) return
     Column(
         modifier = Modifier
@@ -399,7 +432,7 @@ private fun DeckWarnings(deck: Deck) {
             .padding(horizontal = 16.dp, vertical = 6.dp),
     ) {
         DeckWarning(
-            text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, FULL_DECK_SIZE),
+            text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, deck.maxCardCount),
         )
     }
 }

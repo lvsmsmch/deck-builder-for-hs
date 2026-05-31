@@ -83,6 +83,35 @@ object CardLabels {
         "fel" -> R.string.school_fel
         else -> R.string.school_arcane
     }
+
+    @StringRes
+    fun keywordRes(slug: String?): Int? = when (slug?.lowercase()) {
+        "battlecry" -> R.string.keyword_battlecry
+        "deathrattle" -> R.string.keyword_deathrattle
+        "taunt" -> R.string.keyword_taunt
+        "divine-shield" -> R.string.keyword_divine_shield
+        "charge" -> R.string.keyword_charge
+        "rush" -> R.string.keyword_rush
+        "lifesteal" -> R.string.keyword_lifesteal
+        "poisonous" -> R.string.keyword_poisonous
+        "tradeable" -> R.string.keyword_tradeable
+        "discover" -> R.string.keyword_discover
+        "secret" -> R.string.keyword_secret
+        "combo" -> R.string.keyword_combo
+        "overload" -> R.string.keyword_overload
+        "windfury" -> R.string.keyword_windfury
+        "stealth" -> R.string.keyword_stealth
+        "reborn" -> R.string.keyword_reborn
+        "outcast" -> R.string.keyword_outcast
+        "finale" -> R.string.keyword_finale
+        else -> null
+    }
+
+    @StringRes
+    fun expansionRes(slug: String?): Int? = when (slug?.lowercase()) {
+        "stormwind" -> R.string.set_stormwind
+        else -> null
+    }
 }
 
 @Composable
@@ -102,3 +131,11 @@ fun raceLabel(slug: String?): String = stringResource(CardLabels.raceRes(slug))
 
 @Composable
 fun spellSchoolLabel(slug: String?): String = stringResource(CardLabels.spellSchoolRes(slug))
+
+@Composable
+fun keywordLabel(slug: String?, fallback: String): String =
+    CardLabels.keywordRes(slug)?.let { stringResource(it) } ?: fallback
+
+@Composable
+fun expansionLabel(slug: String?, fallback: String): String =
+    CardLabels.expansionRes(slug)?.let { stringResource(it) } ?: fallback

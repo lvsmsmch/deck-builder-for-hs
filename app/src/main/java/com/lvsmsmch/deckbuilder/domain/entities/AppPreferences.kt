@@ -1,8 +1,10 @@
 package com.lvsmsmch.deckbuilder.domain.entities
 
+import java.util.Locale
+
 data class AppPreferences(
     val theme: ThemeMode = ThemeMode.System,
-    val cardLocale: String = "en_US",
+    val cardLocale: String = SupportedCardLocales.defaultForSystem(),
     val crashReportingEnabled: Boolean = true,
     val lastSeenSetSlug: String? = null,
     val lastUpdateCheckAtMs: Long? = null,
@@ -30,4 +32,11 @@ object SupportedCardLocales {
 
     fun isSupported(code: String): Boolean = codes.any { it.first == code }
     fun displayName(code: String): String = codes.firstOrNull { it.first == code }?.second ?: code
+
+    fun defaultForSystem(locale: Locale = Locale.getDefault()): String {
+        val exact = "${locale.language}_${locale.country}"
+        return codes.firstOrNull { it.first.equals(exact, ignoreCase = true) }?.first
+            ?: codes.firstOrNull { it.first.substringBefore('_').equals(locale.language, ignoreCase = true) }?.first
+            ?: "en_US"
+    }
 }

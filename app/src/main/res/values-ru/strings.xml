@@ -4,7 +4,7 @@
 
     <!-- Bottom nav -->
     <string name="nav_library">Карты</string>
-    <string name="nav_saved">Деки</string>
+    <string name="nav_saved">Колоды</string>
     <string name="nav_more">Ещё</string>
 
     <!-- Library -->
@@ -21,7 +21,7 @@
     <string name="action_apply">Применить</string>
     <string name="action_close">Закрыть</string>
     <string name="action_save">Сохранить</string>
-    <string name="action_save_deck">Сохранить деку</string>
+    <string name="action_save_deck">Сохранить</string>
     <string name="action_decode">Декодировать</string>
     <string name="action_retry">Повторить</string>
     <string name="action_clear">Очистить</string>
@@ -57,47 +57,79 @@
     <string name="filters_all_cards">Все карты</string>
 
     <!-- Builder -->
-    <string name="builder_new_deck">Новая дека</string>
+    <string name="builder_new_deck">Новая колода</string>
     <string name="builder_pick_class">Выбери класс, чтобы начать.</string>
     <string name="builder_search_pool">Поиск в пуле</string>
     <string name="builder_pool_tab">Пул</string>
-    <string name="builder_deck_tab">Дека</string>
+    <string name="builder_deck_tab">Колода</string>
     <string name="builder_deck_count">%1$d / %2$d</string>
     <string name="builder_format_standard">Без названия · Стандарт</string>
-    <string name="builder_empty_deck_title">Дека пуста.</string>
+    <string name="builder_empty_deck_title">Колода пуста.</string>
     <string name="builder_empty_deck_body">Перейди во вкладку «Пул» и тапай по картам, чтобы добавить.</string>
     <string name="builder_toast_wrong_class">Это карта другого класса (нужен %1$s или нейтрал)</string>
     <string name="builder_toast_legendary_limit">Лимит легендарок (×1)</string>
     <string name="builder_toast_card_limit">Лимит карт (×2)</string>
-    <string name="builder_toast_deck_full">Дека заполнена (%1$d/%1$d)</string>
+    <string name="builder_toast_deck_full">Колода заполнена (%1$d/%1$d)</string>
 
     <!-- Saved Decks -->
-    <string name="saved_title">Сохранённые деки</string>
+    <string name="saved_title">Сохранённые колоды</string>
     <string name="saved_search_hint">Поиск по сохранённым</string>
-    <string name="saved_empty_title">Деки ещё не сохранены.</string>
-    <string name="saved_empty_body">Жми «+», чтобы создать новую деку или вставить код.</string>
+    <string name="saved_empty_title">Колоды ещё не сохранены.</string>
+    <string name="saved_empty_body">Жми «+», чтобы создать новую колоду или вставить код.</string>
 
     <!-- New deck chooser -->
-    <string name="new_deck_title">Новая дека</string>
+    <string name="new_deck_title">Новая колода</string>
     <string name="new_deck_from_scratch">Создать с нуля</string>
-    <string name="new_deck_from_scratch_subtitle">Выбери класс и собери деку карта за картой.</string>
+    <string name="new_deck_from_scratch_subtitle">Выбери класс и собери колоду карта за картой.</string>
     <string name="new_deck_paste_code">Вставить код</string>
-    <string name="new_deck_paste_code_subtitle">Импортируй готовую деку Hearthstone по коду.</string>
-    <string name="saved_delete_title">Удалить деку?</string>
+    <string name="new_deck_paste_code_subtitle">Импортируй готовую колоду Hearthstone по коду.</string>
+    <string name="saved_delete_title">Удалить колоду?</string>
     <string name="saved_delete_message">«%1$s» будет удалена из сохранённых. Код по-прежнему валиден — её можно импортировать снова в любой момент.</string>
 
     <!-- Import sheet -->
-    <string name="import_title">Импорт деки</string>
-    <string name="import_subtitle">Вставь код деки Hearthstone. Тап «Декодировать», чтобы увидеть и сохранить.</string>
-    <string name="import_invalid">Этот код деки выглядит некорректным.</string>
+    <string name="import_title">Импорт колоды</string>
+    <string name="import_subtitle">Вставь код колоды Hearthstone. Тап «Декодировать», чтобы увидеть и сохранить.</string>
+    <string name="import_invalid">Этот код колоды выглядит некорректным.</string>
 
     <!-- Deck view -->
     <string name="deck_view_cards_count">КАРТЫ · %1$d</string>
     <string name="deck_view_invalid_format">API сообщил о %1$d некорректных id карт</string>
-    <string name="deck_view_copied">Код деки скопирован</string>
+    <string name="deck_view_copied">Код колоды скопирован</string>
 
     <!-- Card detail -->
     <string name="card_detail_related">СВЯЗАННЫЕ КАРТЫ</string>
+    <string name="card_detail_by_artist">художник: %1$s</string>
+    <string name="card_stat_mana">Мана</string>
+    <string name="card_stat_attack">Атака</string>
+    <string name="card_stat_health">Здоровье</string>
+    <string name="card_stat_durability">Прочность</string>
+    <string name="card_stat_armor">Броня</string>
+
+    <!-- Card metadata -->
+    <string name="set_stormwind">Штормград</string>
+    <string name="keyword_battlecry">Боевой клич</string>
+    <string name="keyword_deathrattle">Предсмертный хрип</string>
+    <string name="keyword_taunt">Провокация</string>
+    <string name="keyword_divine_shield">Божественный щит</string>
+    <string name="keyword_charge">Рывок</string>
+    <string name="keyword_rush">Натиск</string>
+    <string name="keyword_lifesteal">Похищение жизни</string>
+    <string name="keyword_poisonous">Яд</string>
+    <string name="keyword_tradeable">Обмен</string>
+    <string name="keyword_discover">Раскопка</string>
+    <string name="keyword_secret">Секрет</string>
+    <string name="keyword_combo">Серия приёмов</string>
+    <string name="keyword_overload">Перегрузка</string>
+    <string name="keyword_windfury">Неистовство ветра</string>
+    <string name="keyword_stealth">Маскировка</string>
+    <string name="keyword_reborn">Перерождение</string>
+    <string name="keyword_outcast">Изгой</string>
+    <string name="keyword_finale">Финал</string>
+    <string name="deck_stats_title">СТАТИСТИКА</string>
+    <string name="deck_stats_avg_mana">Средняя мана</string>
+    <string name="deck_stats_dust">Пыль</string>
+    <string name="deck_stats_spells">Заклинания</string>
+    <string name="deck_stats_rarity">РЕДКОСТЬ</string>
 
     <!-- More -->
     <string name="more_title">Ещё</string>
@@ -137,6 +169,9 @@
     <string name="settings_contact_developer">Связаться с разработчиком</string>
     <string name="settings_contact_developer_subtitle">Отправить письмо с отзывом или ошибкой</string>
     <string name="settings_version">Версия</string>
+    <string name="settings_debug_copy_logs">[DEBUG] Копировать логи</string>
+    <string name="settings_debug_copy_logs_subtitle">Копирует логи текущей сессии приложения</string>
+    <string name="settings_debug_logs_copied">Debug-логи скопированы</string>
 
     <!-- Updates -->
     <string name="settings_section_updates">Данные карт</string>

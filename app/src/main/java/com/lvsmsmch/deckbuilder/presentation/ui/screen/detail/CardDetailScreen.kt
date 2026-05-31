@@ -33,26 +33,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.domain.entities.Keyword
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
-import com.lvsmsmch.deckbuilder.presentation.ui.components.CrossedDaggers
-import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaGem
-import com.lvsmsmch.deckbuilder.presentation.ui.components.StatGem
-import com.lvsmsmch.deckbuilder.presentation.ui.components.StatGemPalette
-import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.components.rarityColor
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.expansionLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.keywordLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -77,7 +75,7 @@ fun CardDetailScreen(
         )
 
         when (val cardState = state.card) {
-            UiState.Idle, UiState.Loading -> Box(modifier = Modifier.fillMaxSize())
+            UiState.Idle, UiState.Loading -> CardLoadingShell()
 
             is UiState.Failed -> ErrorState(
                 message = cardState.throwable.message ?: cardState.throwable.javaClass.simpleName,
@@ -91,6 +89,40 @@ fun CardDetailScreen(
                 onRelatedClick = onCardClick,
             )
         }
+    }
+}
+
+@Composable
+private fun CardLoadingShell() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp)),
+        )
+        Spacer(Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.62f)
+                .height(24.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(DeckBuilderColors.SurfaceContainerHigh),
+        )
+        Spacer(Modifier.height(12.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(DeckBuilderColors.SurfaceContainer),
+        )
     }
 }
 
@@ -127,7 +159,6 @@ private fun Body(
     isLoadingRelated: Boolean,
     onRelatedClick: (Card) -> Unit,
 ) {
-    val classColor = colorForClassSlug(card.classes.firstOrNull()?.slug)
     val rarityColor = rarityColor(card.rarity)
     val isLegendary = card.rarity?.slug?.equals("legendary", ignoreCase = true) == true
 
@@ -143,10 +174,8 @@ private fun Body(
                 .fillMaxWidth()
                 .height(280.dp)
                 .clip(RoundedCornerShape(18.dp))
-                .background(
-                    Brush.linearGradient(listOf(classColor, DeckBuilderColors.SurfaceContainer)),
-                )
-                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(18.dp)),
+                .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp)),
         ) {
             val img = card.image.takeIf { it.isNotBlank() }
                 ?.replace("/256x/", "/512x/")
@@ -159,14 +188,6 @@ private fun Body(
                     contentScale = ContentScale.Fit,
                 )
             }
-            ManaGem(
-                cost = card.manaCost,
-                size = 50.dp,
-                fontSize = 22.sp,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(12.dp),
-            )
             if (isLegendary) {
                 Text(
                     text = "★",
@@ -196,7 +217,7 @@ private fun Body(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = card.rarity.name,
+                        text = rarityLabel(card.rarity.slug),
                         style = MaterialTheme.typography.labelMedium,
                         color = rarityColor,
                     )
@@ -211,7 +232,7 @@ private fun Body(
             FlavorTextBlock(card.flavorText)
             if (card.keywords.isNotEmpty()) {
                 Spacer(Modifier.height(16.dp))
-                KeywordsRow(card.keywords.map { it.name })
+                KeywordsRow(card.keywords)
             }
         }
 
@@ -228,12 +249,11 @@ private fun Body(
 
 @Composable
 private fun SubtitleRow(card: Card) {
-    val parts = buildList {
-        card.classes.firstOrNull()?.let { add(it.name) }
-        card.cardType.name.takeIf { it.isNotBlank() }?.let { add(it) }
-        card.cardSet?.name?.let { add(it) }
-        card.artistName?.let { add("by $it") }
-    }
+    val localizedClass = card.classes.firstOrNull()?.let { classLabel(it.slug) }
+    val localizedType = card.cardType.slug.takeIf { it.isNotBlank() }?.let { typeLabel(it) }
+    val localizedSet = card.cardSet?.let { expansionLabel(it.slug, it.name) }
+    val artist = card.artistName?.let { stringResource(R.string.card_detail_by_artist, it) }
+    val parts = listOfNotNull(localizedClass, localizedType, localizedSet, artist)
     if (parts.isEmpty()) return
     Text(
         text = parts.joinToString(" · "),
@@ -246,82 +266,49 @@ private fun SubtitleRow(card: Card) {
 @Composable
 private fun StatsRow(card: Card) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        ManaPill(card.manaCost, modifier = Modifier.weight(1f))
-        card.attack?.let { AttackPill(it, modifier = Modifier.weight(1f)) }
-        card.health?.let { HealthPill(it, modifier = Modifier.weight(1f)) }
-        card.durability?.let { WeaponPill(it, modifier = Modifier.weight(1f)) }
-        card.armor?.let { ArmorPill(it, modifier = Modifier.weight(1f)) }
-    }
-}
-
-@Composable
-private fun ManaPill(value: Int, modifier: Modifier = Modifier) {
-    StatPill(modifier = modifier) {
-        // ManaGem already carries the cost number; reuse it as-is.
-        ManaGem(cost = value, size = 28.dp)
-        Spacer(Modifier.height(4.dp))
-        StatLabel(value.toString())
-    }
-}
-
-@Composable
-private fun AttackPill(value: Int, modifier: Modifier = Modifier) {
-    StatPill(modifier = modifier) {
-        StatGem(fill = StatGemPalette.Attack, size = 28.dp) {
-            CrossedDaggers(color = Color.White, size = 16.dp)
+        StatPill(
+            value = card.manaCost,
+            label = stringResource(R.string.card_stat_mana),
+            modifier = Modifier.weight(1f),
+        )
+        card.attack?.let {
+            StatPill(value = it, label = stringResource(R.string.card_stat_attack), modifier = Modifier.weight(1f))
         }
-        Spacer(Modifier.height(4.dp))
-        StatLabel(value.toString())
+        card.health?.let {
+            StatPill(value = it, label = stringResource(R.string.card_stat_health), modifier = Modifier.weight(1f))
+        }
+        card.durability?.let {
+            StatPill(value = it, label = stringResource(R.string.card_stat_durability), modifier = Modifier.weight(1f))
+        }
+        card.armor?.let {
+            StatPill(value = it, label = stringResource(R.string.card_stat_armor), modifier = Modifier.weight(1f))
+        }
     }
 }
 
 @Composable
-private fun HealthPill(value: Int, modifier: Modifier = Modifier) {
-    StatPill(modifier = modifier) {
-        StatGem(fill = StatGemPalette.Health, size = 28.dp)
-        Spacer(Modifier.height(4.dp))
-        StatLabel(value.toString())
-    }
-}
-
-@Composable
-private fun ArmorPill(value: Int, modifier: Modifier = Modifier) {
-    StatPill(modifier = modifier) {
-        StatGem(fill = StatGemPalette.Armor, size = 28.dp)
-        Spacer(Modifier.height(4.dp))
-        StatLabel(value.toString())
-    }
-}
-
-@Composable
-private fun WeaponPill(value: Int, modifier: Modifier = Modifier) {
-    StatPill(modifier = modifier) {
-        StatGem(fill = StatGemPalette.Weapon, size = 28.dp)
-        Spacer(Modifier.height(4.dp))
-        StatLabel(value.toString())
-    }
-}
-
-@Composable
-private fun StatPill(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+private fun StatPill(value: Int, label: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(DeckBuilderColors.SurfaceContainer)
             .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
-            .padding(vertical = 10.dp, horizontal = 8.dp)
+            .padding(vertical = 8.dp, horizontal = 6.dp)
             .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
-    ) { content() }
-}
-
-@Composable
-private fun StatLabel(value: String) {
-    Text(
-        text = value,
-        style = MaterialTheme.typography.headlineMedium,
-        color = DeckBuilderColors.OnSurface,
-    )
+    ) {
+        Text(
+            text = value.toString(),
+            style = MaterialTheme.typography.titleMedium,
+            color = DeckBuilderColors.OnSurface,
+        )
+        Spacer(Modifier.height(3.dp))
+        Text(
+            text = label.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = DeckBuilderColors.OnSurfaceDim,
+        )
+    }
 }
 
 @Composable
@@ -358,14 +345,14 @@ private fun FlavorTextBlock(text: String?) {
 }
 
 @Composable
-private fun KeywordsRow(keywords: List<String>) {
+private fun KeywordsRow(keywords: List<Keyword>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        keywords.forEach { name ->
+        keywords.forEach { keyword ->
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(99.dp))
@@ -374,7 +361,7 @@ private fun KeywordsRow(keywords: List<String>) {
                     .padding(horizontal = 12.dp, vertical = 6.dp),
             ) {
                 Text(
-                    text = name,
+                    text = keywordLabel(keyword.slug, keyword.name),
                     style = MaterialTheme.typography.labelMedium,
                     color = DeckBuilderColors.OnSurface,
                 )

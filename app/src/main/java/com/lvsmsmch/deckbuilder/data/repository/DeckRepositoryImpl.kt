@@ -1,6 +1,8 @@
 package com.lvsmsmch.deckbuilder.data.repository
 
 import android.util.Log
+import android.os.SystemClock
+import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.deckstring.Deckstring
 import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringCard
 import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringFormat
@@ -19,20 +21,26 @@ import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "DB.DeckRepo"
 
 class DeckRepositoryImpl(
     private val hsJson: HsJsonRepository,
     private val locales: CurrentLocaleProvider,
+    private val sessionLog: SessionLog,
 ) : DeckRepository {
+    private val memoryCache = ConcurrentHashMap<String, Deck>()
+
+    override fun cachedDeck(code: String): Deck? = memoryCache[code]
 
     override suspend fun decodeByCode(code: String, locale: String?): Result<Deck> =
         withContext(Dispatchers.IO) {
+            val started = SystemClock.elapsedRealtime()
             runCatchingResult {
                 val resolved = locales.resolve(locale)
                 val payload = Deckstring.decode(code)
-                buildDeck(code = code, payload = payload, locale = resolved)
+                buildDeck(code = code, payload = payload, locale = resolved).also { memoryCache[code] = it }
             }.also { r ->
                 val codePreview = code.take(12) + if (code.length > 12) "…" else ""
                 when (r) {
@@ -44,6 +52,7 @@ class DeckRepositoryImpl(
                         TAG, "decodeByCode: FAILED code=$codePreview: ${r.throwable.message}", r.throwable,
                     )
                 }
+                sessionLog.add(TAG, "decode code=$codePreview result=${if (r is Result.Success) "OK" else "FAILED"} ms=${SystemClock.elapsedRealtime() - started}")
             }
         }
 
@@ -65,7 +74,7 @@ class DeckRepositoryImpl(
                 cards = cardEntries,
             )
             val code = Deckstring.encode(payload)
-            buildDeck(code = code, payload = payload, locale = resolved)
+            buildDeck(code = code, payload = payload, locale = resolved).also { memoryCache[code] = it }
         }.also { r ->
             when (r) {
                 is Result.Success -> Log.i(
@@ -94,6 +103,9 @@ class DeckRepositoryImpl(
         for (dbf in allDbfIds) {
             val row = rowsByDbf[dbf]
             if (row != null) resolved[dbf] = row.toDomain() else invalid += dbf
+        }
+        if (invalid.isNotEmpty()) {
+            sessionLog.add(TAG, "invalid ids code=${code.take(12)} ids=${invalid.joinToString()} locale=$locale")
         }
 
         val hero = payload.heroes.firstOrNull()?.let { resolved[it] }

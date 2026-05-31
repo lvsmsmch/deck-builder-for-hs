@@ -7,6 +7,8 @@ import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
 class GetDeckByCodeUseCase(
     private val decks: DeckRepository,
 ) {
+    fun cached(code: String): Deck? = decks.cachedDeck(code)
+
     suspend operator fun invoke(code: String, locale: String? = null): Result<Deck> =
         decks.decodeByCode(code, locale)
 }

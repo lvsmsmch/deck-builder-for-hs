@@ -7,6 +7,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.Page
 
 interface CardRepository {
 
+    fun cachedCard(idOrSlug: String): Card?
+
     /** When [locale] is null, the impl falls back to the user's current pref. */
     suspend fun getCard(idOrSlug: String, locale: String? = null): Result<Card>
 

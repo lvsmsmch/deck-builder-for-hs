@@ -1,6 +1,8 @@
 package com.lvsmsmch.deckbuilder.data.repository
 
 import android.util.Log
+import android.os.SystemClock
+import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.data.hsjson.parseClassTokens
@@ -17,16 +19,22 @@ import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.CardRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "DB.CardRepo"
 
 class CardRepositoryImpl(
     private val hsJson: HsJsonRepository,
     private val locales: CurrentLocaleProvider,
+    private val sessionLog: SessionLog,
 ) : CardRepository {
+    private val memoryCache = ConcurrentHashMap<String, Card>()
+
+    override fun cachedCard(idOrSlug: String): Card? = memoryCache[idOrSlug.lowercase()]
 
     override suspend fun getCard(idOrSlug: String, locale: String?): Result<Card> =
         withContext(Dispatchers.IO) {
+            val started = SystemClock.elapsedRealtime()
             runCatchingResult {
                 val resolved = locales.resolve(locale)
                 val snap = hsJson.ensureLoaded(resolved)
@@ -36,11 +44,17 @@ class CardRepositoryImpl(
                 } else {
                     snap.cards.firstOrNull { it.cardId.equals(idOrSlug, ignoreCase = true) }
                 } ?: error("Card not found in HsJson pool: $idOrSlug")
-                row.toDomain()
+                row.toDomain().also(::remember)
             }.also { r ->
                 when (r) {
-                    is Result.Success -> Log.i(TAG, "getCard: OK idOrSlug=$idOrSlug name='${r.data.name}'")
-                    is Result.Error -> Log.w(TAG, "getCard: FAILED idOrSlug=$idOrSlug: ${r.throwable.message}", r.throwable)
+                    is Result.Success -> {
+                        Log.i(TAG, "getCard: OK idOrSlug=$idOrSlug name='${r.data.name}'")
+                        sessionLog.add(TAG, "getCard id=$idOrSlug name='${r.data.name}' ms=${SystemClock.elapsedRealtime() - started}")
+                    }
+                    is Result.Error -> {
+                        Log.w(TAG, "getCard: FAILED idOrSlug=$idOrSlug: ${r.throwable.message}", r.throwable)
+                        sessionLog.add(TAG, "getCard FAILED id=$idOrSlug error=${r.throwable.message}")
+                    }
                 }
             }
         }
@@ -51,6 +65,7 @@ class CardRepositoryImpl(
         pageSize: Int,
         locale: String?,
     ): Result<Page<Card>> = withContext(Dispatchers.IO) {
+        val started = SystemClock.elapsedRealtime()
         runCatchingResult {
             val resolved = locales.resolve(locale)
             val snap = hsJson.ensureLoaded(resolved)
@@ -61,7 +76,7 @@ class CardRepositoryImpl(
             val total = sorted.size
             val pageCount = if (pageSize > 0 && total > 0) (total + pageSize - 1) / pageSize else 1
             val from = ((page - 1).coerceAtLeast(0)) * pageSize
-            val items = sorted.drop(from).take(pageSize).map { it.toDomain() }
+            val items = sorted.drop(from).take(pageSize).map { it.toDomain().also(::remember) }
             Page(items = items, pageNumber = page, pageCount = pageCount, totalCount = total)
         }.also { r ->
             val summary = "page=$page " +
@@ -76,6 +91,7 @@ class CardRepositoryImpl(
                 )
                 is Result.Error -> Log.w(TAG, "searchCards: FAILED $summary: ${r.throwable.message}", r.throwable)
             }
+            sessionLog.add(TAG, "search $summary result=${(r as? Result.Success)?.data?.items?.size ?: "FAILED"} ms=${SystemClock.elapsedRealtime() - started}")
         }
     }
 
@@ -190,5 +206,10 @@ class CardRepositoryImpl(
         }
         val cmp = if (dir == SortDir.DESC) base.reversed() else base
         return rows.sortedWith(cmp)
+    }
+
+    private fun remember(card: Card) {
+        memoryCache[card.id.toString()] = card
+        memoryCache[card.slug.lowercase()] = card
     }
 }

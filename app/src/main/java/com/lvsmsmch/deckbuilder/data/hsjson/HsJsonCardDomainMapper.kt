@@ -59,7 +59,10 @@ internal fun HsJsonCardEntity.toDomain(): Card {
         armor = armor,
         classes = classes,
         cardSet = cardSet?.let { Expansion(0, it.toDomainSlug(), it.toDisplayName(), null) },
-        rarity = rarity?.let { Rarity(0, it.toDomainSlug(), it.toDisplayName(), emptyList()) },
+        rarity = rarity?.let {
+            val slug = it.toDomainSlug()
+            Rarity(0, slug, it.toDisplayName(), rarityCraftingCost(slug))
+        },
         cardType = type?.let { CardType(0, it.toDomainSlug(), it.toDisplayName()) } ?: UnknownType,
         minionType = races.firstOrNull()
             ?.let { MinionType(0, it.toDomainSlug(), it.toDisplayName()) },
@@ -72,6 +75,14 @@ internal fun HsJsonCardEntity.toDomain(): Card {
         collectible = collectible,
         childIds = emptyList(),
     )
+}
+
+private fun rarityCraftingCost(slug: String): List<Int> = when (slug) {
+    "common" -> listOf(40, 400)
+    "rare" -> listOf(100, 800)
+    "epic" -> listOf(400, 1600)
+    "legendary" -> listOf(1600, 3200)
+    else -> emptyList()
 }
 
 internal fun HsJsonCardEntity.parseClassTokens(): List<String> {

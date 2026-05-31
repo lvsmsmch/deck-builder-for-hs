@@ -1,7 +1,11 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.settings
 
 import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -48,11 +52,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.BuildConfig
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
 private const val PRIVACY_POLICY_URL = "https://www.google.com"
@@ -66,6 +72,7 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val sessionLog: SessionLog = koinInject()
     var showThemePicker by remember { mutableStateOf(false) }
     var showLocalePicker by remember { mutableStateOf(false) }
 
@@ -138,6 +145,15 @@ fun SettingsScreen(
                             onClick = { context.openEmail("iamajavagod@gmail.com") },
                         )
                         Divider()
+                        if (BuildConfig.DEBUG) {
+                            DialogRow(
+                                title = stringResource(R.string.settings_debug_copy_logs),
+                                subtitle = stringResource(R.string.settings_debug_copy_logs_subtitle),
+                                value = "",
+                                onClick = { context.copyLogs(sessionLog.dump()) },
+                            )
+                            Divider()
+                        }
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -473,4 +489,10 @@ private fun android.content.Context.openEmail(email: String) {
         putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
     }
     runCatching { startActivity(intent) }
+}
+
+private fun Context.copyLogs(logs: String) {
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText("Deck Builder debug log", logs))
+    Toast.makeText(this, getString(R.string.settings_debug_logs_copied), Toast.LENGTH_SHORT).show()
 }

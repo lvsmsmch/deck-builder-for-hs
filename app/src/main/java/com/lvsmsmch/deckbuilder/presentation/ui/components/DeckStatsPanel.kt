@@ -19,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
@@ -43,7 +45,7 @@ fun DeckStatsPanel(deck: Deck, modifier: Modifier = Modifier) {
             .padding(14.dp),
     ) {
         Text(
-            text = "STATS",
+            text = stringResource(R.string.deck_stats_title),
             style = MaterialTheme.typography.labelSmall,
             color = DeckBuilderColors.OnSurfaceDim,
         )
@@ -52,10 +54,10 @@ fun DeckStatsPanel(deck: Deck, modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            StatBlock(label = "Avg mana", value = "%.1f".format(stats.avgMana), modifier = Modifier.weight(1f))
-            StatBlock(label = "Dust", value = formatDust(stats.totalDust), modifier = Modifier.weight(1f))
+            StatBlock(label = stringResource(R.string.deck_stats_avg_mana), value = "%.1f".format(stats.avgMana), modifier = Modifier.weight(1f))
+            StatBlock(label = stringResource(R.string.deck_stats_dust), value = formatDust(stats.totalDust), modifier = Modifier.weight(1f))
             StatBlock(
-                label = "Spells",
+                label = stringResource(R.string.deck_stats_spells),
                 value = (stats.typeCounts["spell"] ?: 0).toString(),
                 modifier = Modifier.weight(1f),
             )
@@ -101,7 +103,7 @@ private fun RarityDistribution(rarityCounts: Map<String, Int>) {
 
     Column {
         Text(
-            text = "RARITY",
+            text = stringResource(R.string.deck_stats_rarity),
             style = MaterialTheme.typography.labelSmall,
             color = DeckBuilderColors.OnSurfaceDim,
         )

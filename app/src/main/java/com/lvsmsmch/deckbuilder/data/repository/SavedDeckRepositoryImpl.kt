@@ -99,6 +99,7 @@ class SavedDeckRepositoryImpl(
         heroSlug = row.heroSlug,
         format = row.formatFromCode(),
         cardCount = row.cardCount,
+        maxCardCount = if (row.cardIdsCsv.split(',').any { it in PRINCE_RENATHAL_DBF_IDS }) 40 else 30,
         savedAtMs = row.updatedAtMs,
     )
 
@@ -118,3 +119,5 @@ private fun DeckstringFormat.toGameFormat(): GameFormat = when (this) {
     DeckstringFormat.CLASSIC -> GameFormat.CLASSIC
     DeckstringFormat.TWIST -> GameFormat.TWIST
 }
+
+private val PRINCE_RENATHAL_DBF_IDS = setOf("79767", "111689")

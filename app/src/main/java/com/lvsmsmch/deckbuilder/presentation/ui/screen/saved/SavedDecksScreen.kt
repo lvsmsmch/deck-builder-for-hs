@@ -266,7 +266,7 @@ private fun SavedDeckRow(
                     FormatChip(deck.format.displayName)
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "${classLabel(deck.classSlug)} · ${deck.cardCount}/30",
+                        text = "${classLabel(deck.classSlug)} · ${deck.cardCount}/${deck.maxCardCount}",
                         style = MaterialTheme.typography.bodySmall,
                         color = DeckBuilderColors.OnSurfaceDim,
                     )
@@ -298,7 +298,7 @@ private fun SavedDeckRow(
         if (incompleteCount != null) {
             Spacer(Modifier.height(6.dp))
             DeckWarning(
-                text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, 30),
+                text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, deck.maxCardCount),
                 modifier = Modifier.padding(start = 39.dp),
             )
         }

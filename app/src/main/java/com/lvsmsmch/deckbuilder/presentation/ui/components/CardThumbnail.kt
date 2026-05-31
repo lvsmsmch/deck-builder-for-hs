@@ -1,5 +1,6 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
+import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -7,8 +8,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -19,7 +22,9 @@ import coil3.request.ImageRequest
 import androidx.compose.foundation.Image
 import androidx.compose.ui.platform.LocalContext
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
+import org.koin.compose.koinInject
 
 private const val CARD_ASPECT = 0.72f
 
@@ -37,10 +42,27 @@ fun CardThumbnail(
 ) {
     val art = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
     val context = LocalContext.current
+    val sessionLog: SessionLog = koinInject()
+    val started = remember(art) { SystemClock.elapsedRealtime() }
     val painter = rememberAsyncImagePainter(
-        ImageRequest.Builder(context).data(art).build(),
+        ImageRequest.Builder(context)
+            .data(art)
+            .size(192, 266)
+            .build(),
     )
     val state by painter.state.collectAsState()
+    LaunchedEffect(art) {
+        sessionLog.add("Image.Card", "request id=${card.id} url=$art decode=192x266")
+    }
+    LaunchedEffect(state) {
+        when (state) {
+            is AsyncImagePainter.State.Success ->
+                sessionLog.add("Image.Card", "loaded id=${card.id} ms=${SystemClock.elapsedRealtime() - started}")
+            is AsyncImagePainter.State.Error ->
+                sessionLog.add("Image.Card", "FAILED id=${card.id} url=$art ms=${SystemClock.elapsedRealtime() - started}")
+            else -> Unit
+        }
+    }
 
     Box(
         modifier = modifier

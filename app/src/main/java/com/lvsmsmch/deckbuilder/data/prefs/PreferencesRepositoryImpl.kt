@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
+import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import kotlinx.coroutines.flow.Flow
@@ -54,7 +55,7 @@ class PreferencesRepositoryImpl(
     private fun Preferences.toDomain(): AppPreferences = AppPreferences(
         theme = this[Keys.theme]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
             ?: ThemeMode.System,
-        cardLocale = this[Keys.cardLocale] ?: "en_US",
+        cardLocale = this[Keys.cardLocale] ?: SupportedCardLocales.defaultForSystem(),
         crashReportingEnabled = this[Keys.crashEnabled] ?: true,
         lastSeenSetSlug = this[Keys.lastSeenSetSlug],
         lastUpdateCheckAtMs = this[Keys.lastUpdateCheckAt],

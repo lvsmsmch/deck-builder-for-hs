@@ -81,6 +81,7 @@ val networkModule = module {
             dao = get(),
             builds = get(),
             json = get(),
+            sessionLog = get(),
         )
     }
 

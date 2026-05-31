@@ -9,6 +9,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import com.lvsmsmch.deckbuilder.domain.entities.isPrinceRenathal
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
@@ -162,7 +163,8 @@ class DeckBuilderViewModel(
             flashToast(msg)
             return
         }
-        if (st.cardCount + (target - existingCount) > st.maxDeckSize) {
+        val resultingMaxSize = if (card.isPrinceRenathal) 40 else st.maxDeckSize
+        if (st.cardCount + (target - existingCount) > resultingMaxSize) {
             flashToast("Deck is full (${st.maxDeckSize}/${st.maxDeckSize})")
             return
         }
@@ -172,6 +174,10 @@ class DeckBuilderViewModel(
     }
 
     fun removeCard(card: Card) {
+        if (card.isPrinceRenathal && _state.value.cardCount > 30) {
+            flashToast("Remove cards down to 30 before removing Prince Renathal")
+            return
+        }
         val current = _state.value.deck[card.id] ?: return
         val nextCount = current.count - 1
         _state.update {
@@ -184,10 +190,6 @@ class DeckBuilderViewModel(
 
     fun clearDeck() {
         _state.update { it.copy(deck = emptyMap()) }
-    }
-
-    fun toggleHighlanderSize() {
-        _state.update { it.copy(maxDeckSize = if (it.maxDeckSize == 30) 40 else 30) }
     }
 
     fun toggleSingleton() {

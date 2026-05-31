@@ -3,6 +3,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.builder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +58,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -116,7 +119,6 @@ fun DeckBuilderScreen(
                 onLoadMore = viewModel::loadNextPoolPage,
                 onSave = viewModel::save,
                 onClear = viewModel::clearDeck,
-                onToggleSize = viewModel::toggleHighlanderSize,
                 onToggleSingleton = viewModel::toggleSingleton,
                 onSelectFormat = viewModel::setFormat,
                 onSetPoolSort = viewModel::setPoolSort,
@@ -183,6 +185,7 @@ private fun ClassTile(slug: String, onClick: () -> Unit) {
             fallbackTint = Brush.linearGradient(listOf(color, DeckBuilderColors.SurfaceContainer)),
             contentDescription = classLabel(slug),
             modifier = Modifier.matchParentSize(),
+            zoomed = true,
         )
         Box(
             modifier = Modifier
@@ -216,7 +219,6 @@ private fun EditingView(
     onLoadMore: () -> Unit,
     onSave: () -> Unit,
     onClear: () -> Unit,
-    onToggleSize: () -> Unit,
     onToggleSingleton: () -> Unit,
     onSelectFormat: (GameFormat) -> Unit,
     onSetPoolSort: (SortKey, SortDir) -> Unit,
@@ -232,7 +234,6 @@ private fun EditingView(
             singleton = state.singleton,
             format = state.format,
             onBack = onBack,
-            onToggleSize = onToggleSize,
             onToggleSingleton = onToggleSingleton,
             onSelectFormat = onSelectFormat,
         )
@@ -281,7 +282,6 @@ private fun Header(
     singleton: Boolean,
     format: GameFormat,
     onBack: () -> Unit,
-    onToggleSize: () -> Unit,
     onToggleSingleton: () -> Unit,
     onSelectFormat: (GameFormat) -> Unit,
 ) {
@@ -302,11 +302,13 @@ private fun Header(
                 tint = DeckBuilderColors.OnSurface,
             )
         }
-        Box(
+        HeroPortrait(
+            cardId = DefaultHeroes.cardIdFor(chosenClass?.slug),
+            fallbackTint = Brush.linearGradient(listOf(color, DeckBuilderColors.SurfaceContainer)),
+            contentDescription = chosenClass?.let { classLabel(it.slug) },
             modifier = Modifier
                 .size(36.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Brush.linearGradient(listOf(color, DeckBuilderColors.SurfaceContainer)))
                 .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(10.dp)),
         )
         Spacer(Modifier.width(10.dp))
@@ -394,7 +396,6 @@ private fun Header(
                     if (full) DeckBuilderColors.Success else DeckBuilderColors.OutlineSoft,
                     RoundedCornerShape(10.dp),
                 )
-                .clickable(onClick = onToggleSize)
                 .padding(horizontal = 10.dp, vertical = 6.dp),
         ) {
             Text(
@@ -497,6 +498,7 @@ private fun PoolPane(
     onToggleMana: (Int) -> Unit,
 ) {
     val gridState = rememberLazyGridState()
+    val focusManager = LocalFocusManager.current
     var showFilters by remember { mutableStateOf(false) }
     val nearEnd by remember {
         derivedStateOf {
@@ -513,8 +515,19 @@ private fun PoolPane(
     LaunchedEffect(state.pool.textQuery, state.pool.sort, state.pool.manaCosts, state.format) {
         gridState.scrollToItem(0)
     }
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.isScrollInProgress }.distinctUntilChanged().collect { scrolling ->
+            if (scrolling) focusManager.clearFocus()
+        }
+    }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { focusManager.clearFocus() })
+            },
+    ) {
         TextField(
             value = state.pool.textQuery,
             onValueChange = onSetQuery,

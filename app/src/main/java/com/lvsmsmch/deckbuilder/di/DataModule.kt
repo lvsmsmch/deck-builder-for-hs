@@ -1,6 +1,7 @@
 package com.lvsmsmch.deckbuilder.di
 
 import com.lvsmsmch.deckbuilder.data.crash.CrashReporter
+import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.prefs.CurrentLocaleProvider
 import com.lvsmsmch.deckbuilder.data.prefs.PreferencesRepositoryImpl
 import kotlinx.coroutines.CoroutineScope
@@ -25,8 +26,9 @@ val dataModule = module {
     // Lambda forms (not singleOf) where the constructor has defaulted params —
     // singleOf reflects all params and ignores Kotlin defaults, which would
     // make Koin try to resolve a Long/`() -> Long` it doesn't know about.
-    single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get()) }
-    single<DeckRepository> { DeckRepositoryImpl(hsJson = get(), locales = get()) }
+    single { SessionLog() }
+    single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get()) }
+    single<DeckRepository> { DeckRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get()) }
     single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }
 
     // Crash reporting — safe no-op when google-services.json is missing.

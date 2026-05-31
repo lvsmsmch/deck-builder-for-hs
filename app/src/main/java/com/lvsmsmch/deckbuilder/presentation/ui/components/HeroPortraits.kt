@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
@@ -74,14 +76,16 @@ fun HeroPortrait(
     fallbackTint: Brush,
     contentDescription: String?,
     modifier: Modifier = Modifier,
+    zoomed: Boolean = false,
 ) {
     Box(modifier = modifier.background(fallbackTint)) {
         if (cardId != null) {
             AsyncImage(
                 model = heroRenderUrl(cardId),
                 contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
+                modifier = if (zoomed) Modifier.fillMaxSize().scale(2f) else Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
+                alignment = if (zoomed) Alignment.TopCenter else Alignment.Center,
             )
         }
     }
@@ -101,6 +105,7 @@ fun HeroTile(
                 contentDescription = contentDescription,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
             )
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,17 +53,19 @@ fun ManaCurve(
             ) {
                 if (count > 0) {
                     Text(
-                        text = count.toString(),
+                        text = "×$count",
                         style = MaterialTheme.typography.labelSmall,
                         color = DeckBuilderColors.OnSurfaceDim,
                     )
                 }
+                Spacer(Modifier.height(3.dp))
                 ManaBar(
                     fraction = count.toFloat() / maxValue.toFloat(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(height - 54.dp),
                 )
+                Spacer(Modifier.height(3.dp))
                 Text(
                     text = if (index == 7) "7+" else index.toString(),
                     style = MaterialTheme.typography.labelSmall,

@@ -26,7 +26,9 @@ class CardDetailViewModel(
     prefs: PreferencesRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(CardDetailState())
+    private val _state = MutableStateFlow(
+        CardDetailState(card = getCardDetails.cached(idOrSlug)?.let { UiState.Loaded(it) } ?: UiState.Idle),
+    )
     val state: StateFlow<CardDetailState> = _state.asStateFlow()
 
     init {

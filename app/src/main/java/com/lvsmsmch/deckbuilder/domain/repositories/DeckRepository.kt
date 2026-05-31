@@ -6,6 +6,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 
 interface DeckRepository {
 
+    fun cachedDeck(code: String): Deck?
+
     suspend fun decodeByCode(code: String, locale: String? = null): Result<Deck>
 
     suspend fun assembleByIds(

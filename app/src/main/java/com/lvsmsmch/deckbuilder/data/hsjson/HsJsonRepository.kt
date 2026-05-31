@@ -1,6 +1,7 @@
 package com.lvsmsmch.deckbuilder.data.hsjson
 
 import android.util.Log
+import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.db.dao.HsJsonCardDao
 import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 import kotlinx.coroutines.sync.Mutex
@@ -26,6 +27,7 @@ class HsJsonRepository(
     private val dao: HsJsonCardDao,
     private val builds: HsJsonBuildStore,
     private val json: Json,
+    private val sessionLog: SessionLog,
 ) {
     private val mutex = Mutex()
 
@@ -51,6 +53,7 @@ class HsJsonRepository(
         val hs = blizzardLocaleToHsJson(blizzardLocale)
         val existing = dao.all(hs)
         if (existing.isNotEmpty()) {
+            sessionLog.add(TAG, "cache hit locale=$hs cards=${existing.size}")
             return Snapshot(hs, builds.get(hs), existing)
         }
         val build = buildChecker.latestBuild(hs)
@@ -61,6 +64,7 @@ class HsJsonRepository(
         dao.replaceLocale(hs, rows)
         builds.set(hs, build)
         Log.i(TAG, "ensureLoaded: stored ${rows.size} cards build=$build locale=$hs")
+        sessionLog.add(TAG, "fetched locale=$hs build=$build cards=${rows.size}")
         Snapshot(hs, build, rows)
     }
 
@@ -78,6 +82,7 @@ class HsJsonRepository(
         val rows = dtos.map { it.toEntity(hs, json) }
         dao.replaceLocale(hs, rows)
         builds.set(hs, latest)
+        sessionLog.add(TAG, "updated locale=$hs build=$latest cards=${rows.size}")
         latest
     }
 

@@ -21,7 +21,7 @@
     <string name="action_apply">Apply</string>
     <string name="action_close">Close</string>
     <string name="action_save">Save</string>
-    <string name="action_save_deck">Save deck</string>
+    <string name="action_save_deck">Save</string>
     <string name="action_decode">Decode</string>
     <string name="action_retry">Retry</string>
     <string name="action_clear">Clear</string>
@@ -98,6 +98,38 @@
 
     <!-- Card detail -->
     <string name="card_detail_related">RELATED CARDS</string>
+    <string name="card_detail_by_artist">by %1$s</string>
+    <string name="card_stat_mana">Mana</string>
+    <string name="card_stat_attack">Attack</string>
+    <string name="card_stat_health">Health</string>
+    <string name="card_stat_durability">Durability</string>
+    <string name="card_stat_armor">Armor</string>
+
+    <!-- Card metadata -->
+    <string name="set_stormwind">Stormwind</string>
+    <string name="keyword_battlecry">Battlecry</string>
+    <string name="keyword_deathrattle">Deathrattle</string>
+    <string name="keyword_taunt">Taunt</string>
+    <string name="keyword_divine_shield">Divine Shield</string>
+    <string name="keyword_charge">Charge</string>
+    <string name="keyword_rush">Rush</string>
+    <string name="keyword_lifesteal">Lifesteal</string>
+    <string name="keyword_poisonous">Poisonous</string>
+    <string name="keyword_tradeable">Tradeable</string>
+    <string name="keyword_discover">Discover</string>
+    <string name="keyword_secret">Secret</string>
+    <string name="keyword_combo">Combo</string>
+    <string name="keyword_overload">Overload</string>
+    <string name="keyword_windfury">Windfury</string>
+    <string name="keyword_stealth">Stealth</string>
+    <string name="keyword_reborn">Reborn</string>
+    <string name="keyword_outcast">Outcast</string>
+    <string name="keyword_finale">Finale</string>
+    <string name="deck_stats_title">STATS</string>
+    <string name="deck_stats_avg_mana">Avg mana</string>
+    <string name="deck_stats_dust">Dust</string>
+    <string name="deck_stats_spells">Spells</string>
+    <string name="deck_stats_rarity">RARITY</string>
 
     <!-- More -->
     <string name="more_title">More</string>
@@ -137,6 +169,9 @@
     <string name="settings_contact_developer">Contact developer</string>
     <string name="settings_contact_developer_subtitle">Send an email with feedback or a bug report</string>
     <string name="settings_version">Version</string>
+    <string name="settings_debug_copy_logs">[DEBUG] Copy logs</string>
+    <string name="settings_debug_copy_logs_subtitle">Copies logs from the current app session</string>
+    <string name="settings_debug_logs_copied">Debug logs copied</string>
 
     <!-- Updates -->
     <string name="settings_section_updates">Card data</string>

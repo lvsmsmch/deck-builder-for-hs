@@ -33,7 +33,9 @@ class DeckViewViewModel(
     prefs: PreferencesRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(DeckViewState())
+    private val _state = MutableStateFlow(
+        DeckViewState(deck = getDeck.cached(code)?.let { UiState.Loaded(it) } ?: UiState.Idle),
+    )
     val state: StateFlow<DeckViewState> = _state.asStateFlow()
 
     init {
