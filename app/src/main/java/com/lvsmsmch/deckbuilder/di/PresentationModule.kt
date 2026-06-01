@@ -38,6 +38,7 @@ val presentationModule = module {
         CardDetailViewModel(
             idOrSlug = idOrSlug,
             getCardDetails = get(),
+            rotation = get(),
             prefs = get(),
         )
     }

@@ -26,16 +26,21 @@ import androidx.compose.ui.text.withStyle
  */
 private val UNKNOWN_TAG = Regex("<(?!\\s*/?\\s*[bi]\\s*>)[^>]*>", RegexOption.IGNORE_CASE)
 private val BI_TAG = Regex("<\\s*(/?)\\s*([bi])\\s*>", RegexOption.IGNORE_CASE)
-private val TEXT_PREFIX = Regex("^\\s*\\[x]", RegexOption.IGNORE_CASE)
+private val TEXT_MARKER = Regex("\\[x]", RegexOption.IGNORE_CASE)
+private val LINE_BREAK = Regex("\\s*(\\r?\\n|<\\s*br\\s*/?\\s*>)\\s*", RegexOption.IGNORE_CASE)
+private val EXTRA_SPACES = Regex(" {2,}")
 
 fun cardTextToAnnotated(raw: String): AnnotatedString {
     val cleaned = raw
-        .replace(TEXT_PREFIX, "")
+        .replace(TEXT_MARKER, "")
+        .replace(LINE_BREAK, " ")
         .replace("$", "")
         .replace("#", "")
         .replace(UNKNOWN_TAG, "")
         // Canonicalise b/i tags so the parser only ever sees `<b>` / `</b>` / `<i>` / `</i>`.
         .replace(BI_TAG) { m -> "<${m.groupValues[1]}${m.groupValues[2].lowercase()}>" }
+        .replace(EXTRA_SPACES, " ")
+        .trim()
 
     return buildAnnotatedString { appendWithTags(cleaned) }
 }

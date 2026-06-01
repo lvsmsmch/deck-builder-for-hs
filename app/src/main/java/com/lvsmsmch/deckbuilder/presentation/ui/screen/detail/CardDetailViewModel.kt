@@ -6,7 +6,9 @@ import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.GetCardDetailsUseCase
+import com.lvsmsmch.deckbuilder.data.rotation.isStandardLegal
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +25,7 @@ import kotlinx.coroutines.launch
 class CardDetailViewModel(
     private val idOrSlug: String,
     private val getCardDetails: GetCardDetailsUseCase,
+    private val rotation: RotationRepository,
     prefs: PreferencesRepository,
 ) : ViewModel() {
 
@@ -50,7 +53,8 @@ class CardDetailViewModel(
         viewModelScope.launch {
             when (val r = getCardDetails(idOrSlug)) {
                 is Result.Success -> {
-                    _state.update { it.copy(card = UiState.Loaded(r.data)) }
+                    val standard = rotation.cached()?.let { isStandardLegal(r.data, it) }
+                    _state.update { it.copy(card = UiState.Loaded(r.data), isStandardLegal = standard) }
                     fetchRelated(r.data.childIds)
                 }
                 is Result.Error -> _state.update { it.copy(card = UiState.Failed(r.throwable)) }

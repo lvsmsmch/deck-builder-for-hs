@@ -47,12 +47,12 @@ fun CardThumbnail(
     val painter = rememberAsyncImagePainter(
         ImageRequest.Builder(context)
             .data(art)
-            .size(192, 266)
+            .size(256, 356)
             .build(),
     )
     val state by painter.state.collectAsState()
     LaunchedEffect(art) {
-        sessionLog.add("Image.Card", "request id=${card.id} url=$art decode=192x266")
+        sessionLog.add("Image.Card", "request id=${card.id} url=$art decode=256x356")
     }
     LaunchedEffect(state) {
         when (state) {

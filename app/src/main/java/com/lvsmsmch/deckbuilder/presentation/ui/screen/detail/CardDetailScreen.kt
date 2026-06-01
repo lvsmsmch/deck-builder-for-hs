@@ -7,6 +7,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,7 +50,9 @@ import com.lvsmsmch.deckbuilder.domain.entities.Keyword
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.rarityColor
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
-import com.lvsmsmch.deckbuilder.presentation.ui.labels.expansionLabel
+import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.keywordLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
@@ -86,6 +90,7 @@ fun CardDetailScreen(
 
             is UiState.Loaded -> Body(
                 card = cardState.data,
+                isStandardLegal = state.isStandardLegal,
                 related = state.relatedCards,
                 isLoadingRelated = state.isLoadingRelated,
                 onRelatedClick = onCardClick,
@@ -157,6 +162,7 @@ private fun TopBar(title: String, onBack: () -> Unit) {
 @Composable
 private fun Body(
     card: Card,
+    isStandardLegal: Boolean?,
     related: List<Card>,
     isLoadingRelated: Boolean,
     onRelatedClick: (Card) -> Unit,
@@ -225,17 +231,18 @@ private fun Body(
                     )
                 }
             }
-            SubtitleRow(card)
+            SubtitleRow(card, isStandardLegal)
             Spacer(Modifier.height(14.dp))
             StatsRow(card)
             Spacer(Modifier.height(14.dp))
             CardTextBlock(card.text)
+            val visibleKeywords = card.keywords.filter { CardLabels.keywordRes(it.slug) != null }
+            if (visibleKeywords.isNotEmpty()) {
+                Spacer(Modifier.height(16.dp))
+                KeywordsRow(visibleKeywords)
+            }
             Spacer(Modifier.height(8.dp))
             FlavorTextBlock(card.flavorText)
-            if (card.keywords.isNotEmpty()) {
-                Spacer(Modifier.height(16.dp))
-                KeywordsRow(card.keywords)
-            }
         }
 
         if (related.isNotEmpty() || isLoadingRelated) {
@@ -250,12 +257,13 @@ private fun Body(
 }
 
 @Composable
-private fun SubtitleRow(card: Card) {
+private fun SubtitleRow(card: Card, isStandardLegal: Boolean?) {
     val localizedClass = card.classes.firstOrNull()?.let { classLabel(it.slug) }
     val localizedType = card.cardType.slug.takeIf { it.isNotBlank() }?.let { typeLabel(it) }
-    val localizedSet = card.cardSet?.let { expansionLabel(it.slug, it.name) }
+    val set = card.cardSet?.name
+    val format = isStandardLegal?.let { formatLabel(if (it) GameFormat.STANDARD else GameFormat.WILD) }
     val artist = card.artistName?.let { stringResource(R.string.card_detail_by_artist, it) }
-    val parts = listOfNotNull(localizedClass, localizedType, localizedSet, artist)
+    val parts = listOfNotNull(localizedClass, localizedType, set, format, artist)
     if (parts.isEmpty()) return
     Text(
         text = parts.joinToString(" · "),
@@ -347,13 +355,14 @@ private fun FlavorTextBlock(text: String?) {
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun KeywordsRow(keywords: List<Keyword>) {
-    Row(
+    FlowRow(
         modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         keywords.forEach { keyword ->
             Box(

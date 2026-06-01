@@ -25,6 +25,12 @@ class HtmlAnnotatedStringTest {
     }
 
     @Test
+    fun `hsjson markers and line breaks are stripped throughout text`() {
+        val result = cardTextToAnnotated("Draw a Beast [x]this turn.\nThen play it.<br>Now.")
+        assertEquals("Draw a Beast this turn. Then play it. Now.", result.text)
+    }
+
+    @Test
     fun `bold tag content is preserved without tags`() {
         val result = cardTextToAnnotated("<b>Battlecry:</b> Draw a card.")
         assertEquals("Battlecry: Draw a card.", result.text)

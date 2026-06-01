@@ -61,7 +61,7 @@ fun DeckCardRow(
                 slug = card.slug,
                 contentDescription = card.name,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillBounds,
             )
             // Subtle dark gradient at the left side so the name overlay reads
             // cleanly against any card art.

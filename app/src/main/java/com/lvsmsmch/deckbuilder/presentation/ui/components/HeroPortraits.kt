@@ -104,7 +104,7 @@ fun HeroTile(
                 model = heroTileUrl(cardId),
                 contentDescription = contentDescription,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillBounds,
                 alignment = Alignment.Center,
             )
         }
