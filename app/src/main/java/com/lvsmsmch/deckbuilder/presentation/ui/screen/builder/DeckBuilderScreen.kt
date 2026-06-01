@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -38,7 +39,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -78,6 +78,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.viewmodel.koinViewModel
@@ -104,7 +105,7 @@ fun DeckBuilderScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+    Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
         when (state.phase) {
             Phase.ClassPicker -> ClassPickerView(
                 slugs = CardLabels.ClassOrder,
@@ -118,7 +119,6 @@ fun DeckBuilderScreen(
                 onRemove = viewModel::removeCard,
                 onLoadMore = viewModel::loadNextPoolPage,
                 onSave = viewModel::save,
-                onClear = viewModel::clearDeck,
                 onToggleSingleton = viewModel::toggleSingleton,
                 onSelectFormat = viewModel::setFormat,
                 onSetPoolSort = viewModel::setPoolSort,
@@ -218,7 +218,6 @@ private fun EditingView(
     onRemove: (com.lvsmsmch.deckbuilder.domain.entities.Card) -> Unit,
     onLoadMore: () -> Unit,
     onSave: () -> Unit,
-    onClear: () -> Unit,
     onToggleSingleton: () -> Unit,
     onSelectFormat: (GameFormat) -> Unit,
     onSetPoolSort: (SortKey, SortDir) -> Unit,
@@ -266,7 +265,6 @@ private fun EditingView(
             canSave = state.canSave,
             isSaving = state.isSaving,
             error = state.saveError,
-            onClear = onClear,
             onSave = onSave,
         )
     }
@@ -327,7 +325,7 @@ private fun Header(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = format.displayName,
+                        text = formatLabel(format),
                         style = MaterialTheme.typography.bodySmall,
                         color = DeckBuilderColors.Primary,
                     )
@@ -349,7 +347,7 @@ private fun Header(
                         GameFormat.CLASSIC,
                     ).forEach { f ->
                         DropdownMenuItem(
-                            text = { Text(f.displayName) },
+                            text = { Text(formatLabel(f)) },
                             onClick = {
                                 onSelectFormat(f)
                                 formatMenuOpen = false
@@ -809,7 +807,6 @@ private fun BottomActions(
     canSave: Boolean,
     isSaving: Boolean,
     error: String?,
-    onClear: () -> Unit,
     onSave: () -> Unit,
 ) {
     Column(
@@ -826,13 +823,7 @@ private fun BottomActions(
                 modifier = Modifier.padding(bottom = 8.dp),
             )
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedButton(
-                onClick = onClear,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.width(96.dp),
-            ) { Text(stringResource(R.string.action_clear)) }
-
+        Row {
             Button(
                 onClick = onSave,
                 enabled = canSave,

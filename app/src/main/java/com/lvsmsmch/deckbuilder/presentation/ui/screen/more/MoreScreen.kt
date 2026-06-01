@@ -43,7 +43,7 @@ fun MoreScreen(
             text = stringResource(R.string.more_title),
             style = MaterialTheme.typography.titleLarge,
             color = DeckBuilderColors.OnSurface,
-            modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
         )
 
         Column(

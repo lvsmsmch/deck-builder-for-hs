@@ -18,7 +18,7 @@ data class Library(
 @Serializable data object More : Route
 
 @Serializable data class CardDetail(val idOrSlug: String) : Route
-@Serializable data class DeckView(val code: String) : Route
+@Serializable data class DeckView(val code: String, val savedName: String? = null) : Route
 
 @Serializable data object Settings : Route
 @Serializable data object CardData : Route

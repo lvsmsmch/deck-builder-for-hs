@@ -63,6 +63,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -70,7 +71,7 @@ private val WarningYellow = Color(0xFFE0A23F)
 
 @Composable
 fun SavedDecksScreen(
-    onOpenDeck: (String) -> Unit,
+    onOpenDeck: (String, String?) -> Unit,
     onCreateFromScratch: () -> Unit,
     viewModel: SavedDecksViewModel = koinViewModel(),
 ) {
@@ -87,7 +88,7 @@ fun SavedDecksScreen(
                 is SavedDecksViewModel.NavEffect.OpenDeck -> {
                     showImportSheet = false
                     showChooser = false
-                    onOpenDeck(effect.code)
+                    onOpenDeck(effect.code, null)
                 }
             }
         }
@@ -122,7 +123,7 @@ fun SavedDecksScreen(
                     items(state.decks, key = { it.code }) { deck ->
                         SavedDeckRow(
                             deck = deck,
-                            onClick = { onOpenDeck(deck.code) },
+                            onClick = { onOpenDeck(deck.code, deck.name) },
                             onShare = { shareDeckCode(context, deck) },
                             onCopyCode = { copyDeckCode(context, deck.code) },
                             onRename = { pendingRename = deck },
@@ -221,7 +222,7 @@ private fun SavedDeckRow(
     onDelete: () -> Unit,
 ) {
     val classColor = colorForClassSlug(deck.classSlug)
-    val incompleteCount = (30 - deck.cardCount).takeIf { it > 0 }
+    val incompleteCount = (deck.maxCardCount - deck.cardCount).takeIf { it > 0 }
     var menuOpen by remember { mutableStateOf(false) }
 
     Column(
@@ -263,7 +264,7 @@ private fun SavedDeckRow(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 2.dp),
                 ) {
-                    FormatChip(deck.format.displayName)
+                    FormatChip(formatLabel(deck.format))
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "${classLabel(deck.classSlug)} · ${deck.cardCount}/${deck.maxCardCount}",

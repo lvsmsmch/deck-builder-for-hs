@@ -35,6 +35,7 @@
     <string name="action_rename">Переименовать</string>
     <string name="action_more">Ещё</string>
     <string name="action_edit">Редактировать</string>
+    <string name="action_press_back_again_exit">Нажмите «Назад» ещё раз для выхода</string>
 
     <!-- Sort options -->
     <string name="sort_mana_asc">Мана \u2191</string>
@@ -125,6 +126,16 @@
     <string name="keyword_reborn">Перерождение</string>
     <string name="keyword_outcast">Изгой</string>
     <string name="keyword_finale">Финал</string>
+    <string name="keyword_immune">Неуязвимость</string>
+    <string name="keyword_spell_damage">Урон от заклинаний</string>
+    <string name="set_kara">Вечеринка в Каражане</string>
+    <string name="set_scholomance">Некроситет</string>
+    <string name="set_lootapalooza">Кобольды и катакомбы</string>
+    <string name="format_standard">Стандартный</string>
+    <string name="format_wild">Вольный</string>
+    <string name="format_classic">Классический</string>
+    <string name="format_twist">Твист</string>
+    <string name="format_unknown">—</string>
     <string name="deck_stats_title">СТАТИСТИКА</string>
     <string name="deck_stats_avg_mana">Средняя мана</string>
     <string name="deck_stats_dust">Пыль</string>
@@ -156,6 +167,7 @@
     <string name="settings_section_language">Язык</string>
     <string name="settings_section_privacy">Конфиденциальность</string>
     <string name="settings_section_about">О приложении</string>
+    <string name="settings_section_storage">Хранилище</string>
     <string name="settings_theme_title">Тема</string>
     <string name="settings_theme_subtitle">Системная, тёмная или светлая</string>
     <string name="settings_theme_system">Как в системе</string>
@@ -172,6 +184,9 @@
     <string name="settings_debug_copy_logs">[DEBUG] Копировать логи</string>
     <string name="settings_debug_copy_logs_subtitle">Копирует логи текущей сессии приложения</string>
     <string name="settings_debug_logs_copied">Debug-логи скопированы</string>
+    <string name="settings_image_cache">Кэш изображений</string>
+    <string name="settings_image_cache_subtitle">Нажмите, чтобы очистить загруженные изображения</string>
+    <string name="settings_image_cache_cleared">Кэш изображений очищен</string>
 
     <!-- Updates -->
     <string name="settings_section_updates">Данные карт</string>

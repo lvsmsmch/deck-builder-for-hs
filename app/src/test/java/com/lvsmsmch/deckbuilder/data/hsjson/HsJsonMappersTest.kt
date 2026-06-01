@@ -149,4 +149,16 @@ class HsJsonMappersTest {
         assertFalse(entity.collectible)
         assertNotNull(entity.payloadJson)
     }
+
+    @Test
+    fun `referenced tags are projected while visual-only tags stay hidden`() {
+        val dto = HsJsonCardDto(
+            id = "X",
+            dbfId = 1,
+            mechanics = listOf("TRIGGER_VISUAL"),
+            referencedTags = listOf("IMMUNE", "SPELLPOWER"),
+        )
+        val card = dto.toEntity(locale = "enUS", json = json).toDomain()
+        assertEquals(listOf("immune", "spellpower"), card.keywords.map { it.slug })
+    }
 }

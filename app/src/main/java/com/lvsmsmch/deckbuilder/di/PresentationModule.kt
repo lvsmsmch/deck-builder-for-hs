@@ -42,9 +42,10 @@ val presentationModule = module {
         )
     }
 
-    viewModel { (code: String) ->
+    viewModel { (code: String, initialSavedName: String) ->
         DeckViewViewModel(
             code = code,
+            initialSavedName = initialSavedName,
             getDeck = get(),
             isSaved = get(),
             saveDeck = get(),

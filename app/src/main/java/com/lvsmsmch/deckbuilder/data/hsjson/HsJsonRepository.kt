@@ -7,6 +7,7 @@ import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "DB.HsJson.Repo"
 
@@ -30,6 +31,7 @@ class HsJsonRepository(
     private val sessionLog: SessionLog,
 ) {
     private val mutex = Mutex()
+    private val cachedBuilds = ConcurrentHashMap<String, String>()
 
     data class Snapshot(
         val locale: String,
@@ -42,7 +44,9 @@ class HsJsonRepository(
         val hs = blizzardLocaleToHsJson(blizzardLocale)
         val rows = dao.all(hs)
         if (rows.isEmpty()) return null
-        return Snapshot(locale = hs, build = builds.get(hs), cards = rows)
+        val build = builds.get(hs)
+        build?.let { cachedBuilds[hs] = it }
+        return Snapshot(locale = hs, build = build, cards = rows)
     }
 
     /**
@@ -54,7 +58,9 @@ class HsJsonRepository(
         val existing = dao.all(hs)
         if (existing.isNotEmpty()) {
             sessionLog.add(TAG, "cache hit locale=$hs cards=${existing.size}")
-            return Snapshot(hs, builds.get(hs), existing)
+            val build = builds.get(hs)
+            build?.let { cachedBuilds[hs] = it }
+            return Snapshot(hs, build, existing)
         }
         val build = buildChecker.latestBuild(hs)
             ?: error("HsJson: cannot resolve latest build for $hs")
@@ -63,6 +69,7 @@ class HsJsonRepository(
         val rows = dtos.map { it.toEntity(hs, json) }
         dao.replaceLocale(hs, rows)
         builds.set(hs, build)
+        cachedBuilds[hs] = build
         Log.i(TAG, "ensureLoaded: stored ${rows.size} cards build=$build locale=$hs")
         sessionLog.add(TAG, "fetched locale=$hs build=$build cards=${rows.size}")
         Snapshot(hs, build, rows)
@@ -76,16 +83,25 @@ class HsJsonRepository(
         val hs = blizzardLocaleToHsJson(blizzardLocale)
         val current = builds.get(hs)
         val latest = buildChecker.latestBuild(hs) ?: return null
-        if (latest == current) return null
+        if (latest == current) {
+            cachedBuilds[hs] = latest
+            return null
+        }
         Log.i(TAG, "checkForUpdate: $hs $current → $latest")
         val dtos = api.cardsForBuild(latest, hs)
         val rows = dtos.map { it.toEntity(hs, json) }
         dao.replaceLocale(hs, rows)
         builds.set(hs, latest)
+        cachedBuilds[hs] = latest
         sessionLog.add(TAG, "updated locale=$hs build=$latest cards=${rows.size}")
         latest
     }
 
-    suspend fun currentBuild(blizzardLocale: String): String? =
-        builds.get(blizzardLocaleToHsJson(blizzardLocale))
+    suspend fun currentBuild(blizzardLocale: String): String? {
+        val hs = blizzardLocaleToHsJson(blizzardLocale)
+        return builds.get(hs)?.also { cachedBuilds[hs] = it }
+    }
+
+    fun cachedBuild(blizzardLocale: String): String? =
+        cachedBuilds[blizzardLocaleToHsJson(blizzardLocale)]
 }

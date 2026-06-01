@@ -7,7 +7,8 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -71,6 +73,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.DeckWarning
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
@@ -79,9 +82,10 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun DeckViewScreen(
     code: String,
+    initialSavedName: String? = null,
     onBack: () -> Unit,
     onCardClick: (Card) -> Unit = {},
-    viewModel: DeckViewViewModel = koinViewModel(parameters = { parametersOf(code) }),
+    viewModel: DeckViewViewModel = koinViewModel(parameters = { parametersOf(code, initialSavedName.orEmpty()) }),
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -91,8 +95,12 @@ fun DeckViewScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DeckBuilderColors.Surface)
+            .statusBarsPadding()
             .pointerInput(Unit) {
-                detectTapGestures(onTap = { focusManager.clearFocus() })
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    focusManager.clearFocus(force = true)
+                }
             },
     ) {
         TopBar(
@@ -304,7 +312,7 @@ private fun HeroHeader(
                         .padding(horizontal = 8.dp, vertical = 2.dp),
                 ) {
                     Text(
-                        text = deck.format.displayName,
+                        text = formatLabel(deck.format),
                         style = MaterialTheme.typography.labelSmall,
                         color = DeckBuilderColors.Primary,
                     )

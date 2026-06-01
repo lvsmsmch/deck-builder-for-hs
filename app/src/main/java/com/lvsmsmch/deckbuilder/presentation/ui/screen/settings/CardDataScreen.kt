@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -55,7 +56,7 @@ fun CardDataScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+    Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier
@@ -89,8 +90,7 @@ fun CardDataScreen(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     InfoRow(
                         title = stringResource(R.string.settings_cards_build),
-                        value = state.cardsBuild
-                            ?: stringResource(R.string.settings_cards_build_unknown),
+                        value = state.cardsBuild.orEmpty(),
                     )
                     InfoRow(
                         title = stringResource(R.string.settings_last_check),

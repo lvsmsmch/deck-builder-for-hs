@@ -26,9 +26,11 @@ import androidx.compose.ui.text.withStyle
  */
 private val UNKNOWN_TAG = Regex("<(?!\\s*/?\\s*[bi]\\s*>)[^>]*>", RegexOption.IGNORE_CASE)
 private val BI_TAG = Regex("<\\s*(/?)\\s*([bi])\\s*>", RegexOption.IGNORE_CASE)
+private val TEXT_PREFIX = Regex("^\\s*\\[x]", RegexOption.IGNORE_CASE)
 
 fun cardTextToAnnotated(raw: String): AnnotatedString {
     val cleaned = raw
+        .replace(TEXT_PREFIX, "")
         .replace("$", "")
         .replace("#", "")
         .replace(UNKNOWN_TAG, "")

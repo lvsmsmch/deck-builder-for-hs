@@ -26,7 +26,10 @@ internal fun HsJsonCardDto.toEntity(locale: String, json: Json): HsJsonCardEntit
         rarity = rarity,
         raceCsv = races.takeIf { it.isNotEmpty() }?.joinToCsv(),
         spellSchool = spellSchool,
-        mechanicsCsv = mechanics?.takeIf { it.isNotEmpty() }?.joinToCsv(),
+        mechanicsCsv = (mechanics.orEmpty() + referencedTags.orEmpty())
+            .distinct()
+            .takeIf { it.isNotEmpty() }
+            ?.joinToCsv(),
         collectible = collectible == true,
         payloadJson = json.encodeToString(this),
     )

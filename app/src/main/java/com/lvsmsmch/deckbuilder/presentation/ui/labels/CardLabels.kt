@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 
 object CardLabels {
 
@@ -104,13 +105,27 @@ object CardLabels {
         "reborn" -> R.string.keyword_reborn
         "outcast" -> R.string.keyword_outcast
         "finale" -> R.string.keyword_finale
+        "immune" -> R.string.keyword_immune
+        "spellpower", "spell-damage" -> R.string.keyword_spell_damage
         else -> null
     }
 
     @StringRes
     fun expansionRes(slug: String?): Int? = when (slug?.lowercase()) {
         "stormwind" -> R.string.set_stormwind
+        "kara" -> R.string.set_kara
+        "scholomance" -> R.string.set_scholomance
+        "lootapalooza" -> R.string.set_lootapalooza
         else -> null
+    }
+
+    @StringRes
+    fun formatRes(format: GameFormat): Int = when (format) {
+        GameFormat.STANDARD -> R.string.format_standard
+        GameFormat.WILD -> R.string.format_wild
+        GameFormat.CLASSIC -> R.string.format_classic
+        GameFormat.TWIST -> R.string.format_twist
+        GameFormat.UNKNOWN -> R.string.format_unknown
     }
 }
 
@@ -139,3 +154,6 @@ fun keywordLabel(slug: String?, fallback: String): String =
 @Composable
 fun expansionLabel(slug: String?, fallback: String): String =
     CardLabels.expansionRes(slug)?.let { stringResource(it) } ?: fallback
+
+@Composable
+fun formatLabel(format: GameFormat): String = stringResource(CardLabels.formatRes(format))

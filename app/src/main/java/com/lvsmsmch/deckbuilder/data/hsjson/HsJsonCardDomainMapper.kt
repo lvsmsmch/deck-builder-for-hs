@@ -11,6 +11,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.Rarity
 import com.lvsmsmch.deckbuilder.domain.entities.SpellSchool
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -69,7 +70,7 @@ internal fun HsJsonCardEntity.toDomain(): Card {
         spellSchool = spellSchool?.let {
             SpellSchool(0, it.toDomainSlug(), it.toDisplayName())
         },
-        keywords = parseList(mechanicsCsv).map {
+        keywords = keywordTokens(mechanicsCsv, payloadJson).filterNot { it in HiddenKeywordTokens }.distinct().map {
             Keyword(0, it.toDomainSlug(), it.toDisplayName(), refText = "")
         },
         collectible = collectible,
@@ -93,6 +94,21 @@ internal fun HsJsonCardEntity.parseClassTokens(): List<String> {
 
 private fun parseList(csv: String?): List<String> =
     csv?.trim(',')?.takeIf { it.isNotBlank() }?.split(',') ?: emptyList()
+
+private val HiddenKeywordTokens = setOf(
+    "TRIGGER_VISUAL",
+    "TAG_ONE_TURN_EFFECT",
+)
+
+private fun keywordTokens(mechanicsCsv: String?, payloadJson: String): List<String> {
+    val referenced = runCatching {
+        PayloadJson.parseToJsonElement(payloadJson).jsonObject["referencedTags"]
+            ?.jsonArray
+            ?.mapNotNull { it.jsonPrimitive.contentOrNull }
+            .orEmpty()
+    }.getOrDefault(emptyList())
+    return parseList(mechanicsCsv) + referenced
+}
 
 /** "DEATH_KNIGHT" → "death-knight", "DEMONHUNTER" → "demonhunter". */
 internal fun String.toDomainSlug(): String = lowercase().replace('_', '-')

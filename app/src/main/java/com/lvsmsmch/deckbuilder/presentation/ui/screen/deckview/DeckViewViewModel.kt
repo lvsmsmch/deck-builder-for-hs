@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 
 class DeckViewViewModel(
     private val code: String,
+    initialSavedName: String?,
     private val getDeck: GetDeckByCodeUseCase,
     private val isSaved: IsDeckSavedUseCase,
     private val saveDeck: SaveDeckUseCase,
@@ -34,7 +35,11 @@ class DeckViewViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        DeckViewState(deck = getDeck.cached(code)?.let { UiState.Loaded(it) } ?: UiState.Idle),
+        DeckViewState(
+            deck = getDeck.cached(code)?.let { UiState.Loaded(it) } ?: UiState.Idle,
+            isSaved = !initialSavedName.isNullOrBlank(),
+            savedName = initialSavedName?.takeIf { it.isNotBlank() },
+        ),
     )
     val state: StateFlow<DeckViewState> = _state.asStateFlow()
 

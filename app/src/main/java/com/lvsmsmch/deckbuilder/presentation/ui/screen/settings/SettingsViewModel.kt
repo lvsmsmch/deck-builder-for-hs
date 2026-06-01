@@ -29,7 +29,12 @@ class SettingsViewModel(
     initialPreferences: AppPreferences = AppPreferences(),
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(SettingsState(prefs = initialPreferences))
+    private val _state = MutableStateFlow(
+        SettingsState(
+            prefs = initialPreferences,
+            cardsBuild = hsJson.cachedBuild(initialPreferences.cardLocale),
+        ),
+    )
     val state: StateFlow<SettingsState> = _state.asStateFlow()
 
     init {

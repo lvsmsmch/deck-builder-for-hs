@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -67,7 +68,8 @@ fun CardDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeckBuilderColors.Surface),
+            .background(DeckBuilderColors.Surface)
+            .statusBarsPadding(),
     ) {
         TopBar(
             title = (state.card as? UiState.Loaded)?.data?.name ?: "",
@@ -265,6 +267,7 @@ private fun SubtitleRow(card: Card) {
 
 @Composable
 private fun StatsRow(card: Card) {
+    val isWeapon = card.cardType.slug.equals("weapon", ignoreCase = true)
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
         StatPill(
             value = card.manaCost,
@@ -274,10 +277,10 @@ private fun StatsRow(card: Card) {
         card.attack?.let {
             StatPill(value = it, label = stringResource(R.string.card_stat_attack), modifier = Modifier.weight(1f))
         }
-        card.health?.let {
+        card.health?.takeUnless { isWeapon }?.let {
             StatPill(value = it, label = stringResource(R.string.card_stat_health), modifier = Modifier.weight(1f))
         }
-        card.durability?.let {
+        (if (isWeapon) card.health else card.durability)?.let {
             StatPill(value = it, label = stringResource(R.string.card_stat_durability), modifier = Modifier.weight(1f))
         }
         card.armor?.let {
@@ -334,7 +337,7 @@ private fun CardTextBlock(text: String?) {
 private fun FlavorTextBlock(text: String?) {
     if (text.isNullOrBlank()) return
     Text(
-        text = text,
+        text = cardTextToAnnotated(text),
         style = MaterialTheme.typography.bodySmall.copy(
             fontStyle = FontStyle.Italic,
             fontWeight = FontWeight.Normal,

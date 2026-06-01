@@ -19,6 +19,12 @@ class HtmlAnnotatedStringTest {
     }
 
     @Test
+    fun `hsjson text prefix is stripped`() {
+        val result = cardTextToAnnotated("[x]At the start of your turn.")
+        assertEquals("At the start of your turn.", result.text)
+    }
+
+    @Test
     fun `bold tag content is preserved without tags`() {
         val result = cardTextToAnnotated("<b>Battlecry:</b> Draw a card.")
         assertEquals("Battlecry: Draw a card.", result.text)
