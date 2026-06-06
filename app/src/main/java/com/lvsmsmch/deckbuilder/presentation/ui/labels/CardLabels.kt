@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 
 object CardLabels {
@@ -112,11 +113,33 @@ object CardLabels {
 
     @StringRes
     fun expansionRes(slug: String?): Int? = when (slug?.lowercase()) {
+        "core" -> R.string.set_core
+        "the-lost-city" -> R.string.set_the_lost_city
+        "space" -> R.string.set_space
+        "island-vacation" -> R.string.set_island_vacation
+        "whizbangs-workshop" -> R.string.set_whizbangs_workshop
+        "wild-west" -> R.string.set_wild_west
+        "titans" -> R.string.set_titans
+        "festival-of-legends" -> R.string.set_festival_of_legends
+        "return-of-the-lich-king" -> R.string.set_return_of_the_lich_king
+        "revendreth" -> R.string.set_revendreth
+        "voyage-to-the-sunken-city" -> R.string.set_voyage_to_the_sunken_city
+        "alterac-valley" -> R.string.set_alterac_valley
+        "barrens" -> R.string.set_barrens
+        "darkmoon-faire" -> R.string.set_darkmoon_faire
+        "outlands" -> R.string.set_outlands
         "stormwind" -> R.string.set_stormwind
-        "kara" -> R.string.set_kara
+        "karazhan", "kara" -> R.string.set_kara
         "scholomance" -> R.string.set_scholomance
         "lootapalooza" -> R.string.set_lootapalooza
         else -> null
+    }
+
+    @StringRes
+    fun formatFilterRes(format: CardFormatFilter): Int = when (format) {
+        CardFormatFilter.ALL -> R.string.format_all
+        CardFormatFilter.STANDARD -> R.string.format_standard
+        CardFormatFilter.WILD -> R.string.format_wild
     }
 
     @StringRes
@@ -154,6 +177,9 @@ fun keywordLabel(slug: String?, fallback: String): String =
 @Composable
 fun expansionLabel(slug: String?, fallback: String): String =
     CardLabels.expansionRes(slug)?.let { stringResource(it) } ?: fallback
+
+@Composable
+fun formatFilterLabel(format: CardFormatFilter): String = stringResource(CardLabels.formatFilterRes(format))
 
 @Composable
 fun formatLabel(format: GameFormat): String = stringResource(CardLabels.formatRes(format))

@@ -4,6 +4,7 @@ package com.lvsmsmch.deckbuilder.domain.entities
 data class CardFilters(
     val classes: Set<String> = emptySet(),
     val sets: Set<String> = emptySet(),
+    val format: CardFormatFilter = CardFormatFilter.ALL,
     val rarities: Set<String> = emptySet(),
     val types: Set<String> = emptySet(),
     val minionTypes: Set<String> = emptySet(),
@@ -17,6 +18,7 @@ data class CardFilters(
     val hasFilters: Boolean
         get() = classes.isNotEmpty() ||
             sets.isNotEmpty() ||
+            format != CardFormatFilter.ALL ||
             rarities.isNotEmpty() ||
             types.isNotEmpty() ||
             minionTypes.isNotEmpty() ||
@@ -25,6 +27,12 @@ data class CardFilters(
             manaCosts.isNotEmpty() ||
             !collectibleOnly ||
             textQuery.isNotBlank()
+}
+
+enum class CardFormatFilter {
+    ALL,
+    STANDARD,
+    WILD,
 }
 
 data class CardSort(

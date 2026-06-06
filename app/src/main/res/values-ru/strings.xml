@@ -47,6 +47,7 @@
 
     <!-- Filter sheet -->
     <string name="filters_title">Фильтры</string>
+    <string name="filters_section_format">Формат</string>
     <string name="filters_section_mana">Стоимость</string>
     <string name="filters_section_rarity">Редкость</string>
     <string name="filters_section_type">Тип</string>
@@ -108,6 +109,21 @@
 
     <!-- Card metadata -->
     <string name="set_stormwind">Штормград</string>
+    <string name="set_core">Основной набор</string>
+    <string name="set_the_lost_city">Затерянный город</string>
+    <string name="set_space">Великая Тьма</string>
+    <string name="set_island_vacation">Разборки в раю</string>
+    <string name="set_whizbangs_workshop">Мастерская Чудастера</string>
+    <string name="set_wild_west">Битва в Бесплодных землях</string>
+    <string name="set_titans">ТИТАНЫ</string>
+    <string name="set_festival_of_legends">Фестиваль легенд</string>
+    <string name="set_return_of_the_lich_king">Марш Короля-лича</string>
+    <string name="set_revendreth">Убийство в замке Нафрия</string>
+    <string name="set_voyage_to_the_sunken_city">Путешествие в Затонувший город</string>
+    <string name="set_alterac_valley">Разделённые Альтераком</string>
+    <string name="set_barrens">Закалённые Степями</string>
+    <string name="set_darkmoon_faire">Ярмарка Безумия</string>
+    <string name="set_outlands">Руины Запределья</string>
     <string name="keyword_battlecry">Боевой клич</string>
     <string name="keyword_deathrattle">Предсмертный хрип</string>
     <string name="keyword_taunt">Провокация</string>
@@ -133,6 +149,7 @@
     <string name="set_lootapalooza">Кобольды и катакомбы</string>
     <string name="format_standard">Стандартный</string>
     <string name="format_wild">Вольный</string>
+    <string name="format_all">Все</string>
     <string name="format_classic">Классический</string>
     <string name="format_twist">Твист</string>
     <string name="format_unknown">—</string>

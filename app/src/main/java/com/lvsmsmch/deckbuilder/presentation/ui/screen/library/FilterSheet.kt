@@ -31,8 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForRaritySlug
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.expansionLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatFilterLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.raceLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.spellSchoolLabel
@@ -79,7 +82,9 @@ fun FilterSheet(
                     .heightIn(max = 560.dp)
                     .padding(horizontal = 20.dp),
             ) {
+                item { FormatSection(current, onChange) }
                 item { ManaSection(current, onChange) }
+                item { SetSection(current, onChange) }
                 item { RaritySection(current, onChange) }
                 item { TypeSection(current, onChange) }
                 item { MinionTypeSection(current, onChange) }
@@ -87,6 +92,20 @@ fun FilterSheet(
                 item { CollectibleSection(current, onChange) }
                 item { Spacer(Modifier.height(20.dp)) }
             }
+        }
+    }
+}
+
+@Composable
+private fun FormatSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
+    SectionHeader(stringResource(R.string.filters_section_format))
+    ChipFlow {
+        CardFormatFilter.entries.forEach { format ->
+            Chip(
+                label = formatFilterLabel(format),
+                active = draft.format == format,
+                onClick = { onChange(draft.copy(format = format)) },
+            )
         }
     }
 }
@@ -142,7 +161,8 @@ private fun Chip(
                 shape = RoundedCornerShape(99.dp),
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .height(40.dp)
+            .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
@@ -174,7 +194,7 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(36.dp)
+                    .height(42.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainerHigh)
                     .border(
@@ -199,6 +219,61 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
 }
 
 private val RaritySlugs = listOf("common", "rare", "epic", "legendary")
+
+private val SetSlugs = listOf(
+    "core",
+    "the-lost-city",
+    "space",
+    "island-vacation",
+    "whizbangs-workshop",
+    "wild-west",
+    "titans",
+    "festival-of-legends",
+    "return-of-the-lich-king",
+    "revendreth",
+    "voyage-to-the-sunken-city",
+    "alterac-valley",
+    "stormwind",
+    "barrens",
+    "darkmoon-faire",
+    "scholomance",
+    "outlands",
+    "dragons",
+    "uldum",
+    "dalaraan",
+    "troll",
+    "boomsday",
+    "gilneas",
+    "lootapalooza",
+    "icecrown",
+    "ungoro",
+    "gadgetzan",
+    "karazhan",
+    "old-gods",
+    "loe",
+    "tgt",
+    "brm",
+    "gvg",
+    "naxx",
+    "expert1",
+)
+
+@Composable
+private fun SetSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
+    SectionHeader(stringResource(R.string.filters_section_set))
+    ChipFlow {
+        SetSlugs.forEach { slug ->
+            Chip(
+                label = expansionLabel(slug, slug.toSetFallbackLabel()),
+                active = slug in draft.sets,
+                onClick = {
+                    val next = if (slug in draft.sets) draft.sets - slug else draft.sets + slug
+                    onChange(draft.copy(sets = next))
+                },
+            )
+        }
+    }
+}
 
 @Composable
 private fun RaritySection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
@@ -303,3 +378,8 @@ private fun ChipFlow(content: @Composable () -> Unit) {
         content()
     }
 }
+
+private fun String.toSetFallbackLabel(): String =
+    split('-', '_').joinToString(" ") { word ->
+        word.lowercase().replaceFirstChar { it.uppercaseChar() }
+    }

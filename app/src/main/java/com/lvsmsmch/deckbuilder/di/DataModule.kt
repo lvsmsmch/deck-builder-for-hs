@@ -27,7 +27,7 @@ val dataModule = module {
     // singleOf reflects all params and ignores Kotlin defaults, which would
     // make Koin try to resolve a Long/`() -> Long` it doesn't know about.
     single { SessionLog() }
-    single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get()) }
+    single<CardRepository> { CardRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get(), rotation = get()) }
     single<DeckRepository> { DeckRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get()) }
     single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }
 

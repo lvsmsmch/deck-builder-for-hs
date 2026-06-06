@@ -62,6 +62,7 @@ import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
@@ -226,6 +227,7 @@ private fun com.lvsmsmch.deckbuilder.domain.entities.CardFilters.activeFilterCou
     var n = 0
     if (classes.isNotEmpty()) n++
     if (sets.isNotEmpty()) n++
+    if (format != CardFormatFilter.ALL) n++
     if (rarities.isNotEmpty()) n++
     if (types.isNotEmpty()) n++
     if (minionTypes.isNotEmpty()) n++
@@ -272,7 +274,8 @@ private fun Header(
                         onInteraction()
                         sortMenuOpen = true
                     }
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .height(40.dp)
+                    .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -407,7 +410,7 @@ private fun ManaChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(36.dp)
+                    .height(40.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(
                         if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer,
@@ -459,7 +462,8 @@ private fun ClassChips(
                         shape = RoundedCornerShape(99.dp),
                     )
                     .clickable { onToggle(slug) }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .height(40.dp)
+                    .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(

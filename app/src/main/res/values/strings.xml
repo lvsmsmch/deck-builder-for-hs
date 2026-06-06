@@ -47,6 +47,7 @@
 
     <!-- Filter sheet -->
     <string name="filters_title">Filters</string>
+    <string name="filters_section_format">Format</string>
     <string name="filters_section_mana">Mana cost</string>
     <string name="filters_section_rarity">Rarity</string>
     <string name="filters_section_type">Type</string>
@@ -108,6 +109,21 @@
 
     <!-- Card metadata -->
     <string name="set_stormwind">Stormwind</string>
+    <string name="set_core">Core</string>
+    <string name="set_the_lost_city">The Lost City</string>
+    <string name="set_space">The Great Dark Beyond</string>
+    <string name="set_island_vacation">Perils in Paradise</string>
+    <string name="set_whizbangs_workshop">Whizbang’s Workshop</string>
+    <string name="set_wild_west">Showdown in the Badlands</string>
+    <string name="set_titans">TITANS</string>
+    <string name="set_festival_of_legends">Festival of Legends</string>
+    <string name="set_return_of_the_lich_king">March of the Lich King</string>
+    <string name="set_revendreth">Murder at Castle Nathria</string>
+    <string name="set_voyage_to_the_sunken_city">Voyage to the Sunken City</string>
+    <string name="set_alterac_valley">Fractured in Alterac Valley</string>
+    <string name="set_barrens">Forged in the Barrens</string>
+    <string name="set_darkmoon_faire">Madness at the Darkmoon Faire</string>
+    <string name="set_outlands">Ashes of Outland</string>
     <string name="keyword_battlecry">Battlecry</string>
     <string name="keyword_deathrattle">Deathrattle</string>
     <string name="keyword_taunt">Taunt</string>
@@ -133,6 +149,7 @@
     <string name="set_lootapalooza">Kobolds &amp; Catacombs</string>
     <string name="format_standard">Standard</string>
     <string name="format_wild">Wild</string>
+    <string name="format_all">All</string>
     <string name="format_classic">Classic</string>
     <string name="format_twist">Twist</string>
     <string name="format_unknown">—</string>

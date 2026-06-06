@@ -12,11 +12,13 @@ import com.lvsmsmch.deckbuilder.data.prefs.CurrentLocaleProvider
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.common.runCatchingResult
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.Page
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.CardRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
@@ -27,6 +29,7 @@ class CardRepositoryImpl(
     private val hsJson: HsJsonRepository,
     private val locales: CurrentLocaleProvider,
     private val sessionLog: SessionLog,
+    private val rotation: RotationRepository,
 ) : CardRepository {
     private val memoryCache = ConcurrentHashMap<String, Card>()
 
@@ -69,7 +72,12 @@ class CardRepositoryImpl(
         runCatchingResult {
             val resolved = locales.resolve(locale)
             val snap = hsJson.ensureLoaded(resolved)
-            val pred = buildPredicate(filters)
+            val standardSets = if (filters.format != CardFormatFilter.ALL) {
+                rotation.ensureLoaded().standardSets
+            } else {
+                emptySet()
+            }
+            val pred = buildPredicate(filters, standardSets)
             val matched = snap.cards.filter(pred)
             val deduped = dedupeReprints(matched)
             val sorted = sort(deduped, filters.sort.key, filters.sort.direction)
@@ -80,7 +88,7 @@ class CardRepositoryImpl(
             Page(items = items, pageNumber = page, pageCount = pageCount, totalCount = total)
         }.also { r ->
             val summary = "page=$page " +
-                "classes=${filters.classes} sets=${filters.sets.size} " +
+                "classes=${filters.classes} sets=${filters.sets.size} format=${filters.format} " +
                 "rarities=${filters.rarities} mana=${filters.manaCosts} " +
                 "q='${filters.textQuery}'"
             when (r) {
@@ -95,7 +103,10 @@ class CardRepositoryImpl(
         }
     }
 
-    private fun buildPredicate(filters: CardFilters): (HsJsonCardEntity) -> Boolean {
+    private fun buildPredicate(
+        filters: CardFilters,
+        standardSets: Set<String>,
+    ): (HsJsonCardEntity) -> Boolean {
         // UI passes Blizzard-style lowercase slugs ("mage", "demonhunter"); HsJson
         // stores uppercase tokens ("MAGE", "DEMONHUNTER"). Compare on the lowercase
         // domain projection so both sides agree.
@@ -113,6 +124,15 @@ class CardRepositoryImpl(
 
         return predicate@{ row ->
             if (filters.collectibleOnly && !row.collectible) return@predicate false
+            if (filters.format != CardFormatFilter.ALL) {
+                val set = row.cardSet ?: return@predicate false
+                val isStandard = set.toRotationToken() in standardSets
+                when (filters.format) {
+                    CardFormatFilter.STANDARD -> if (!isStandard) return@predicate false
+                    CardFormatFilter.WILD -> if (isStandard) return@predicate false
+                    CardFormatFilter.ALL -> Unit
+                }
+            }
 
             if (classes.isNotEmpty()) {
                 val rowClasses = row.parseClassTokens().map { it.toDomainSlug() }
@@ -213,3 +233,5 @@ class CardRepositoryImpl(
         memoryCache[card.slug.lowercase()] = card
     }
 }
+
+private fun String.toRotationToken(): String = uppercase().replace('-', '_')
