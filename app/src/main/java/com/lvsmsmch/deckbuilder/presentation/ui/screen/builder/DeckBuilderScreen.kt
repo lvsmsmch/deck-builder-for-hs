@@ -321,7 +321,8 @@ private fun Header(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .clickable { formatMenuOpen = true }
-                        .padding(top = 2.dp, end = 4.dp),
+                        .height(40.dp)
+                        .padding(end = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -371,7 +372,8 @@ private fun Header(
                     RoundedCornerShape(8.dp),
                 )
                 .clickable(onClick = onToggleSingleton)
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+                .height(40.dp)
+                .padding(horizontal = 10.dp),
         ) {
             Text(
                 text = "★1",
@@ -648,7 +650,8 @@ private fun PoolControls(
                     .background(DeckBuilderColors.SurfaceContainer)
                     .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
                     .clickable { sortMenuOpen = true }
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .height(40.dp)
+                    .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -717,7 +720,7 @@ private fun ManaFilterChips(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(36.dp)
+                    .height(40.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer)
                     .border(
@@ -832,7 +835,9 @@ private fun BottomActions(
                     contentColor = DeckBuilderColors.OnPrimary,
                 ),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
             ) {
                 if (isSaving) {
                     CircularProgressIndicator(
