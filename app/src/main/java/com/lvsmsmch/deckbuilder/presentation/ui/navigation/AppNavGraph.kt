@@ -3,8 +3,9 @@ package com.lvsmsmch.deckbuilder.presentation.ui.navigation
 import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -45,6 +46,9 @@ import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.SettingsScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.koinInject
 
+private const val SCREEN_FADE_IN_MS = 160
+private const val SCREEN_FADE_OUT_MS = 120
+
 @Composable
 fun AppNavGraph(currentPreferences: AppPreferences) {
     val navController = rememberNavController()
@@ -67,10 +71,10 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
             navController = navController,
             startDestination = Home,
             modifier = Modifier.fillMaxSize(),
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None },
-            popEnterTransition = { EnterTransition.None },
-            popExitTransition = { ExitTransition.None },
+            enterTransition = { fadeIn(tween(SCREEN_FADE_IN_MS)) },
+            exitTransition = { fadeOut(tween(SCREEN_FADE_OUT_MS)) },
+            popEnterTransition = { fadeIn(tween(SCREEN_FADE_IN_MS)) },
+            popExitTransition = { fadeOut(tween(SCREEN_FADE_OUT_MS)) },
         ) {
             composable<Home> {
                 HomeScreen(
@@ -173,10 +177,10 @@ private fun HomeScreen(
             navController = navController,
             startDestination = Library(),
             modifier = Modifier.padding(padding),
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None },
-            popEnterTransition = { EnterTransition.None },
-            popExitTransition = { ExitTransition.None },
+            enterTransition = { fadeIn(tween(SCREEN_FADE_IN_MS)) },
+            exitTransition = { fadeOut(tween(SCREEN_FADE_OUT_MS)) },
+            popEnterTransition = { fadeIn(tween(SCREEN_FADE_IN_MS)) },
+            popExitTransition = { fadeOut(tween(SCREEN_FADE_OUT_MS)) },
         ) {
             composable<Library> { entry ->
                 val args = entry.toRoute<Library>()

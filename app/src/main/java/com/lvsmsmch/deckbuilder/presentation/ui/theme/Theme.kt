@@ -1,13 +1,19 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.ripple.RippleAlpha
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeckBuilderTheme(
     themeMode: ThemeMode = ThemeMode.System,
@@ -20,8 +26,20 @@ fun DeckBuilderTheme(
     }
     val tokens = if (isDark) DarkAppTokens else LightAppTokens
     val scheme = if (isDark) buildDarkScheme(tokens) else buildLightScheme(tokens)
+    val rippleConfiguration = RippleConfiguration(
+        color = Color.White,
+        rippleAlpha = RippleAlpha(
+            pressedAlpha = 0.08f,
+            focusedAlpha = 0f,
+            draggedAlpha = 0f,
+            hoveredAlpha = 0f,
+        ),
+    )
 
-    CompositionLocalProvider(LocalAppTokens provides tokens) {
+    CompositionLocalProvider(
+        LocalAppTokens provides tokens,
+        LocalRippleConfiguration provides rippleConfiguration,
+    ) {
         MaterialTheme(
             colorScheme = scheme,
             typography = DeckBuilderTypography,
