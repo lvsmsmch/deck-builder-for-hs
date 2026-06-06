@@ -5,11 +5,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
+import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 /**
@@ -58,13 +59,22 @@ object DefaultHeroes {
 
 private const val ART_BASE = "https://art.hearthstonejson.com/v1"
 
-/** 256×ratio render of the hero card. */
-private fun heroRenderUrl(cardId: String, locale: String = "enUS"): String =
-    "$ART_BASE/render/latest/$locale/256x/$cardId.png"
+private val localHeroArt = mapOf(
+    "HERO_01" to R.drawable.hero_warrior,
+    "HERO_02" to R.drawable.hero_shaman,
+    "HERO_03" to R.drawable.hero_rogue,
+    "HERO_04" to R.drawable.hero_paladin,
+    "HERO_05" to R.drawable.hero_hunter,
+    "HERO_06" to R.drawable.hero_druid,
+    "HERO_07" to R.drawable.hero_warlock,
+    "HERO_08" to R.drawable.hero_mage,
+    "HERO_09" to R.drawable.hero_priest,
+    "HERO_10" to R.drawable.hero_demonhunter,
+    "HERO_11" to R.drawable.hero_deathknight,
+)
 
-/** 256×59 horizontal tile. */
-private fun heroTileUrl(cardId: String): String =
-    "$ART_BASE/tiles/$cardId.png"
+private fun heroArtModel(cardId: String): Any =
+    localHeroArt[cardId] ?: "$ART_BASE/512x/$cardId.webp"
 
 /**
  * Square-ish hero portrait used in the class picker. Falls back to a class-color
@@ -81,31 +91,33 @@ fun HeroPortrait(
     Box(modifier = modifier.background(fallbackTint)) {
         if (cardId != null) {
             AsyncImage(
-                model = heroRenderUrl(cardId),
+                model = heroArtModel(cardId),
                 contentDescription = contentDescription,
-                modifier = if (zoomed) Modifier.fillMaxSize().scale(2f) else Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alignment = if (zoomed) Alignment.TopCenter else Alignment.Center,
+                alignment = if (zoomed) BiasAlignment(0f, -0.2f) else Alignment.Center,
             )
         }
     }
 }
 
-/** 256×59 tile rendering of a hero. Used in the saved-deck row + DeckView header. */
+/** Horizontal hero art strip. Used in the saved-deck row + DeckView header. */
 @Composable
 fun HeroTile(
     cardId: String?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
+    verticalFocus: Float = 0.30f,
 ) {
+    val yBias = (verticalFocus.coerceIn(0f, 1f) * 2f) - 1f
     Box(modifier = modifier.background(DeckBuilderColors.SurfaceContainer)) {
         if (cardId != null) {
             AsyncImage(
-                model = heroTileUrl(cardId),
+                model = heroArtModel(cardId),
                 contentDescription = contentDescription,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillBounds,
-                alignment = Alignment.Center,
+                contentScale = ContentScale.Crop,
+                alignment = BiasAlignment(horizontalBias = 0f, verticalBias = yBias),
             )
         }
     }

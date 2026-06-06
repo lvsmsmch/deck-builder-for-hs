@@ -51,7 +51,7 @@ internal fun HsJsonCardEntity.toDomain(): Card {
         // Grid thumbnails use 256x — ~3x smaller payload than 512x. Detail
         // screen swaps to FULL_SIZE via [renderUrl].
         image = renderUrl(cardId, locale, THUMB_SIZE),
-        cropImage = "$ART_BASE/tiles/$cardId.png",
+        cropImage = "$ART_BASE/512x/$cardId.webp",
         artistName = artist,
         manaCost = cost ?: 0,
         attack = attack,

@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
@@ -61,7 +60,6 @@ fun DeckCardRow(
                 slug = card.slug,
                 contentDescription = card.name,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillBounds,
             )
             // Subtle dark gradient at the left side so the name overlay reads
             // cleanly against any card art.
