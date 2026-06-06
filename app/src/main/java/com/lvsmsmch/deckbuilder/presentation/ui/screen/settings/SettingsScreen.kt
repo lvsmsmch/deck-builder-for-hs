@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,6 +85,7 @@ fun SettingsScreen(
     val sessionLog: SessionLog = koinInject()
     var showThemePicker by remember { mutableStateOf(false) }
     var showLocalePicker by remember { mutableStateOf(false) }
+    var showClearImageCacheConfirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -151,17 +153,7 @@ fun SettingsScreen(
                             title = stringResource(R.string.settings_image_cache),
                             subtitle = stringResource(R.string.settings_image_cache_subtitle),
                             value = formatBytes(imageCacheBytes),
-                            onClick = {
-                                scope.launch {
-                                    withContext(Dispatchers.IO) { context.clearImageCache() }
-                                    imageCacheBytes = context.imageCacheSize()
-                                    Toast.makeText(
-                                        context,
-                                        R.string.settings_image_cache_cleared,
-                                        Toast.LENGTH_SHORT,
-                                    ).show()
-                                }
-                            },
+                            onClick = { showClearImageCacheConfirm = true },
                         )
                     }
                 }
@@ -245,6 +237,36 @@ fun SettingsScreen(
                 showLocalePicker = false
             },
             onDismiss = { showLocalePicker = false },
+        )
+    }
+
+    if (showClearImageCacheConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearImageCacheConfirm = false },
+            containerColor = DeckBuilderColors.SurfaceContainer,
+            title = { Text(stringResource(R.string.settings_clear_image_cache_title)) },
+            text = { Text(stringResource(R.string.settings_clear_image_cache_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showClearImageCacheConfirm = false
+                    scope.launch {
+                        withContext(Dispatchers.IO) { context.clearImageCache() }
+                        imageCacheBytes = context.imageCacheSize()
+                        Toast.makeText(
+                            context,
+                            R.string.settings_image_cache_cleared,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    }
+                }) {
+                    Text(stringResource(R.string.action_clear), color = DeckBuilderColors.Error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearImageCacheConfirm = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
         )
     }
 }
@@ -342,10 +364,11 @@ private fun DialogRow(
             )
             Spacer(Modifier.size(6.dp))
         }
-        Text(
-            text = ">",
-            style = MaterialTheme.typography.titleLarge,
-            color = DeckBuilderColors.OnSurfaceDimmer,
+        Icon(
+            imageVector = Icons.Outlined.KeyboardArrowRight,
+            contentDescription = null,
+            tint = DeckBuilderColors.OnSurfaceDimmer,
+            modifier = Modifier.size(18.dp),
         )
     }
 }

@@ -31,4 +31,7 @@ class FakePreferencesRepository(
     override suspend fun setLastSeenSetSlug(slug: String?) {
         state.update { it.copy(lastSeenSetSlug = slug) }
     }
+    override suspend fun setLastUpdateCheckAt(epochMs: Long) {
+        state.update { it.copy(lastUpdateCheckAtMs = epochMs) }
+    }
 }

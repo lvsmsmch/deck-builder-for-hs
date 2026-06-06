@@ -187,6 +187,8 @@
     <string name="settings_image_cache">Кэш изображений</string>
     <string name="settings_image_cache_subtitle">Нажмите, чтобы очистить загруженные изображения</string>
     <string name="settings_image_cache_cleared">Кэш изображений очищен</string>
+    <string name="settings_clear_image_cache_title">Очистить кэш изображений?</string>
+    <string name="settings_clear_image_cache_message">Загруженные изображения карт будут удалены из локального кэша. Они загрузятся снова, когда понадобятся.</string>
 
     <!-- Updates -->
     <string name="settings_section_updates">Данные карт</string>

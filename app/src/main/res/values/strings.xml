@@ -187,6 +187,8 @@
     <string name="settings_image_cache">Image cache</string>
     <string name="settings_image_cache_subtitle">Tap to clear downloaded images</string>
     <string name="settings_image_cache_cleared">Image cache cleared</string>
+    <string name="settings_clear_image_cache_title">Clear image cache?</string>
+    <string name="settings_clear_image_cache_message">Downloaded card images will be removed from local cache. They will load again when needed.</string>
 
     <!-- Updates -->
     <string name="settings_section_updates">Card data</string>
