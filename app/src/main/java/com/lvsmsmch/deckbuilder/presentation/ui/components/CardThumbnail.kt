@@ -26,7 +26,7 @@ import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.koinInject
 
-private const val CARD_ASPECT = 0.72f
+private const val CARD_ASPECT = 2f / 3f
 
 /**
  * Hearthstone's full-card render is portrait (~0.72 aspect) and already
@@ -47,7 +47,7 @@ fun CardThumbnail(
     val painter = rememberAsyncImagePainter(
         ImageRequest.Builder(context)
             .data(art)
-            .size(256, 356)
+            .size(256, 384)
             .build(),
     )
     val state by painter.state.collectAsState()

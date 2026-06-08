@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -85,7 +86,7 @@ private fun ManaBar(fraction: Float, modifier: Modifier) {
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val barHeight = (size.height * safeFraction).coerceAtLeast(if (safeFraction > 0f) 2f else 0f)
-            drawRect(
+            drawRoundRect(
                 brush = Brush.verticalGradient(
                     listOf(Color(0xFF5BA6FF), Color(0xFF1F4CC0)),
                     startY = size.height - barHeight,
@@ -93,6 +94,7 @@ private fun ManaBar(fraction: Float, modifier: Modifier) {
                 ),
                 topLeft = Offset(0f, size.height - barHeight),
                 size = Size(size.width, barHeight),
+                cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
             )
         }
     }
