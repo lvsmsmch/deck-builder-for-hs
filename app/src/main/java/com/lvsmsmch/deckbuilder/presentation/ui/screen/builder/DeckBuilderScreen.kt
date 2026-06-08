@@ -1,5 +1,6 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.builder
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -33,6 +35,7 @@ import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -43,6 +46,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -79,6 +83,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.FilterSheet
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.viewmodel.koinViewModel
@@ -86,10 +91,15 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun DeckBuilderScreen(
     onDeckSaved: (String) -> Unit,
+    onExit: () -> Unit,
     viewModel: DeckBuilderViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
+    var showExitConfirm by remember { mutableStateOf(false) }
+    val requestExit = {
+        if (state.phase == Phase.Editing) showExitConfirm = true else onExit()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
@@ -113,7 +123,7 @@ fun DeckBuilderScreen(
             )
             Phase.Editing -> EditingView(
                 state = state,
-                onBack = viewModel::backToPicker,
+                onBack = requestExit,
                 onSetQuery = viewModel::setPoolQuery,
                 onAdd = { viewModel.addCard(it) },
                 onRemove = viewModel::removeCard,
@@ -123,6 +133,7 @@ fun DeckBuilderScreen(
                 onSelectFormat = viewModel::setFormat,
                 onSetPoolSort = viewModel::setPoolSort,
                 onTogglePoolMana = viewModel::togglePoolManaCost,
+                onApplyPoolFilters = viewModel::applyPoolFilters,
             )
         }
 
@@ -135,6 +146,28 @@ fun DeckBuilderScreen(
                 contentColor = DeckBuilderColors.OnSurface,
             ) { Text(data.visuals.message) }
         }
+    }
+
+    BackHandler { requestExit() }
+
+    if (showExitConfirm) {
+        AlertDialog(
+            onDismissRequest = { showExitConfirm = false },
+            containerColor = DeckBuilderColors.SurfaceContainer,
+            title = { Text(stringResource(R.string.builder_exit_title)) },
+            text = { Text(stringResource(R.string.builder_exit_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExitConfirm = false
+                    onExit()
+                }) { Text(stringResource(R.string.builder_exit_confirm), color = DeckBuilderColors.Error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitConfirm = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
     }
 }
 
@@ -222,6 +255,7 @@ private fun EditingView(
     onSelectFormat: (GameFormat) -> Unit,
     onSetPoolSort: (SortKey, SortDir) -> Unit,
     onTogglePoolMana: (Int) -> Unit,
+    onApplyPoolFilters: (com.lvsmsmch.deckbuilder.domain.entities.CardFilters) -> Unit,
 ) {
     var activeTab by remember { mutableStateOf(EditingTab.Deck) }
 
@@ -253,6 +287,7 @@ private fun EditingView(
                     onLoadMore = onLoadMore,
                     onSetSort = onSetPoolSort,
                     onToggleMana = onTogglePoolMana,
+                    onApplyFilters = onApplyPoolFilters,
                 )
                 EditingTab.Deck -> DeckPane(
                     state = state,
@@ -310,7 +345,10 @@ private fun Header(
                 .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(10.dp)),
         )
         Spacer(Modifier.width(10.dp))
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+        ) {
             Text(
                 text = if (chosenClass != null) classLabel(chosenClass.slug) else "Deck",
                 style = MaterialTheme.typography.titleMedium,
@@ -321,8 +359,7 @@ private fun Header(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .clickable { formatMenuOpen = true }
-                        .height(40.dp)
-                        .padding(end = 10.dp),
+                        .padding(end = 8.dp, top = 2.dp, bottom = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -361,7 +398,7 @@ private fun Header(
 
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(
                     if (singleton) DeckBuilderColors.Rarity.Legendary.copy(alpha = 0.18f)
                     else DeckBuilderColors.SurfaceContainerHigh,
@@ -369,11 +406,12 @@ private fun Header(
                 .border(
                     1.dp,
                     if (singleton) DeckBuilderColors.Rarity.Legendary else DeckBuilderColors.OutlineSoft,
-                    RoundedCornerShape(8.dp),
+                    RoundedCornerShape(10.dp),
                 )
                 .clickable(onClick = onToggleSingleton)
-                .height(40.dp)
-                .padding(horizontal = 10.dp),
+                .height(34.dp)
+                .padding(horizontal = 11.dp),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = "★1",
@@ -496,6 +534,7 @@ private fun PoolPane(
     onLoadMore: () -> Unit,
     onSetSort: (SortKey, SortDir) -> Unit,
     onToggleMana: (Int) -> Unit,
+    onApplyFilters: (com.lvsmsmch.deckbuilder.domain.entities.CardFilters) -> Unit,
 ) {
     val gridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
@@ -512,8 +551,10 @@ private fun PoolPane(
             if (atEnd) onLoadMore()
         }
     }
-    LaunchedEffect(state.pool.textQuery, state.pool.sort, state.pool.manaCosts, state.format) {
-        gridState.scrollToItem(0)
+    LaunchedEffect(state.pool.contentVersion) {
+        if (state.pool.contentVersion > 0) {
+            gridState.scrollToItem(0)
+        }
     }
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.isScrollInProgress }.distinctUntilChanged().collect { scrolling ->
@@ -529,7 +570,7 @@ private fun PoolPane(
             },
     ) {
         TextField(
-            value = state.pool.textQuery,
+            value = state.pool.filters.textQuery,
             onValueChange = onSetQuery,
             placeholder = { Text(stringResource(R.string.builder_search_pool), color = DeckBuilderColors.OnSurfaceDimmer) },
             singleLine = true,
@@ -552,16 +593,17 @@ private fun PoolPane(
 
         PoolControls(
             totalCount = state.pool.totalCount,
-            sort = state.pool.sort,
+            sort = state.pool.filters.sort,
             activeFilterCount = state.pool.activeFilterCount,
             onSortChange = { onSetSort(it.key, it.direction) },
-            onToggleFilters = { showFilters = !showFilters },
+            onToggleFilters = { showFilters = true },
         )
 
         if (showFilters) {
-            ManaFilterChips(
-                selected = state.pool.manaCosts,
-                onToggle = onToggleMana,
+            FilterSheet(
+                current = state.pool.filters,
+                onChange = onApplyFilters,
+                onDismiss = { showFilters = false },
             )
         }
 
@@ -816,7 +858,8 @@ private fun BottomActions(
         modifier = Modifier
             .fillMaxWidth()
             .background(DeckBuilderColors.SurfaceContainer)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .navigationBarsPadding()
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp),
     ) {
         if (error != null) {
             Text(

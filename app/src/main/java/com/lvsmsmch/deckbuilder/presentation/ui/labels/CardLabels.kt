@@ -120,16 +120,18 @@ object CardLabels {
         "whizbangs-workshop" -> R.string.set_whizbangs_workshop
         "wild-west" -> R.string.set_wild_west
         "titans" -> R.string.set_titans
-        "festival-of-legends" -> R.string.set_festival_of_legends
+        "battle-of-the-bands", "festival-of-legends" -> R.string.set_festival_of_legends
         "return-of-the-lich-king" -> R.string.set_return_of_the_lich_king
         "revendreth" -> R.string.set_revendreth
-        "voyage-to-the-sunken-city" -> R.string.set_voyage_to_the_sunken_city
+        "the-sunken-city", "voyage-to-the-sunken-city" -> R.string.set_voyage_to_the_sunken_city
         "alterac-valley" -> R.string.set_alterac_valley
-        "barrens" -> R.string.set_barrens
+        "the-barrens", "barrens" -> R.string.set_barrens
         "darkmoon-faire" -> R.string.set_darkmoon_faire
-        "outlands" -> R.string.set_outlands
+        "black-temple", "outlands" -> R.string.set_outlands
         "stormwind" -> R.string.set_stormwind
         "karazhan", "kara" -> R.string.set_kara
+        "gangs", "gadgetzan" -> R.string.set_gangs
+        "og", "old-gods" -> R.string.set_og
         "scholomance" -> R.string.set_scholomance
         "lootapalooza" -> R.string.set_lootapalooza
         else -> null

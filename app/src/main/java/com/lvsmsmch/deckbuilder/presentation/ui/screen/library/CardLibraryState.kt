@@ -12,6 +12,7 @@ data class CardLibraryState(
     val isLoadingFirstPage: Boolean = false,
     val isLoadingMore: Boolean = false,
     val errorMessage: String? = null,
+    val contentVersion: Long = 0L,
 ) {
     val hasMore: Boolean get() = page < pageCount
 }

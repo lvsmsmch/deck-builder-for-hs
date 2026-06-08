@@ -138,6 +138,7 @@ class CardLibraryViewModel(
                         totalCount = r.data.totalCount,
                         isLoadingFirstPage = false,
                         isLoadingMore = false,
+                        contentVersion = if (replaceItems) prev.contentVersion + 1 else prev.contentVersion,
                     )
                 }
 

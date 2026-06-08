@@ -84,12 +84,12 @@ fun FilterSheet(
             ) {
                 item { FormatSection(current, onChange) }
                 item { ManaSection(current, onChange) }
-                item { SetSection(current, onChange) }
                 item { RaritySection(current, onChange) }
                 item { TypeSection(current, onChange) }
                 item { MinionTypeSection(current, onChange) }
                 item { SpellSchoolSection(current, onChange) }
                 item { CollectibleSection(current, onChange) }
+                item { SetSection(current, onChange) }
                 item { Spacer(Modifier.height(20.dp)) }
             }
         }
@@ -161,7 +161,7 @@ private fun Chip(
                 shape = RoundedCornerShape(99.dp),
             )
             .clickable(onClick = onClick)
-            .height(40.dp)
+            .height(44.dp)
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -194,7 +194,7 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(42.dp)
+                    .height(46.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainerHigh)
                     .border(
@@ -228,28 +228,28 @@ private val SetSlugs = listOf(
     "whizbangs-workshop",
     "wild-west",
     "titans",
-    "festival-of-legends",
+    "battle-of-the-bands",
     "return-of-the-lich-king",
     "revendreth",
-    "voyage-to-the-sunken-city",
+    "the-sunken-city",
     "alterac-valley",
     "stormwind",
-    "barrens",
+    "the-barrens",
     "darkmoon-faire",
     "scholomance",
-    "outlands",
+    "black-temple",
     "dragons",
     "uldum",
-    "dalaraan",
+    "dalaran",
     "troll",
     "boomsday",
     "gilneas",
     "lootapalooza",
     "icecrown",
     "ungoro",
-    "gadgetzan",
-    "karazhan",
-    "old-gods",
+    "gangs",
+    "kara",
+    "og",
     "loe",
     "tgt",
     "brm",

@@ -72,6 +72,9 @@
     <string name="builder_toast_legendary_limit">Лимит легендарок (×1)</string>
     <string name="builder_toast_card_limit">Лимит карт (×2)</string>
     <string name="builder_toast_deck_full">Колода заполнена (%1$d/%1$d)</string>
+    <string name="builder_exit_title">Выйти из создания колоды?</string>
+    <string name="builder_exit_message">Текущий черновик колоды будет сброшен.</string>
+    <string name="builder_exit_confirm">Выйти</string>
 
     <!-- Saved Decks -->
     <string name="saved_title">Сохранённые колоды</string>
@@ -101,6 +104,8 @@
     <!-- Card detail -->
     <string name="card_detail_related">СВЯЗАННЫЕ КАРТЫ</string>
     <string name="card_detail_by_artist">художник: %1$s</string>
+    <string name="card_image_loading">Loading...</string>
+    <string name="card_image_error">Изображение не загрузилось</string>
     <string name="card_stat_mana">Мана</string>
     <string name="card_stat_attack">Атака</string>
     <string name="card_stat_health">Здоровье</string>
@@ -145,6 +150,8 @@
     <string name="keyword_immune">Неуязвимость</string>
     <string name="keyword_spell_damage">Урон от заклинаний</string>
     <string name="set_kara">Вечеринка в Каражане</string>
+    <string name="set_gangs">Злачный город Прибамбасск</string>
+    <string name="set_og">Пробуждение древних богов</string>
     <string name="set_scholomance">Некроситет</string>
     <string name="set_lootapalooza">Кобольды и катакомбы</string>
     <string name="format_standard">Стандартный</string>

@@ -46,8 +46,8 @@ import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.SettingsScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.koinInject
 
-private const val SCREEN_FADE_IN_MS = 160
-private const val SCREEN_FADE_OUT_MS = 120
+private const val SCREEN_FADE_IN_MS = 260
+private const val SCREEN_FADE_OUT_MS = 220
 
 @Composable
 fun AppNavGraph(currentPreferences: AppPreferences) {
@@ -92,6 +92,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                             popUpTo(Builder) { inclusive = true }
                         }
                     },
+                    onExit = { navController.navigateUp() },
                 )
             }
             composable<CardDetail> { entry ->

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
@@ -53,7 +54,7 @@ class DeckBuilderViewModel(
 
     init {
         _state
-            .map { it.pool.textQuery }
+            .map { it.pool.filters.textQuery }
             .distinctUntilChanged()
             .drop(1)
             .debounce(350L)
@@ -115,22 +116,28 @@ class DeckBuilderViewModel(
     }
 
     fun setPoolQuery(query: String) {
-        _state.update { it.copy(pool = it.pool.copy(textQuery = query)) }
+        _state.update { it.copy(pool = it.pool.copy(filters = it.pool.filters.copy(textQuery = query))) }
     }
 
     fun setPoolSort(key: SortKey, direction: SortDir) {
         val nextSort = CardSort(key = key, direction = direction)
-        if (nextSort == _state.value.pool.sort) return
-        _state.update { it.copy(pool = it.pool.copy(sort = nextSort)) }
+        if (nextSort == _state.value.pool.filters.sort) return
+        _state.update { it.copy(pool = it.pool.copy(filters = it.pool.filters.copy(sort = nextSort))) }
         reloadPoolFirstPage()
     }
 
     fun togglePoolManaCost(cost: Int) {
         _state.update {
-            val current = it.pool.manaCosts
+            val current = it.pool.filters.manaCosts
             val next = if (cost in current) current - cost else current + cost
-            it.copy(pool = it.pool.copy(manaCosts = next))
+            it.copy(pool = it.pool.copy(filters = it.pool.filters.copy(manaCosts = next)))
         }
+        reloadPoolFirstPage()
+    }
+
+    fun applyPoolFilters(filters: CardFilters) {
+        if (filters == _state.value.pool.filters) return
+        _state.update { it.copy(pool = it.pool.copy(filters = filters)) }
         reloadPoolFirstPage()
     }
 
@@ -202,7 +209,14 @@ class DeckBuilderViewModel(
 
     fun setFormat(format: GameFormat) {
         if (format == _state.value.format) return
-        _state.update { it.copy(format = format) }
+        _state.update {
+            it.copy(
+                format = format,
+                pool = it.pool.copy(
+                    filters = it.pool.filters.copy(format = format.toCardFormatFilter()),
+                ),
+            )
+        }
         reloadPoolFirstPage()
     }
 
@@ -255,18 +269,12 @@ class DeckBuilderViewModel(
         val st = _state.value
         val clsSlug = st.chosenClass?.slug ?: return
         poolJob = viewModelScope.launch {
-            val formatSets: Set<String> = when (st.format) {
-                GameFormat.STANDARD -> rotation.cached()?.standardSets
-                    ?.map { it.lowercase() }?.toSet().orEmpty()
-                else -> emptySet()
-            }
-            val filters = CardFilters(
+            val poolFormat = st.pool.filters.format.takeUnless { it == CardFormatFilter.ALL }
+                ?: st.format.toCardFormatFilter()
+            val filters = st.pool.filters.copy(
                 classes = setOf(clsSlug, "neutral"),
-                textQuery = st.pool.textQuery,
                 collectibleOnly = true,
-                sets = formatSets,
-                manaCosts = st.pool.manaCosts,
-                sort = st.pool.sort,
+                format = poolFormat,
             )
             val result = searchCards(filters, page = targetPage)
 
@@ -296,6 +304,7 @@ class DeckBuilderViewModel(
                         totalCount = page.totalCount,
                         isLoading = false,
                         isLoadingMore = false,
+                        contentVersion = if (replace) it.pool.contentVersion + 1 else it.pool.contentVersion,
                     ),
                 )
             }
@@ -323,4 +332,10 @@ class DeckBuilderViewModel(
     private companion object {
         val CanonicalHeroId = Regex("""^HERO_\d+[a-z]*$""")
     }
+}
+
+private fun GameFormat.toCardFormatFilter(): CardFormatFilter = when (this) {
+    GameFormat.STANDARD -> CardFormatFilter.STANDARD
+    GameFormat.WILD -> CardFormatFilter.WILD
+    else -> CardFormatFilter.ALL
 }

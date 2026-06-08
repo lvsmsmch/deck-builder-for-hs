@@ -72,6 +72,9 @@
     <string name="builder_toast_legendary_limit">Legendary limit (×1)</string>
     <string name="builder_toast_card_limit">Card limit (×2)</string>
     <string name="builder_toast_deck_full">Deck is full (%1$d/%1$d)</string>
+    <string name="builder_exit_title">Leave deck builder?</string>
+    <string name="builder_exit_message">Your current deck draft will be discarded.</string>
+    <string name="builder_exit_confirm">Leave</string>
 
     <!-- Saved Decks -->
     <string name="saved_title">Saved decks</string>
@@ -101,6 +104,8 @@
     <!-- Card detail -->
     <string name="card_detail_related">RELATED CARDS</string>
     <string name="card_detail_by_artist">by %1$s</string>
+    <string name="card_image_loading">Loading...</string>
+    <string name="card_image_error">Image failed to load</string>
     <string name="card_stat_mana">Mana</string>
     <string name="card_stat_attack">Attack</string>
     <string name="card_stat_health">Health</string>
@@ -145,6 +150,8 @@
     <string name="keyword_immune">Immune</string>
     <string name="keyword_spell_damage">Spell Damage</string>
     <string name="set_kara">One Night in Karazhan</string>
+    <string name="set_gangs">Mean Streets of Gadgetzan</string>
+    <string name="set_og">Whispers of the Old Gods</string>
     <string name="set_scholomance">Scholomance Academy</string>
     <string name="set_lootapalooza">Kobolds &amp; Catacombs</string>
     <string name="format_standard">Standard</string>

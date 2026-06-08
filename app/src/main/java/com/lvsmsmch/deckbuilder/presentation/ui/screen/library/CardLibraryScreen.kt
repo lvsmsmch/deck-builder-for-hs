@@ -89,7 +89,6 @@ fun CardLibraryScreen(
     val gridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
     var showFilterSheet by remember { mutableStateOf(false) }
-    var displayedFilters by remember { mutableStateOf(state.filters) }
 
     val notifier: UpdateNotifier = koinInject()
     val updateRunner: UpdateRunner = koinInject()
@@ -109,9 +108,8 @@ fun CardLibraryScreen(
             if (atEnd) viewModel.loadNextPage()
         }
     }
-    LaunchedEffect(state.filters) {
-        if (state.filters != displayedFilters) {
-            displayedFilters = state.filters
+    LaunchedEffect(state.contentVersion) {
+        if (state.contentVersion > 0) {
             gridState.scrollToItem(0)
         }
     }

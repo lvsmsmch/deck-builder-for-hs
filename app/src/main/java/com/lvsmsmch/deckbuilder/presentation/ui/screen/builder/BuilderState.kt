@@ -1,6 +1,7 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.builder
 
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
@@ -35,15 +36,30 @@ data class PoolState(
     val page: Int = 1,
     val pageCount: Int = 0,
     val totalCount: Int = 0,
-    val textQuery: String = "",
-    val sort: CardSort = CardSort(SortKey.MANA_COST, SortDir.ASC),
-    val manaCosts: Set<Int> = emptySet(),
+    val filters: CardFilters = CardFilters(sort = CardSort(SortKey.MANA_COST, SortDir.ASC)),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val errorMessage: String? = null,
+    val contentVersion: Long = 0L,
 ) {
     val hasMore: Boolean get() = page < pageCount
-    val activeFilterCount: Int get() = if (manaCosts.isEmpty()) 0 else 1
+    val activeFilterCount: Int get() = filters.activeFilterCount()
+}
+
+internal fun CardFilters.activeFilterCount(): Int {
+    var n = 0
+    if (classes.isNotEmpty()) n++
+    if (sets.isNotEmpty()) n++
+    if (format != com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter.ALL) n++
+    if (rarities.isNotEmpty()) n++
+    if (types.isNotEmpty()) n++
+    if (minionTypes.isNotEmpty()) n++
+    if (keywords.isNotEmpty()) n++
+    if (spellSchools.isNotEmpty()) n++
+    if (manaCosts.isNotEmpty()) n++
+    if (!collectibleOnly) n++
+    if (textQuery.isNotBlank()) n++
+    return n
 }
 
 sealed interface BuilderEffect {
