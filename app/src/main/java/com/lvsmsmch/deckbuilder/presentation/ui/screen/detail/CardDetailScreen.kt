@@ -3,14 +3,20 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.detail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,16 +41,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import coil3.compose.AsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
@@ -169,6 +190,7 @@ private fun Body(
 ) {
     val rarityColor = rarityColor(card.rarity)
     val isLegendary = card.rarity?.slug?.equals("legendary", ignoreCase = true) == true
+    var fullscreenImage by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -176,37 +198,11 @@ private fun Body(
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .fillMaxWidth()
-                .height(280.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp)),
-        ) {
-            val img = card.image.takeIf { it.isNotBlank() }
-                ?.replace("/256x/", "/512x/")
-                ?: card.cropImage
-            if (!img.isNullOrBlank()) {
-                AsyncImage(
-                    model = img,
-                    contentDescription = card.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit,
-                )
-            }
-            if (isLegendary) {
-                Text(
-                    text = "★",
-                    color = DeckBuilderColors.Rarity.Legendary,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(12.dp),
-                )
-            }
-        }
+        CardImagePanel(
+            card = card,
+            isLegendary = isLegendary,
+            onOpenFullscreen = { fullscreenImage = true },
+        )
 
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -254,6 +250,196 @@ private fun Body(
             )
         }
     }
+
+    if (fullscreenImage) {
+        FullscreenCardImage(card = card, onDismiss = { fullscreenImage = false })
+    }
+}
+
+private const val CARD_RENDER_ASPECT = 0.72f
+
+@Composable
+private fun CardImagePanel(
+    card: Card,
+    isLegendary: Boolean,
+    onOpenFullscreen: () -> Unit,
+) {
+    val lowUrl = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
+    val highUrl = card.image.takeIf { it.isNotBlank() }?.replace("/256x/", "/512x/") ?: card.cropImage
+    val context = LocalContext.current
+    val lowPainter = rememberAsyncImagePainter(
+        ImageRequest.Builder(context)
+            .data(lowUrl)
+            .size(256, 384)
+            .build(),
+    )
+    val highPainter = rememberAsyncImagePainter(
+        ImageRequest.Builder(context)
+            .data(highUrl)
+            .size(512, 768)
+            .build(),
+    )
+    val highState by highPainter.state.collectAsState()
+
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.78f)
+                .widthIn(max = 360.dp)
+                .aspectRatio(CARD_RENDER_ASPECT)
+                .clip(RoundedCornerShape(18.dp))
+                .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp))
+                .clickable(onClick = onOpenFullscreen),
+        ) {
+            if (!lowUrl.isNullOrBlank()) {
+                Image(
+                    painter = lowPainter,
+                    contentDescription = card.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+            if (highState is AsyncImagePainter.State.Success && !highUrl.isNullOrBlank()) {
+                Image(
+                    painter = highPainter,
+                    contentDescription = card.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+            when (highState) {
+                is AsyncImagePainter.State.Error -> CardImageErrorOverlay(onRetry = { highPainter.restart() })
+                is AsyncImagePainter.State.Success -> Unit
+                else -> CardImageLoadingOverlay()
+            }
+            if (isLegendary) {
+                Text(
+                    text = "★",
+                    color = DeckBuilderColors.Rarity.Legendary,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.CardImageLoadingOverlay() {
+    Text(
+        text = stringResource(R.string.card_image_loading),
+        color = Color.White,
+        style = MaterialTheme.typography.labelLarge.copy(
+            shadow = Shadow(color = Color.Black, blurRadius = 6f),
+        ),
+        modifier = Modifier
+            .align(Alignment.Center)
+            .background(Color.Black.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+    )
+}
+
+@Composable
+private fun BoxScope.CardImageErrorOverlay(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .align(Alignment.Center)
+            .background(Color.Black.copy(alpha = 0.46f), RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = stringResource(R.string.card_image_error),
+            color = Color.White,
+            style = MaterialTheme.typography.labelMedium.copy(
+                shadow = Shadow(color = Color.Black, blurRadius = 6f),
+            ),
+        )
+        Spacer(Modifier.height(8.dp))
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(DeckBuilderColors.Primary)
+                .clickable { onRetry() }
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.action_retry),
+                color = DeckBuilderColors.OnPrimary,
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
+    val highUrl = card.image.takeIf { it.isNotBlank() }?.replace("/256x/", "/512x/") ?: card.cropImage
+    val fallbackUrl = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
+    val context = LocalContext.current
+    val painter = rememberAsyncImagePainter(
+        ImageRequest.Builder(context)
+            .data(highUrl ?: fallbackUrl)
+            .size(512, 768)
+            .build(),
+    )
+    var scale by remember { mutableFloatStateOf(1f) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.96f))
+                .statusBarsPadding(),
+        ) {
+            Image(
+                painter = painter,
+                contentDescription = card.name,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+                    .aspectRatio(CARD_RENDER_ASPECT)
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
+                    .pointerInput(card.id) {
+                        awaitEachGesture {
+                            awaitFirstDown()
+                            do {
+                                val event = awaitPointerEvent()
+                                scale = (scale * event.calculateZoom()).coerceIn(1f, 3.2f)
+                            } while (event.changes.any { it.pressed })
+                            scale = 1f
+                        }
+                    },
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.Close,
+                    contentDescription = stringResource(R.string.action_close),
+                    tint = Color.White,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -266,7 +452,7 @@ private fun SubtitleRow(card: Card, isStandardLegal: Boolean?) {
     val parts = listOfNotNull(localizedClass, localizedType, set, format, artist)
     if (parts.isEmpty()) return
     Text(
-        text = parts.joinToString(" · "),
+        text = parts.joinToString(" Â· "),
         style = MaterialTheme.typography.bodySmall,
         color = DeckBuilderColors.OnSurfaceDim,
         modifier = Modifier.padding(top = 4.dp),
