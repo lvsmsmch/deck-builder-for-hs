@@ -369,7 +369,7 @@ private fun Header(
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "▾",
+                        text = "\u25BE",
                         style = MaterialTheme.typography.bodySmall,
                         color = DeckBuilderColors.OnSurfaceDim,
                     )
@@ -414,7 +414,7 @@ private fun Header(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "★1",
+                text = "\u26051",
                 style = MaterialTheme.typography.labelMedium,
                 color = if (singleton) DeckBuilderColors.Rarity.Legendary else DeckBuilderColors.OnSurfaceDim,
             )
@@ -539,6 +539,7 @@ private fun PoolPane(
     val gridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
     var showFilters by remember { mutableStateOf(false) }
+    var seenContentVersion by remember { mutableStateOf(state.pool.contentVersion) }
     val nearEnd by remember {
         derivedStateOf {
             val total = gridState.layoutInfo.totalItemsCount
@@ -552,7 +553,8 @@ private fun PoolPane(
         }
     }
     LaunchedEffect(state.pool.contentVersion) {
-        if (state.pool.contentVersion > 0) {
+        if (state.pool.contentVersion != seenContentVersion) {
+            seenContentVersion = state.pool.contentVersion
             gridState.scrollToItem(0)
         }
     }
@@ -623,21 +625,35 @@ private fun PoolPane(
             modifier = Modifier.fillMaxSize(),
         ) {
             items(state.pool.cards, key = { it.id }) { card ->
-                Box {
+                val count = state.deck[card.id]?.count ?: 0
+                Box(
+                    modifier = if (count > 0) {
+                        Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .border(2.dp, DeckBuilderColors.Primary, RoundedCornerShape(14.dp))
+                    } else {
+                        Modifier
+                    },
+                ) {
                     CardThumbnail(card = card, onClick = { onAdd(card) })
-                    val count = state.deck[card.id]?.count ?: 0
                     if (count > 0) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(6.dp)
-                                .clip(RoundedCornerShape(8.dp))
+                                .padding(7.dp)
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(DeckBuilderColors.Primary)
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                                .border(
+                                    1.dp,
+                                    DeckBuilderColors.OnPrimary.copy(alpha = 0.8f),
+                                    RoundedCornerShape(12.dp),
+                                ),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = "×$count",
-                                style = MaterialTheme.typography.labelSmall,
+                                text = "x$count",
+                                style = MaterialTheme.typography.titleSmall,
                                 color = DeckBuilderColors.OnPrimary,
                             )
                         }
