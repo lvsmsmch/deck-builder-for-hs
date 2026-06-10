@@ -57,8 +57,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -319,7 +317,7 @@ private fun HeroHeader(
                 }
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "$heroClassLabel · ${deck.cardCount}/${deck.maxCardCount}",
+                    text = "$heroClassLabel \u00B7 ${deck.cardCount}/${deck.maxCardCount}",
                     style = MaterialTheme.typography.bodySmall,
                     color = DeckBuilderColors.OnSurfaceDim,
                 )
@@ -341,6 +339,7 @@ private fun EditableTitle(
     var hadFocus by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
+    val titleStyle = MaterialTheme.typography.titleLarge.copy(color = DeckBuilderColors.OnSurface)
 
     LaunchedEffect(editing) {
         if (editing) focusRequester.requestFocus()
@@ -353,11 +352,7 @@ private fun EditableTitle(
                 onValueChange = { draft = it },
                 singleLine = false,
                 maxLines = 3,
-                textStyle = TextStyle(
-                    color = DeckBuilderColors.OnSurface,
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                    fontWeight = FontWeight.Bold,
-                ),
+                textStyle = titleStyle,
                 cursorBrush = SolidColor(DeckBuilderColors.Primary),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
@@ -380,12 +375,13 @@ private fun EditableTitle(
                     }
                     .focusRequester(focusRequester),
             )
+            Spacer(Modifier.width(26.dp))
         }
     } else {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleLarge,
+                style = titleStyle,
                 color = DeckBuilderColors.OnSurface,
                 modifier = Modifier.weight(1f),
                 maxLines = 3,
