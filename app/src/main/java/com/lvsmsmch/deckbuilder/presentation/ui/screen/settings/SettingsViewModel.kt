@@ -69,7 +69,7 @@ class SettingsViewModel(
             _state.update {
                 it.copy(
                     isRefreshingCardData = false,
-                    message = if (result.isSuccess) "Card data checked" else "Refresh failed",
+                    message = if (result.isSuccess) "Card data refreshed" else "Refresh failed",
                 )
             }
         }
