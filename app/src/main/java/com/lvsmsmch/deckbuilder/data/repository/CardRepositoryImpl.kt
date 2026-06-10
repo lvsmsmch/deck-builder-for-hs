@@ -46,6 +46,7 @@ class CardRepositoryImpl(
                     snap.cards.firstOrNull { it.dbfId == asInt }
                 } else {
                     snap.cards.firstOrNull { it.cardId.equals(idOrSlug, ignoreCase = true) }
+                        ?: snap.cards.firstOrNull { it.name.equals(idOrSlug, ignoreCase = true) }
                 } ?: error("Card not found in HsJson pool: $idOrSlug")
                 row.toDomain().also(::remember)
             }.also { r ->
@@ -231,6 +232,7 @@ class CardRepositoryImpl(
     private fun remember(card: Card) {
         memoryCache[card.id.toString()] = card
         memoryCache[card.slug.lowercase()] = card
+        memoryCache[card.name.lowercase()] = card
     }
 }
 

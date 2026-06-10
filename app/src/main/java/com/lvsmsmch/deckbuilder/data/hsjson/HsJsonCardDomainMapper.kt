@@ -74,7 +74,7 @@ internal fun HsJsonCardEntity.toDomain(): Card {
             Keyword(0, it.toDomainSlug(), it.toDisplayName(), refText = "")
         },
         collectible = collectible,
-        childIds = relatedCardRefs(payloadJson),
+        childIds = relatedCardRefs(payloadJson, text),
     )
 }
 
@@ -110,7 +110,7 @@ private fun keywordTokens(mechanicsCsv: String?, payloadJson: String): List<Stri
     return parseList(mechanicsCsv) + referenced
 }
 
-private fun relatedCardRefs(payloadJson: String): List<String> =
+private fun relatedCardRefs(payloadJson: String, text: String?): List<String> =
     runCatching {
         val obj = PayloadJson.parseToJsonElement(payloadJson).jsonObject
         val entourage = obj["entourage"]
@@ -120,11 +120,32 @@ private fun relatedCardRefs(payloadJson: String): List<String> =
         val rewards = listOf("questReward", "questRewardDbfId", "rewardDbfId")
             .mapNotNull { key -> obj[key]?.jsonPrimitive?.contentOrNull }
 
-        (rewards + entourage)
+        (rewards + entourage + rewardNamesFromText(text))
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .distinct()
     }.getOrDefault(emptyList())
+
+private fun rewardNamesFromText(text: String?): List<String> {
+    if (text.isNullOrBlank()) return emptyList()
+    val clean = text
+        .replace("[x]", "")
+        .replace('\u00A0', ' ')
+        .replace(Regex("<[^>]+>"), "")
+        .replace(Regex("\\s+"), " ")
+        .trim()
+    return RewardPatterns.mapNotNull { pattern ->
+        pattern.find(clean)?.groupValues?.getOrNull(1)
+            ?.substringBefore(".")
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
+    }
+}
+
+private val RewardPatterns = listOf(
+    Regex("""(?i)\bReward\s*:\s*([^.\n]+)"""),
+    Regex("""\bНаграда\s*:\s*([^.\n]+)""", RegexOption.IGNORE_CASE),
+)
 
 /** "DEATH_KNIGHT" → "death-knight", "DEMONHUNTER" → "demonhunter". */
 internal fun String.toDomainSlug(): String = lowercase().replace('_', '-')
