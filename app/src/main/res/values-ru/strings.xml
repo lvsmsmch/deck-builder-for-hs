@@ -15,6 +15,12 @@
     <string name="library_empty_with_filters">Под эти фильтры ничего не найдено.</string>
     <string name="library_new_set_title">Новые карты в %1$s</string>
     <string name="library_new_set_subtitle">Тап — отфильтровать библиотеку по этому сету.</string>
+    <string name="library_loading_cards">Загружаем карты...</string>
+    <string name="library_loading_resolving">Проверяем данные карт...</string>
+    <string name="library_loading_downloading">Загружаем данные карт: %1$s загружено</string>
+    <string name="library_loading_downloading_known">Загружаем данные карт: %1$s / %2$s (осталось %3$s)</string>
+    <string name="library_loading_parsing">Подготавливаем загруженные карты...</string>
+    <string name="library_loading_saving">Сохраняем данные карт...</string>
 
     <!-- Common -->
     <string name="action_cancel">Отмена</string>

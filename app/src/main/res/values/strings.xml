@@ -15,6 +15,12 @@
     <string name="library_empty_with_filters">No cards match these filters.</string>
     <string name="library_new_set_title">New cards in %1$s</string>
     <string name="library_new_set_subtitle">Tap to filter the library by this set.</string>
+    <string name="library_loading_cards">Loading cards...</string>
+    <string name="library_loading_resolving">Checking card data...</string>
+    <string name="library_loading_downloading">Downloading card data: %1$s loaded</string>
+    <string name="library_loading_downloading_known">Downloading card data: %1$s / %2$s (%3$s left)</string>
+    <string name="library_loading_parsing">Preparing downloaded cards...</string>
+    <string name="library_loading_saving">Saving card data...</string>
 
     <!-- Common -->
     <string name="action_cancel">Cancel</string>

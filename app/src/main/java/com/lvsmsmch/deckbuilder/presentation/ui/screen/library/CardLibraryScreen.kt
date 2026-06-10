@@ -55,10 +55,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.data.update.CardDataProgress
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
 import com.lvsmsmch.deckbuilder.domain.entities.Card
@@ -94,6 +96,7 @@ fun CardLibraryScreen(
     val notifier: UpdateNotifier = koinInject()
     val updateRunner: UpdateRunner = koinInject()
     val rotationStatus by notifier.rotationStatus.collectAsState()
+    val cardDataProgress by notifier.cardDataProgress.collectAsState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
     var rechecking by remember { mutableStateOf(false) }
 
@@ -183,7 +186,7 @@ fun CardLibraryScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 // No cards yet: show one of the three full-screen states.
-                state.cards.isEmpty() && state.isLoadingFirstPage -> CenteredSpinner()
+                state.cards.isEmpty() && state.isLoadingFirstPage -> CenteredSpinner(cardDataProgress)
                 state.cards.isEmpty() && state.errorMessage != null -> ErrorState(
                     message = state.errorMessage!!,
                     onRetry = viewModel::retry,
@@ -521,12 +524,50 @@ private fun CardGrid(
 }
 
 @Composable
-private fun CenteredSpinner() {
-    Box(
+private fun CenteredSpinner(progress: CardDataProgress?) {
+    Column(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         CircularProgressIndicator(color = DeckBuilderColors.Primary, strokeWidth = 2.dp)
+        Spacer(Modifier.height(14.dp))
+        Text(
+            text = cardProgressText(progress),
+            style = MaterialTheme.typography.bodyMedium,
+            color = DeckBuilderColors.OnSurfaceDim,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 28.dp),
+        )
+    }
+}
+
+@Composable
+private fun cardProgressText(progress: CardDataProgress?): String = when (progress?.stage) {
+    CardDataProgress.Stage.RESOLVING_BUILD -> stringResource(R.string.library_loading_resolving)
+    CardDataProgress.Stage.DOWNLOADING -> {
+        val downloaded = progress.downloadedBytes.toReadableMb()
+        val total = progress.totalBytes?.toReadableMb()
+        if (total != null) {
+            val remaining = ((progress.totalBytes ?: 0L) - progress.downloadedBytes)
+                .coerceAtLeast(0L)
+                .toReadableMb()
+            stringResource(R.string.library_loading_downloading_known, downloaded, total, remaining)
+        } else {
+            stringResource(R.string.library_loading_downloading, downloaded)
+        }
+    }
+    CardDataProgress.Stage.PARSING -> stringResource(R.string.library_loading_parsing)
+    CardDataProgress.Stage.SAVING -> stringResource(R.string.library_loading_saving)
+    null -> stringResource(R.string.library_loading_cards)
+}
+
+private fun Long.toReadableMb(): String {
+    val mb = this.toDouble() / (1024.0 * 1024.0)
+    return if (mb >= 10.0) {
+        "%.0f MB".format(mb)
+    } else {
+        "%.1f MB".format(mb)
     }
 }
 

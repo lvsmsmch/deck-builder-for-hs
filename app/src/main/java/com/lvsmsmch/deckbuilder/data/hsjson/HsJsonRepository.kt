@@ -4,6 +4,8 @@ import android.util.Log
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.db.dao.HsJsonCardDao
 import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
+import com.lvsmsmch.deckbuilder.data.update.CardDataProgress
+import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -29,6 +31,7 @@ class HsJsonRepository(
     private val builds: HsJsonBuildStore,
     private val json: Json,
     private val sessionLog: SessionLog,
+    private val notifier: UpdateNotifier,
 ) {
     private val mutex = Mutex()
     private val cachedBuilds = ConcurrentHashMap<String, String>()
@@ -62,17 +65,7 @@ class HsJsonRepository(
             build?.let { cachedBuilds[hs] = it }
             return Snapshot(hs, build, existing)
         }
-        val build = buildChecker.latestBuild(hs)
-            ?: error("HsJson: cannot resolve latest build for $hs")
-        Log.i(TAG, "ensureLoaded: fetching build=$build locale=$hs")
-        val dtos = api.cardsForBuild(build, hs)
-        val rows = dtos.map { it.toEntity(hs, json) }
-        dao.replaceLocale(hs, rows)
-        builds.set(hs, build)
-        cachedBuilds[hs] = build
-        Log.i(TAG, "ensureLoaded: stored ${rows.size} cards build=$build locale=$hs")
-        sessionLog.add(TAG, "fetched locale=$hs build=$build cards=${rows.size}")
-        Snapshot(hs, build, rows)
+        fetchAndStore(hs = hs, reason = "ensureLoaded")
     }
 
     /**
@@ -87,13 +80,8 @@ class HsJsonRepository(
             cachedBuilds[hs] = latest
             return null
         }
-        Log.i(TAG, "checkForUpdate: $hs $current → $latest")
-        val dtos = api.cardsForBuild(latest, hs)
-        val rows = dtos.map { it.toEntity(hs, json) }
-        dao.replaceLocale(hs, rows)
-        builds.set(hs, latest)
-        cachedBuilds[hs] = latest
-        sessionLog.add(TAG, "updated locale=$hs build=$latest cards=${rows.size}")
+        Log.i(TAG, "checkForUpdate: $hs $current -> $latest")
+        fetchAndStore(hs = hs, build = latest, reason = "checkForUpdate")
         latest
     }
 
@@ -104,4 +92,32 @@ class HsJsonRepository(
 
     fun cachedBuild(blizzardLocale: String): String? =
         cachedBuilds[blizzardLocaleToHsJson(blizzardLocale)]
+
+    private suspend fun fetchAndStore(
+        hs: String,
+        build: String? = null,
+        reason: String,
+    ): Snapshot {
+        try {
+            notifier.setCardDataProgress(CardDataProgress(CardDataProgress.Stage.RESOLVING_BUILD))
+            val resolvedBuild = build ?: buildChecker.latestBuild(hs)
+                ?: error("HsJson: cannot resolve latest build for $hs")
+            Log.i(TAG, "$reason: fetching build=$resolvedBuild locale=$hs")
+            notifier.setCardDataProgress(CardDataProgress(CardDataProgress.Stage.DOWNLOADING))
+            val dtos = api.cardsForBuild(resolvedBuild, hs)
+            notifier.setCardDataProgress(CardDataProgress(CardDataProgress.Stage.PARSING))
+            val rows = dtos.map { it.toEntity(hs, json) }
+            notifier.setCardDataProgress(CardDataProgress(CardDataProgress.Stage.SAVING))
+            dao.replaceLocale(hs, rows)
+            builds.set(hs, resolvedBuild)
+            cachedBuilds[hs] = resolvedBuild
+            notifier.setCardDataProgress(null)
+            Log.i(TAG, "$reason: stored ${rows.size} cards build=$resolvedBuild locale=$hs")
+            sessionLog.add(TAG, "$reason locale=$hs build=$resolvedBuild cards=${rows.size}")
+            return Snapshot(hs, resolvedBuild, rows)
+        } catch (t: Throwable) {
+            notifier.setCardDataProgress(null)
+            throw t
+        }
+    }
 }

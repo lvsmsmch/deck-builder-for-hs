@@ -9,6 +9,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+data class CardDataProgress(
+    val stage: Stage,
+    val downloadedBytes: Long = 0L,
+    val totalBytes: Long? = null,
+) {
+    enum class Stage {
+        RESOLVING_BUILD,
+        DOWNLOADING,
+        PARSING,
+        SAVING,
+    }
+}
+
 sealed interface UpdateEvent {
     data class CardsUpdated(val build: String) : UpdateEvent
     data class RotationUpdated(val sha: String?) : UpdateEvent
@@ -28,11 +41,18 @@ class UpdateNotifier {
     private val _rotationStatus = MutableStateFlow<RotationStatus?>(null)
     val rotationStatus: StateFlow<RotationStatus?> = _rotationStatus.asStateFlow()
 
+    private val _cardDataProgress = MutableStateFlow<CardDataProgress?>(null)
+    val cardDataProgress: StateFlow<CardDataProgress?> = _cardDataProgress.asStateFlow()
+
     fun emit(event: UpdateEvent) {
         _events.tryEmit(event)
     }
 
     fun setRotationStatus(status: RotationStatus?) {
         _rotationStatus.value = status
+    }
+
+    fun setCardDataProgress(progress: CardDataProgress?) {
+        _cardDataProgress.value = progress
     }
 }

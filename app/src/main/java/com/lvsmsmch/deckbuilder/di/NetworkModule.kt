@@ -3,6 +3,7 @@ package com.lvsmsmch.deckbuilder.di
 import com.lvsmsmch.deckbuilder.BuildConfig
 import com.lvsmsmch.deckbuilder.data.db.AppDatabase
 import com.lvsmsmch.deckbuilder.data.hsjson.BuildChecker
+import com.lvsmsmch.deckbuilder.data.hsjson.CardDataProgressInterceptor
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonApi
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonBuildStore
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
@@ -47,7 +48,8 @@ val networkModule = module {
     single<OkHttpClient>(HSJSON) {
         OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
+            .addNetworkInterceptor(CardDataProgressInterceptor(get()))
             .apply { if (BuildConfig.DEBUG) addInterceptor(loggingInterceptor()) }
             .build()
     }
@@ -82,6 +84,7 @@ val networkModule = module {
             builds = get(),
             json = get(),
             sessionLog = get(),
+            notifier = get(),
         )
     }
 
