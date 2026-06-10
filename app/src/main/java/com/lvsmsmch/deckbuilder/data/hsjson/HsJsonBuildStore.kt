@@ -17,10 +17,23 @@ class HsJsonBuildStore(
     suspend fun get(hsJsonLocale: String): String? =
         store.data.map { it[key(hsJsonLocale)] }.first()
 
+    suspend fun hasFullCardsDataset(hsJsonLocale: String): Boolean =
+        store.data.map { it[datasetKey(hsJsonLocale)] == FULL_CARDS_DATASET }.first()
+
     suspend fun set(hsJsonLocale: String, build: String) {
-        store.edit { it[key(hsJsonLocale)] = build }
+        store.edit {
+            it[key(hsJsonLocale)] = build
+            it[datasetKey(hsJsonLocale)] = FULL_CARDS_DATASET
+        }
     }
 
     private fun key(hsJsonLocale: String) =
         stringPreferencesKey("hsjson_build_$hsJsonLocale")
+
+    private fun datasetKey(hsJsonLocale: String) =
+        stringPreferencesKey("hsjson_dataset_$hsJsonLocale")
+
+    private companion object {
+        const val FULL_CARDS_DATASET = "cards"
+    }
 }

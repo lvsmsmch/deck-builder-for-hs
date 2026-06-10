@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Single row from HearthstoneJSON `cards.collectible.json`.
+ * Single row from HearthstoneJSON `cards.json`.
  * The schema is documented at https://hearthstonejson.com/docs/cards.html
  * Fields that we don't currently use are left out — kotlinx-serialization
  * is configured with [ignoreUnknownKeys].
@@ -32,6 +32,7 @@ data class HsJsonCardDto(
     val spellSchool: String? = null,
     val mechanics: List<String>? = null,
     val referencedTags: List<String>? = null,
+    val entourage: List<String>? = null,
     val collectible: Boolean? = null,
     val elite: Boolean? = null,
     val artist: String? = null,

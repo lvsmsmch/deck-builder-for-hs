@@ -74,7 +74,7 @@ internal fun HsJsonCardEntity.toDomain(): Card {
             Keyword(0, it.toDomainSlug(), it.toDisplayName(), refText = "")
         },
         collectible = collectible,
-        childIds = emptyList(),
+        childIds = relatedCardRefs(payloadJson),
     )
 }
 
@@ -109,6 +109,22 @@ private fun keywordTokens(mechanicsCsv: String?, payloadJson: String): List<Stri
     }.getOrDefault(emptyList())
     return parseList(mechanicsCsv) + referenced
 }
+
+private fun relatedCardRefs(payloadJson: String): List<String> =
+    runCatching {
+        val obj = PayloadJson.parseToJsonElement(payloadJson).jsonObject
+        val entourage = obj["entourage"]
+            ?.jsonArray
+            ?.mapNotNull { it.jsonPrimitive.contentOrNull }
+            .orEmpty()
+        val rewards = listOf("questReward", "questRewardDbfId", "rewardDbfId")
+            .mapNotNull { key -> obj[key]?.jsonPrimitive?.contentOrNull }
+
+        (rewards + entourage)
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+    }.getOrDefault(emptyList())
 
 /** "DEATH_KNIGHT" → "death-knight", "DEMONHUNTER" → "demonhunter". */
 internal fun String.toDomainSlug(): String = lowercase().replace('_', '-')

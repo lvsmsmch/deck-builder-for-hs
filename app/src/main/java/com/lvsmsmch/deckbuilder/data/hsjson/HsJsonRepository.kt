@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
 private const val TAG = "DB.HsJson.Repo"
 
 /**
- * Loads + caches HearthstoneJSON `cards.collectible.json` per locale.
+ * Loads + caches HearthstoneJSON `cards.json` per locale.
  *
  * - First call for a locale fetches the latest build, stores it, and remembers
  *   the resolved build number.
@@ -56,7 +56,7 @@ class HsJsonRepository(
     suspend fun ensureLoaded(blizzardLocale: String): Snapshot = mutex.withLock {
         val hs = blizzardLocaleToHsJson(blizzardLocale)
         val existing = dao.all(hs)
-        if (existing.isNotEmpty()) {
+        if (existing.isNotEmpty() && builds.hasFullCardsDataset(hs)) {
             sessionLog.add(TAG, "cache hit locale=$hs cards=${existing.size}")
             val build = builds.get(hs)
             build?.let { cachedBuilds[hs] = it }
@@ -83,7 +83,7 @@ class HsJsonRepository(
         val hs = blizzardLocaleToHsJson(blizzardLocale)
         val current = builds.get(hs)
         val latest = buildChecker.latestBuild(hs) ?: return null
-        if (latest == current) {
+        if (latest == current && builds.hasFullCardsDataset(hs)) {
             cachedBuilds[hs] = latest
             return null
         }

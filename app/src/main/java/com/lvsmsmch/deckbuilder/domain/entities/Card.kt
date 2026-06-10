@@ -22,7 +22,7 @@ data class Card(
     val spellSchool: SpellSchool?,
     val keywords: List<Keyword>,
     val collectible: Boolean,
-    val childIds: List<Int>,
+    val childIds: List<String>,
 )
 
 data class ClassMeta(

@@ -66,7 +66,7 @@ class CardDetailViewModel(
      * `childIds` can be huge for cards that summon many tokens or for spells like
      * Yogg-Saron. Cap to keep the detail screen reasonable.
      */
-    private fun fetchRelated(childIds: List<Int>) {
+    private fun fetchRelated(childIds: List<String>) {
         if (childIds.isEmpty()) {
             _state.update { it.copy(relatedCards = emptyList()) }
             return
@@ -75,7 +75,7 @@ class CardDetailViewModel(
         _state.update { it.copy(isLoadingRelated = true) }
         viewModelScope.launch {
             val cards: List<Card> = limited.map { id ->
-                async { (getCardDetails(id.toString()) as? Result.Success)?.data }
+                async { (getCardDetails(id) as? Result.Success)?.data }
             }.awaitAll().filterNotNull()
             _state.update { it.copy(relatedCards = cards, isLoadingRelated = false) }
         }
