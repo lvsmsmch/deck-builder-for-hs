@@ -81,6 +81,9 @@
     <string name="builder_exit_title">Выйти из создания колоды?</string>
     <string name="builder_exit_message">Текущий черновик колоды будет сброшен.</string>
     <string name="builder_exit_confirm">Выйти</string>
+    <string name="builder_incomplete_save_title">Сохранить неполную колоду?</string>
+    <string name="builder_incomplete_save_message">В колоде только %1$d/%2$d карт. Всё равно сохранить?</string>
+    <string name="builder_incomplete_save_confirm">Сохранить</string>
 
     <!-- Saved Decks -->
     <string name="saved_title">Сохранённые колоды</string>

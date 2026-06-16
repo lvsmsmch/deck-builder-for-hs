@@ -81,6 +81,9 @@
     <string name="builder_exit_title">Leave deck builder?</string>
     <string name="builder_exit_message">Your current deck draft will be discarded.</string>
     <string name="builder_exit_confirm">Leave</string>
+    <string name="builder_incomplete_save_title">Save incomplete deck?</string>
+    <string name="builder_incomplete_save_message">This deck has only %1$d/%2$d cards. Save it anyway?</string>
+    <string name="builder_incomplete_save_confirm">Save anyway</string>
 
     <!-- Saved Decks -->
     <string name="saved_title">Saved decks</string>

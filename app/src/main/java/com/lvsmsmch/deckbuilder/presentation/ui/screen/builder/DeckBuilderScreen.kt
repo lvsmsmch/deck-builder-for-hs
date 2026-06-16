@@ -97,8 +97,16 @@ fun DeckBuilderScreen(
     val state by viewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
     var showExitConfirm by remember { mutableStateOf(false) }
+    var showIncompleteSaveConfirm by remember { mutableStateOf(false) }
     val requestExit = {
         if (state.phase == Phase.Editing) showExitConfirm = true else onExit()
+    }
+    val requestSave = {
+        if (state.cardCount < state.maxDeckSize) {
+            showIncompleteSaveConfirm = true
+        } else {
+            viewModel.save()
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -128,7 +136,7 @@ fun DeckBuilderScreen(
                 onAdd = { viewModel.addCard(it) },
                 onRemove = viewModel::removeCard,
                 onLoadMore = viewModel::loadNextPoolPage,
-                onSave = viewModel::save,
+                onSave = requestSave,
                 onToggleSingleton = viewModel::toggleSingleton,
                 onSelectFormat = viewModel::setFormat,
                 onSetPoolSort = viewModel::setPoolSort,
@@ -164,6 +172,34 @@ fun DeckBuilderScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showExitConfirm = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
+    if (showIncompleteSaveConfirm) {
+        AlertDialog(
+            onDismissRequest = { showIncompleteSaveConfirm = false },
+            containerColor = DeckBuilderColors.SurfaceContainer,
+            title = { Text(stringResource(R.string.builder_incomplete_save_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.builder_incomplete_save_message,
+                        state.cardCount,
+                        state.maxDeckSize,
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showIncompleteSaveConfirm = false
+                    viewModel.save()
+                }) { Text(stringResource(R.string.builder_incomplete_save_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showIncompleteSaveConfirm = false }) {
                     Text(stringResource(R.string.action_cancel))
                 }
             },
