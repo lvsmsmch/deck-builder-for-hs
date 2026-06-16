@@ -6,7 +6,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.Rarity
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
-/** Maps a class slug onto the desaturated dark-theme palette from plan §8.1. */
+/** Maps a class slug onto the app class palette. */
 fun colorForClassSlug(slug: String?): Color = when (slug?.lowercase()) {
     "druid" -> DeckBuilderColors.Class.Druid
     "hunter" -> DeckBuilderColors.Class.Hunter

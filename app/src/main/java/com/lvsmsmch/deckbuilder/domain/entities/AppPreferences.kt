@@ -13,7 +13,7 @@ data class AppPreferences(
 enum class ThemeMode { System, Dark, Light }
 
 object SupportedCardLocales {
-    /** Battle.net-supported card locales. Plan §5.2. */
+    /** Hearthstone card locales supported by HearthstoneJSON. */
     val codes: List<Pair<String, String>> = listOf(
         "en_US" to "English (US)",
         "de_DE" to "Deutsch",

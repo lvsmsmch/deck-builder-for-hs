@@ -1,6 +1,6 @@
 package com.lvsmsmch.deckbuilder.domain.entities
 
-/** Stable representation of a query against `/hearthstone/cards`. */
+/** Stable representation of a card library query. */
 data class CardFilters(
     val classes: Set<String> = emptySet(),
     val sets: Set<String> = emptySet(),
@@ -39,7 +39,7 @@ data class CardSort(
     val key: SortKey = SortKey.MANA_COST,
     val direction: SortDir = SortDir.ASC,
 ) {
-    /** API expects `manaCost:asc,attack:desc`. We keep one key — the API supports compound, we don't expose it. */
+    /** Sort key used by card repository implementations and UI labels. */
     fun toApiParam(): String = "${key.api}:${direction.api}"
 }
 

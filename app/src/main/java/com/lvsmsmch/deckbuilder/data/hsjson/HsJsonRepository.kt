@@ -21,8 +21,8 @@ private const val TAG = "DB.HsJson.Repo"
  * - Subsequent calls hit Room.
  * - [checkForUpdate] polls the latest build and re-fetches if it changed.
  *
- * The repo accepts Blizzard-style locales (`en_US`) for symmetry with the
- * existing prefs/metadata pipeline; internally it converts to the HsJson form.
+ * The repo accepts app locale codes (`en_US`) and converts them to the
+ * HearthstoneJSON URL form internally.
  */
 class HsJsonRepository(
     private val api: HsJsonApi,
@@ -43,8 +43,8 @@ class HsJsonRepository(
     )
 
     /** Returns cached rows for the locale, or null if nothing has been fetched yet. */
-    suspend fun cached(blizzardLocale: String): Snapshot? {
-        val hs = blizzardLocaleToHsJson(blizzardLocale)
+    suspend fun cached(appLocale: String): Snapshot? {
+        val hs = appLocaleToHsJson(appLocale)
         val rows = dao.all(hs)
         if (rows.isEmpty()) return null
         val build = builds.get(hs)
@@ -53,11 +53,11 @@ class HsJsonRepository(
     }
 
     /**
-     * Ensures cards exist for [blizzardLocale]. If empty, fetches latest build and
+     * Ensures cards exist for [appLocale]. If empty, fetches latest build and
      * populates Room. Returns the snapshot (possibly fresh, possibly cached).
      */
-    suspend fun ensureLoaded(blizzardLocale: String): Snapshot = mutex.withLock {
-        val hs = blizzardLocaleToHsJson(blizzardLocale)
+    suspend fun ensureLoaded(appLocale: String): Snapshot = mutex.withLock {
+        val hs = appLocaleToHsJson(appLocale)
         val existing = dao.all(hs)
         if (existing.isNotEmpty() && builds.hasFullCardsDataset(hs)) {
             sessionLog.add(TAG, "cache hit locale=$hs cards=${existing.size}")
@@ -69,11 +69,11 @@ class HsJsonRepository(
     }
 
     /**
-     * If a newer build is available, replaces the cache for [blizzardLocale].
+     * If a newer build is available, replaces the cache for [appLocale].
      * Returns the new build number when an update was applied, null otherwise.
      */
-    suspend fun checkForUpdate(blizzardLocale: String): String? = mutex.withLock {
-        val hs = blizzardLocaleToHsJson(blizzardLocale)
+    suspend fun checkForUpdate(appLocale: String): String? = mutex.withLock {
+        val hs = appLocaleToHsJson(appLocale)
         val current = builds.get(hs)
         val latest = buildChecker.latestBuild(hs) ?: return null
         if (latest == current && builds.hasFullCardsDataset(hs)) {
@@ -85,13 +85,13 @@ class HsJsonRepository(
         latest
     }
 
-    suspend fun currentBuild(blizzardLocale: String): String? {
-        val hs = blizzardLocaleToHsJson(blizzardLocale)
+    suspend fun currentBuild(appLocale: String): String? {
+        val hs = appLocaleToHsJson(appLocale)
         return builds.get(hs)?.also { cachedBuilds[hs] = it }
     }
 
-    fun cachedBuild(blizzardLocale: String): String? =
-        cachedBuilds[blizzardLocaleToHsJson(blizzardLocale)]
+    fun cachedBuild(appLocale: String): String? =
+        cachedBuilds[appLocaleToHsJson(appLocale)]
 
     private suspend fun fetchAndStore(
         hs: String,

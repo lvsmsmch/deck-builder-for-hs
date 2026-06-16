@@ -108,9 +108,8 @@ class CardRepositoryImpl(
         filters: CardFilters,
         standardSets: Set<String>,
     ): (HsJsonCardEntity) -> Boolean {
-        // UI passes Blizzard-style lowercase slugs ("mage", "demonhunter"); HsJson
-        // stores uppercase tokens ("MAGE", "DEMONHUNTER"). Compare on the lowercase
-        // domain projection so both sides agree.
+        // UI filters use lowercase class slugs, while cached rows store uppercase
+        // HearthstoneJSON tokens. Compare on the normalized domain projection.
         val classes = filters.classes.map { it.lowercase() }.toSet()
         val sets = filters.sets.map { it.lowercase() }.toSet()
         val rarities = filters.rarities.map { it.lowercase() }.toSet()

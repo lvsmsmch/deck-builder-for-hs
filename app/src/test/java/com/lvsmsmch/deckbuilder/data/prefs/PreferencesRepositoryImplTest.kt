@@ -49,8 +49,7 @@ class PreferencesRepositoryImplTest {
     @Test
     fun `setCardLocale immediately reflected by current()`() = runTest {
         repo.setCardLocale("ru_RU")
-        // Critical for SettingsViewModel.setLocale → forceMetadataRefresh:
-        // current() must see the new value before refresh resolves locale.
+        // current() must see the new value before refresh work resolves locale.
         assertEquals("ru_RU", repo.current().cardLocale)
     }
 

@@ -29,10 +29,7 @@ fun renderUrl(cardId: String, locale: String, size: String = FULL_SIZE): String 
 
 /**
  * HsJson stores tokens like `MAGE`, `BLACK_TEMPLE`, `DEMONHUNTER`. We project
- * them to lowercase domain slugs so UI comparisons that came from the legacy
- * Blizzard metadata pipeline still work — at least for the simple cases.
- * Phase 6 will replace this with a hardcoded localized label table and drop
- * the ID fields entirely.
+ * them to lowercase domain slugs for app-level filtering and labels.
  */
 internal fun HsJsonCardEntity.toDomain(): Card {
     val classTokens = parseClassTokens()

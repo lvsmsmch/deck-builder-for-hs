@@ -101,10 +101,10 @@ class HsJsonMappersTest {
         assertEquals("fel", card.spellSchool?.slug)
         assertEquals(listOf("battlecry", "deathrattle"), card.keywords.map { it.slug })
         assertEquals(
-            "https://art.hearthstonejson.com/v1/render/latest/enUS/512x/BT_001.png",
+            "https://art.hearthstonejson.com/v1/render/latest/enUS/256x/BT_001.png",
             card.image,
         )
-        assertEquals("https://art.hearthstonejson.com/v1/tiles/BT_001.png", card.cropImage)
+        assertEquals("https://art.hearthstonejson.com/v1/512x/BT_001.webp", card.cropImage)
         assertTrue(card.collectible)
     }
 

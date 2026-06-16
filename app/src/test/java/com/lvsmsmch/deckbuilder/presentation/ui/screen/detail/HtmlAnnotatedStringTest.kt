@@ -54,13 +54,13 @@ class HtmlAnnotatedStringTest {
     @Test
     fun `unknown tags are dropped, surrounding text kept`() {
         val result = cardTextToAnnotated("Line one.<br>Line two.<br/>Line three.")
-        assertEquals("Line one.Line two.Line three.", result.text)
+        assertEquals("Line one. Line two. Line three.", result.text)
     }
 
     @Test
     fun `image-style self-closing tags are dropped`() {
         val result = cardTextToAnnotated("Cost <image src='gem.png'/> to play.")
-        assertEquals("Cost  to play.", result.text)
+        assertEquals("Cost to play.", result.text)
     }
 
     @Test
