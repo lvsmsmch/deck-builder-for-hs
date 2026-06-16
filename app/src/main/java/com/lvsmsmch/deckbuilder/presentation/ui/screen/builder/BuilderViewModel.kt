@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.entities.Card
-import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
@@ -209,14 +208,7 @@ class DeckBuilderViewModel(
 
     fun setFormat(format: GameFormat) {
         if (format == _state.value.format) return
-        _state.update {
-            it.copy(
-                format = format,
-                pool = it.pool.copy(
-                    filters = it.pool.filters.copy(format = format.toCardFormatFilter()),
-                ),
-            )
-        }
+        _state.update { it.copy(format = format) }
         reloadPoolFirstPage()
     }
 
@@ -269,12 +261,9 @@ class DeckBuilderViewModel(
         val st = _state.value
         val clsSlug = st.chosenClass?.slug ?: return
         poolJob = viewModelScope.launch {
-            val poolFormat = st.pool.filters.format.takeUnless { it == CardFormatFilter.ALL }
-                ?: st.format.toCardFormatFilter()
             val filters = st.pool.filters.copy(
                 classes = setOf(clsSlug, "neutral"),
                 collectibleOnly = true,
-                format = poolFormat,
             )
             val result = searchCards(filters, page = targetPage)
 
@@ -332,10 +321,4 @@ class DeckBuilderViewModel(
     private companion object {
         val CanonicalHeroId = Regex("""^HERO_\d+[a-z]*$""")
     }
-}
-
-private fun GameFormat.toCardFormatFilter(): CardFormatFilter = when (this) {
-    GameFormat.STANDARD -> CardFormatFilter.STANDARD
-    GameFormat.WILD -> CardFormatFilter.WILD
-    else -> CardFormatFilter.ALL
 }
