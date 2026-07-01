@@ -3,8 +3,8 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.builder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
-import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
+import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
@@ -61,37 +61,18 @@ class DeckBuilderViewModel(
             .launchIn(viewModelScope)
     }
 
-    /**
-     * Resolve the canonical default hero for [slug] and commit the picked
-     * class. We hard-code the canonical `HERO_0X` IDs (see [DefaultHeroes]) —
-     * the previous "first hero with cardClass=druid" heuristic surfaced random
-     * skins like Wildheart Guff instead of Malfurion. The HsJson pool is still
-     * queried so we can carry the rich `ClassMeta` through.
-     */
     fun pickClassBySlug(slug: String) {
         pickJob?.cancel()
         pickJob = viewModelScope.launch {
-            val canonical = DefaultHeroes.cardIdFor(slug)
             val canonicalDbf = DefaultHeroes.dbfIdFor(slug)
-            val heroFilters = CardFilters(
-                classes = setOf(slug),
-                types = setOf("hero"),
-                collectibleOnly = true,
-            )
-            val pool = (searchCards(filters = heroFilters, page = 1, pageSize = 50) as? Result.Success)
-                ?.data?.items.orEmpty()
-            val hero: Card? = canonical?.let { id -> pool.firstOrNull { it.slug == id } }
-                ?: pool.firstOrNull()
-            val meta = hero?.classes?.firstOrNull { it.slug.equals(slug, ignoreCase = true) }
-                ?: hero?.classes?.firstOrNull()
-                ?: ClassMeta(id = 0, slug = slug, name = slug)
+            val meta = ClassMeta(id = 0, slug = slug, name = slug)
             _state.update {
                 it.copy(
                     phase = Phase.Editing,
                     chosenClass = meta,
-                    heroCardId = hero?.id ?: canonicalDbf,
+                    heroCardId = canonicalDbf,
                     deck = emptyMap(),
-                    pool = PoolState(),
+                    pool = PoolState(isLoading = true),
                     saveError = null,
                 )
             }
@@ -161,12 +142,9 @@ class DeckBuilderViewModel(
         }
         val target = (existingCount + count).coerceAtMost(cap)
         if (target == existingCount) {
-            val msg = when {
-                st.singleton -> "Highlander mode (×1)"
-                card.isLegendary() -> "Legendary limit (×1)"
-                else -> "Card limit (×2)"
+            if (st.singleton || card.isLegendary()) {
+                flashToast(if (st.singleton) "Highlander mode (×1)" else "Legendary limit (×1)")
             }
-            flashToast(msg)
             return
         }
         val resultingMaxSize = if (card.isPrinceRenathal) 40 else st.maxDeckSize

@@ -75,6 +75,7 @@ private const val PRIVACY_POLICY_URL = "https://www.google.com"
 fun SettingsScreen(
     initialPreferences: AppPreferences,
     onBack: () -> Unit,
+    onOpenCardData: () -> Unit,
     viewModel: SettingsViewModel = koinViewModel(parameters = { parametersOf(initialPreferences) }),
 ) {
     val state by viewModel.state.collectAsState()
@@ -149,6 +150,13 @@ fun SettingsScreen(
                 item { SectionHeader(stringResource(R.string.settings_section_storage)) }
                 item {
                     GroupCard {
+                        DialogRow(
+                            title = stringResource(R.string.more_card_data),
+                            subtitle = stringResource(R.string.more_card_data_subtitle),
+                            value = "",
+                            onClick = onOpenCardData,
+                        )
+                        Divider()
                         DialogRow(
                             title = stringResource(R.string.settings_image_cache),
                             subtitle = stringResource(R.string.settings_image_cache_subtitle),

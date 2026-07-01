@@ -5,6 +5,7 @@
     <!-- Bottom nav -->
     <string name="nav_library">Карты</string>
     <string name="nav_saved">Колоды</string>
+    <string name="nav_decks">Decks</string>
     <string name="nav_more">Ещё</string>
 
     <!-- Library -->
@@ -28,6 +29,8 @@
     <string name="action_close">Закрыть</string>
     <string name="action_save">Сохранить</string>
     <string name="action_save_deck">Сохранить</string>
+    <string name="action_continue">Продолжить</string>
+    <string name="action_exit">Выйти</string>
     <string name="action_decode">Декодировать</string>
     <string name="action_retry">Повторить</string>
     <string name="action_clear">Очистить</string>
@@ -41,6 +44,8 @@
     <string name="action_rename">Переименовать</string>
     <string name="action_more">Ещё</string>
     <string name="action_edit">Редактировать</string>
+    <string name="action_remove_card">Убрать одну копию</string>
+    <string name="action_view_card">Посмотреть карту</string>
     <string name="action_press_back_again_exit">Нажмите «Назад» ещё раз для выхода</string>
 
     <!-- Sort options -->
@@ -181,6 +186,8 @@
     <string name="more_settings_subtitle">Тема, язык, приватность</string>
     <string name="more_card_data">Данные карт</string>
     <string name="more_card_data_subtitle">Билд, последняя проверка</string>
+    <string name="more_card_library">Card Library</string>
+    <string name="more_card_library_subtitle">Все карты и фильтры</string>
 
     <!-- Privacy -->
     <string name="settings_privacy_policy">Политика конфиденциальности</string>
@@ -231,6 +238,17 @@
     <string name="settings_last_check_never">никогда</string>
     <string name="settings_refresh_card_data">Обновить данные карт</string>
     <string name="settings_refresh_card_data_subtitle">Проверить свежие карты и ротацию сейчас.</string>
+    <string name="settings_card_data_locale">Локаль</string>
+    <string name="settings_card_data_cards">Карт</string>
+    <string name="settings_card_data_size">Размер локальных данных</string>
+    <string name="card_data_dialog_title">Подготавливаем данные карт</string>
+    <string name="card_data_mobile_title">Скачать через мобильную сеть?</string>
+    <string name="card_data_mobile_message">Данные карт занимают примерно 25 МБ до сохранения локально. Продолжить через мобильную сеть?</string>
+    <string name="card_data_mobile_remember">Больше не спрашивать для мобильной сети</string>
+    <string name="card_data_no_network_title">Нет подключения к сети</string>
+    <string name="card_data_no_network_message">Подключитесь к интернету, чтобы скачать данные карт.</string>
+    <string name="card_data_error_title">Не удалось скачать данные карт</string>
+    <string name="card_data_error_message">Приложение не смогло скачать и сохранить данные карт. Попробуйте ещё раз.</string>
     <string name="snackbar_cards_updated">Карты обновлены до билда %1$s</string>
     <string name="library_rotation_lag_title">Standard-ротация может быть устаревшей</string>
     <string name="library_rotation_lag_body">%1$d сет(ов) c карт ещё не известны python-hearthstone.</string>

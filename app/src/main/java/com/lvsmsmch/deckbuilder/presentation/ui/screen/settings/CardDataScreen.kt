@@ -31,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +40,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
+import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CardDataUpdateDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -50,11 +54,15 @@ fun CardDataScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
+    var showRefreshDialog by remember { mutableStateOf(false) }
     LaunchedEffect(state.message) {
         state.message?.let {
             snackbar.showSnackbar(it)
             viewModel.dismissMessage()
         }
+    }
+    LaunchedEffect(state.prefs.cardLocale) {
+        viewModel.refreshCardDataMetadata()
     }
 
     Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
@@ -97,12 +105,24 @@ fun CardDataScreen(
                         title = stringResource(R.string.settings_last_check),
                         value = formatLastCheck(state.prefs.lastUpdateCheckAtMs),
                     )
+                    InfoRow(
+                        title = stringResource(R.string.settings_card_data_locale),
+                        value = SupportedCardLocales.displayName(state.prefs.cardLocale),
+                    )
+                    InfoRow(
+                        title = stringResource(R.string.settings_card_data_cards),
+                        value = state.cardCount.toString(),
+                    )
+                    InfoRow(
+                        title = stringResource(R.string.settings_card_data_size),
+                        value = formatBytes(state.cardDataBytes),
+                    )
                 }
             }
 
             RefreshCardDataRow(
                 isRefreshing = state.isRefreshingCardData,
-                onClick = viewModel::refreshCardDataNow,
+                onClick = { showRefreshDialog = true },
             )
         }
 
@@ -115,6 +135,18 @@ fun CardDataScreen(
                 contentColor = DeckBuilderColors.OnSurface,
             ) { Text(data.visuals.message) }
         }
+    }
+
+    if (showRefreshDialog) {
+        CardDataUpdateDialog(
+            required = false,
+            preferences = state.prefs,
+            onDismiss = {
+                showRefreshDialog = false
+                viewModel.refreshCardDataMetadata()
+            },
+            onExitApp = onBack,
+        )
     }
 }
 
@@ -195,4 +227,10 @@ private fun formatLastCheck(epochMs: Long?): String {
         java.text.DateFormat.SHORT,
     )
     return fmt.format(java.util.Date(epochMs))
+}
+
+private fun formatBytes(bytes: Long): String = when {
+    bytes >= 1024L * 1024L -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
+    bytes >= 1024L -> "%.1f KB".format(bytes / 1024.0)
+    else -> "$bytes B"
 }

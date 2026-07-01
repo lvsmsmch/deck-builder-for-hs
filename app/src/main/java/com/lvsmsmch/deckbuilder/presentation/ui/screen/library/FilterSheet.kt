@@ -123,12 +123,18 @@ private fun Header(hasFilters: Boolean, onReset: () -> Unit) {
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
         )
-        Text(
-            text = stringResource(R.string.action_reset_all),
-            style = MaterialTheme.typography.labelMedium,
-            color = if (hasFilters) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDimmer,
-            modifier = Modifier.clickable(enabled = hasFilters, onClick = onReset),
-        )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(99.dp))
+                .clickable(enabled = hasFilters, onClick = onReset)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.action_reset_all),
+                style = MaterialTheme.typography.labelMedium,
+                color = if (hasFilters) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDimmer,
+            )
+        }
     }
 }
 

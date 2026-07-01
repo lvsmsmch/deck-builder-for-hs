@@ -6,6 +6,7 @@ data class AppPreferences(
     val theme: ThemeMode = ThemeMode.System,
     val cardLocale: String = SupportedCardLocales.defaultForSystem(),
     val crashReportingEnabled: Boolean = true,
+    val allowMobileCardDataDownload: Boolean = false,
     val lastSeenSetSlug: String? = null,
     val lastUpdateCheckAtMs: Long? = null,
 )

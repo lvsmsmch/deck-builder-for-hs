@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DataObject
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +32,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 @Composable
 fun MoreScreen(
     onOpenSettings: () -> Unit,
-    onOpenCardData: () -> Unit,
+    onOpenCardLibrary: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -57,10 +57,10 @@ fun MoreScreen(
                 onClick = onOpenSettings,
             )
             HubRow(
-                icon = Icons.Outlined.DataObject,
-                title = stringResource(R.string.more_card_data),
-                subtitle = stringResource(R.string.more_card_data_subtitle),
-                onClick = onOpenCardData,
+                icon = Icons.Outlined.GridView,
+                title = stringResource(R.string.more_card_library),
+                subtitle = stringResource(R.string.more_card_library_subtitle),
+                onClick = onOpenCardLibrary,
             )
         }
     }

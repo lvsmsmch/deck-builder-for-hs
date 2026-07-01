@@ -44,7 +44,7 @@ class SettingsViewModel(
             }
             .distinctUntilChangedBy { it.cardLocale }
             .onEach { prefs ->
-                refreshBuildLabel(prefs.cardLocale)
+                refreshCardDataMetadata(prefs.cardLocale)
             }
             .launchIn(viewModelScope)
     }
@@ -65,7 +65,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isRefreshingCardData = true, message = null) }
             val result = runCatching { updateRunner.runOnce(reason = "card data screen") }
-            refreshBuildLabel(_state.value.prefs.cardLocale)
+            refreshCardDataMetadata(_state.value.prefs.cardLocale)
             _state.update {
                 it.copy(
                     isRefreshingCardData = false,
@@ -79,8 +79,20 @@ class SettingsViewModel(
         _state.update { it.copy(message = null) }
     }
 
-    private suspend fun refreshBuildLabel(locale: String) {
+    fun refreshCardDataMetadata() {
+        viewModelScope.launch { refreshCardDataMetadata(_state.value.prefs.cardLocale) }
+    }
+
+    private suspend fun refreshCardDataMetadata(locale: String) {
         val build = runCatching { hsJson.currentBuild(locale) }.getOrNull()
-        _state.update { it.copy(cardsBuild = build) }
+        val snapshot = runCatching { hsJson.cached(locale) }.getOrNull()
+        val bytes = snapshot?.cards.orEmpty().sumOf { it.payloadJson.toByteArray().size.toLong() }
+        _state.update {
+            it.copy(
+                cardsBuild = build,
+                cardCount = snapshot?.cards?.size ?: 0,
+                cardDataBytes = bytes,
+            )
+        }
     }
 }

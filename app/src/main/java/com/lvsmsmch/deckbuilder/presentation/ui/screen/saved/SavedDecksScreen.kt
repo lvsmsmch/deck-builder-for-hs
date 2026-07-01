@@ -56,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
@@ -118,7 +119,7 @@ fun SavedDecksScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 20.dp),
                 ) {
                     items(state.decks, key = { it.code }) { deck ->
                         SavedDeckRow(
@@ -393,7 +394,7 @@ private fun EmptyState() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 32.dp),
+            .padding(horizontal = 40.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -401,12 +402,14 @@ private fun EmptyState() {
             text = stringResource(R.string.saved_empty_title),
             style = MaterialTheme.typography.titleMedium,
             color = DeckBuilderColors.OnSurface,
+            textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
             text = stringResource(R.string.saved_empty_body),
             style = MaterialTheme.typography.bodyMedium,
             color = DeckBuilderColors.OnSurfaceDim,
+            textAlign = TextAlign.Center,
         )
     }
 }

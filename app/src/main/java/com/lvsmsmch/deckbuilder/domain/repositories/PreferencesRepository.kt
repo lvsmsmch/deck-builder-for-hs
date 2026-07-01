@@ -14,6 +14,7 @@ interface PreferencesRepository {
     suspend fun setTheme(theme: ThemeMode)
     suspend fun setCardLocale(locale: String)
     suspend fun setCrashReportingEnabled(enabled: Boolean)
+    suspend fun setAllowMobileCardDataDownload(enabled: Boolean)
     suspend fun setLastSeenSetSlug(slug: String?)
     suspend fun setLastUpdateCheckAt(epochMs: Long)
 }

@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,12 +28,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
@@ -69,6 +73,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
@@ -78,7 +84,6 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroPortrait
-import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
@@ -92,6 +97,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun DeckBuilderScreen(
     onDeckSaved: (String) -> Unit,
     onExit: () -> Unit,
+    onOpenCard: (Card) -> Unit,
     viewModel: DeckBuilderViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -137,11 +143,11 @@ fun DeckBuilderScreen(
                 onRemove = viewModel::removeCard,
                 onLoadMore = viewModel::loadNextPoolPage,
                 onSave = requestSave,
-                onToggleSingleton = viewModel::toggleSingleton,
                 onSelectFormat = viewModel::setFormat,
                 onSetPoolSort = viewModel::setPoolSort,
                 onTogglePoolMana = viewModel::togglePoolManaCost,
                 onApplyPoolFilters = viewModel::applyPoolFilters,
+                onOpenCard = onOpenCard,
             )
         }
 
@@ -287,29 +293,28 @@ private fun EditingView(
     onRemove: (com.lvsmsmch.deckbuilder.domain.entities.Card) -> Unit,
     onLoadMore: () -> Unit,
     onSave: () -> Unit,
-    onToggleSingleton: () -> Unit,
     onSelectFormat: (GameFormat) -> Unit,
     onSetPoolSort: (SortKey, SortDir) -> Unit,
     onTogglePoolMana: (Int) -> Unit,
-    onApplyPoolFilters: (com.lvsmsmch.deckbuilder.domain.entities.CardFilters) -> Unit,
+    onApplyPoolFilters: (CardFilters) -> Unit,
+    onOpenCard: (Card) -> Unit,
 ) {
-    var activeTab by remember { mutableStateOf(EditingTab.Deck) }
+    var activeTab by remember { mutableStateOf(EditingTab.Pool) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Header(
             chosenClass = state.chosenClass,
             cardCount = state.cardCount,
             maxDeckSize = state.maxDeckSize,
-            singleton = state.singleton,
             format = state.format,
             onBack = onBack,
-            onToggleSingleton = onToggleSingleton,
             onSelectFormat = onSelectFormat,
         )
 
         TabBar(
             active = activeTab,
             poolCount = state.pool.totalCount,
+            poolLoading = state.pool.isLoading && state.pool.totalCount == 0,
             deckCount = state.cardCount,
             onSelect = { activeTab = it },
         )
@@ -320,24 +325,29 @@ private fun EditingView(
                     state = state,
                     onSetQuery = onSetQuery,
                     onAdd = onAdd,
+                    onRemove = onRemove,
                     onLoadMore = onLoadMore,
                     onSetSort = onSetPoolSort,
                     onToggleMana = onTogglePoolMana,
                     onApplyFilters = onApplyPoolFilters,
+                    onOpenCard = onOpenCard,
                 )
                 EditingTab.Deck -> DeckPane(
                     state = state,
                     onRemove = onRemove,
+                    onOpenCard = onOpenCard,
                 )
             }
         }
 
-        BottomActions(
-            canSave = state.canSave,
-            isSaving = state.isSaving,
-            error = state.saveError,
-            onSave = onSave,
-        )
+        if (activeTab == EditingTab.Deck) {
+            BottomActions(
+                canSave = state.canSave,
+                isSaving = state.isSaving,
+                error = state.saveError,
+                onSave = onSave,
+            )
+        }
     }
 }
 
@@ -348,10 +358,8 @@ private fun Header(
     chosenClass: ClassMeta?,
     cardCount: Int,
     maxDeckSize: Int,
-    singleton: Boolean,
     format: GameFormat,
     onBack: () -> Unit,
-    onToggleSingleton: () -> Unit,
     onSelectFormat: (GameFormat) -> Unit,
 ) {
     val color = colorForClassSlug(chosenClass?.slug)
@@ -436,32 +444,6 @@ private fun Header(
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
                 .background(
-                    if (singleton) DeckBuilderColors.Rarity.Legendary.copy(alpha = 0.18f)
-                    else DeckBuilderColors.SurfaceContainerHigh,
-                )
-                .border(
-                    1.dp,
-                    if (singleton) DeckBuilderColors.Rarity.Legendary else DeckBuilderColors.OutlineSoft,
-                    RoundedCornerShape(10.dp),
-                )
-                .clickable(onClick = onToggleSingleton)
-                .height(34.dp)
-                .padding(horizontal = 11.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "\u26051",
-                style = MaterialTheme.typography.labelMedium,
-                color = if (singleton) DeckBuilderColors.Rarity.Legendary else DeckBuilderColors.OnSurfaceDim,
-            )
-        }
-
-        Spacer(Modifier.width(6.dp))
-
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(
                     if (full) DeckBuilderColors.Success.copy(alpha = 0.18f)
                     else DeckBuilderColors.SurfaceContainerHigh,
                 )
@@ -485,6 +467,7 @@ private fun Header(
 private fun TabBar(
     active: EditingTab,
     poolCount: Int,
+    poolLoading: Boolean,
     deckCount: Int,
     onSelect: (EditingTab) -> Unit,
 ) {
@@ -495,14 +478,14 @@ private fun TabBar(
     ) {
         TabButton(
             label = stringResource(R.string.builder_pool_tab),
-            count = poolCount,
+            count = if (poolLoading) "..." else poolCount.toString(),
             active = active == EditingTab.Pool,
             onClick = { onSelect(EditingTab.Pool) },
             modifier = Modifier.weight(1f),
         )
         TabButton(
             label = stringResource(R.string.builder_deck_tab),
-            count = deckCount,
+            count = deckCount.toString(),
             active = active == EditingTab.Deck,
             onClick = { onSelect(EditingTab.Deck) },
             modifier = Modifier.weight(1f),
@@ -519,14 +502,19 @@ private fun TabBar(
 @Composable
 private fun TabButton(
     label: String,
-    count: Int,
+    count: String,
     active: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val contentColor = if (active) DeckBuilderColors.OnSurface else DeckBuilderColors.OnSurfaceDim
     Column(
         modifier = modifier
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
             .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -534,21 +522,19 @@ private fun TabButton(
             Text(
                 text = label,
                 style = MaterialTheme.typography.titleSmall,
-                color = if (active) DeckBuilderColors.OnSurface else DeckBuilderColors.OnSurfaceDim,
+                color = contentColor,
             )
             Spacer(Modifier.width(6.dp))
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
-                    .background(
-                        if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainerHigh,
-                    )
+                    .background(DeckBuilderColors.SurfaceContainerHigh)
                     .padding(horizontal = 6.dp, vertical = 1.dp),
             ) {
                 Text(
-                    text = count.toString(),
+                    text = count,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
+                    color = contentColor,
                 )
             }
         }
@@ -566,11 +552,13 @@ private fun TabButton(
 private fun PoolPane(
     state: BuilderState,
     onSetQuery: (String) -> Unit,
-    onAdd: (com.lvsmsmch.deckbuilder.domain.entities.Card) -> Unit,
+    onAdd: (Card) -> Unit,
+    onRemove: (Card) -> Unit,
     onLoadMore: () -> Unit,
     onSetSort: (SortKey, SortDir) -> Unit,
     onToggleMana: (Int) -> Unit,
-    onApplyFilters: (com.lvsmsmch.deckbuilder.domain.entities.CardFilters) -> Unit,
+    onApplyFilters: (CardFilters) -> Unit,
+    onOpenCard: (Card) -> Unit,
 ) {
     val gridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
@@ -654,51 +642,25 @@ private fun PoolPane(
 
         LazyVerticalGrid(
             state = gridState,
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            columns = GridCells.Fixed(4),
+            contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxSize(),
         ) {
             items(state.pool.cards, key = { it.id }) { card ->
                 val count = state.deck[card.id]?.count ?: 0
-                Box(
-                    modifier = if (count > 0) {
-                        Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .border(2.dp, DeckBuilderColors.Primary, RoundedCornerShape(14.dp))
-                    } else {
-                        Modifier
-                    },
-                ) {
-                    CardThumbnail(card = card, onClick = { onAdd(card) })
-                    if (count > 0) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(7.dp)
-                                .size(34.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(DeckBuilderColors.Primary)
-                                .border(
-                                    1.dp,
-                                    DeckBuilderColors.OnPrimary.copy(alpha = 0.8f),
-                                    RoundedCornerShape(12.dp),
-                                ),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = "x$count",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = DeckBuilderColors.OnPrimary,
-                            )
-                        }
-                    }
-                }
+                PoolCard(
+                    card = card,
+                    count = count,
+                    onAdd = { onAdd(card) },
+                    onRemove = { onRemove(card) },
+                    onOpenCard = { onOpenCard(card) },
+                )
             }
 
             if (state.pool.isLoadingMore || state.pool.hasMore) {
-                item(span = { GridItemSpan(2) }) {
+                item(span = { GridItemSpan(4) }) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         contentAlignment = Alignment.Center,
@@ -710,6 +672,82 @@ private fun PoolPane(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PoolCard(
+    card: Card,
+    count: Int,
+    onAdd: () -> Unit,
+    onRemove: () -> Unit,
+    onOpenCard: () -> Unit,
+) {
+    val shape = RoundedCornerShape(14.dp)
+    Box(
+        modifier = if (count > 0) {
+            Modifier
+                .clip(shape)
+                .border(1.dp, DeckBuilderColors.Primary, shape)
+        } else {
+            Modifier
+        },
+    ) {
+        CardThumbnail(card = card, onClick = onAdd)
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(5.dp)
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(DeckBuilderColors.SurfaceContainer.copy(alpha = 0.92f))
+                .border(1.dp, DeckBuilderColors.OutlineSoft, CircleShape)
+                .clickable(onClick = onOpenCard),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Visibility,
+                contentDescription = stringResource(R.string.action_view_card),
+                tint = DeckBuilderColors.OnSurface,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+        if (count > 0) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(5.dp)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(DeckBuilderColors.Primary)
+                    .border(1.dp, DeckBuilderColors.OnPrimary.copy(alpha = 0.8f), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "x$count",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = DeckBuilderColors.OnPrimary,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 37.dp, end = 5.dp)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(DeckBuilderColors.SurfaceContainer.copy(alpha = 0.92f))
+                    .border(1.dp, DeckBuilderColors.OutlineSoft, CircleShape)
+                    .clickable(onClick = onRemove),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Remove,
+                    contentDescription = stringResource(R.string.action_remove_card),
+                    tint = DeckBuilderColors.OnSurface,
+                    modifier = Modifier.size(17.dp),
+                )
             }
         }
     }
@@ -740,9 +778,9 @@ private fun PoolControls(
         Box {
             Row(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(99.dp))
                     .background(DeckBuilderColors.SurfaceContainer)
-                    .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
+                    .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(99.dp))
                     .clickable { sortMenuOpen = true }
                     .height(40.dp)
                     .padding(horizontal = 12.dp),
@@ -851,7 +889,8 @@ private fun poolSortLabel(sort: CardSort): Int =
 @Composable
 private fun DeckPane(
     state: BuilderState,
-    onRemove: (com.lvsmsmch.deckbuilder.domain.entities.Card) -> Unit,
+    onRemove: (Card) -> Unit,
+    onOpenCard: (Card) -> Unit,
 ) {
     if (state.deck.isEmpty()) {
         Column(
@@ -874,27 +913,16 @@ private fun DeckPane(
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(DeckBuilderColors.SurfaceContainer),
-        ) {
-            ManaCurve(entries = state.deckEntries)
-        }
-
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            items(state.deckEntries, key = { it.card.id }) { entry ->
-                DeckCardRow(
-                    entry = entry,
-                    onClick = { onRemove(entry.card) },
-                )
-            }
+    LazyColumn(
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 24.dp),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        items(state.deckEntries, key = { it.card.id }) { entry ->
+            DeckCardRow(
+                entry = entry,
+                onClick = { onOpenCard(entry.card) },
+                onRemove = { onRemove(entry.card) },
+            )
         }
     }
 }
@@ -909,7 +937,6 @@ private fun BottomActions(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(DeckBuilderColors.SurfaceContainer)
             .navigationBarsPadding()
             .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp),
     ) {

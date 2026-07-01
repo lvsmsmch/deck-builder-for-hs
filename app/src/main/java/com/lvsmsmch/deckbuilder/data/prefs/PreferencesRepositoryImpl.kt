@@ -40,6 +40,11 @@ class PreferencesRepositoryImpl(
         Log.i(TAG, "setCrashReportingEnabled: $enabled")
     }
 
+    override suspend fun setAllowMobileCardDataDownload(enabled: Boolean) {
+        store.edit { it[Keys.allowMobileCardDataDownload] = enabled }
+        Log.i(TAG, "setAllowMobileCardDataDownload: $enabled")
+    }
+
     override suspend fun setLastSeenSetSlug(slug: String?) {
         store.edit {
             if (slug == null) it.remove(Keys.lastSeenSetSlug)
@@ -57,6 +62,7 @@ class PreferencesRepositoryImpl(
             ?: ThemeMode.System,
         cardLocale = this[Keys.cardLocale] ?: SupportedCardLocales.defaultForSystem(),
         crashReportingEnabled = this[Keys.crashEnabled] ?: true,
+        allowMobileCardDataDownload = this[Keys.allowMobileCardDataDownload] ?: false,
         lastSeenSetSlug = this[Keys.lastSeenSetSlug],
         lastUpdateCheckAtMs = this[Keys.lastUpdateCheckAt],
     )
@@ -65,6 +71,7 @@ class PreferencesRepositoryImpl(
         val theme = stringPreferencesKey("theme")
         val cardLocale = stringPreferencesKey("card_locale")
         val crashEnabled = booleanPreferencesKey("crash_enabled")
+        val allowMobileCardDataDownload = booleanPreferencesKey("allow_mobile_card_data_download")
         val lastSeenSetSlug = stringPreferencesKey("last_seen_set_slug")
         val lastUpdateCheckAt = longPreferencesKey("last_update_check_at_ms")
     }

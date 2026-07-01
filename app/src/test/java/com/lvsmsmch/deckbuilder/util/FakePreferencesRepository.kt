@@ -28,6 +28,9 @@ class FakePreferencesRepository(
     override suspend fun setCrashReportingEnabled(enabled: Boolean) {
         state.update { it.copy(crashReportingEnabled = enabled) }
     }
+    override suspend fun setAllowMobileCardDataDownload(enabled: Boolean) {
+        state.update { it.copy(allowMobileCardDataDownload = enabled) }
+    }
     override suspend fun setLastSeenSetSlug(slug: String?) {
         state.update { it.copy(lastSeenSetSlug = slug) }
     }

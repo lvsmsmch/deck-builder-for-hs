@@ -10,8 +10,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,10 +39,10 @@ fun DeckCardRow(
     entry: DeckCardEntry,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
+    onRemove: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val card = entry.card
-    val isLegendary = card.rarity?.slug?.equals("legendary", ignoreCase = true) == true
 
     Row(
         modifier = modifier
@@ -85,32 +90,40 @@ fun DeckCardRow(
             )
         }
 
-        CountPill(count = entry.count, isLegendary = isLegendary)
+        CountPill(count = entry.count)
+        if (onRemove != null) {
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(DeckBuilderColors.SurfaceContainerHigh)
+                    .clickable(onClick = onRemove),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Remove,
+                    contentDescription = null,
+                    tint = DeckBuilderColors.OnSurface,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
         Spacer(Modifier.width(2.dp))
     }
 }
 
 @Composable
-private fun CountPill(count: Int, isLegendary: Boolean) {
-    if (isLegendary) {
+private fun CountPill(count: Int) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    ) {
         Text(
-            text = "★",
-            style = MaterialTheme.typography.titleMedium,
-            color = DeckBuilderColors.Rarity.Legendary,
-            modifier = Modifier.padding(horizontal = 6.dp),
+            text = "x$count",
+            style = MaterialTheme.typography.labelMedium,
+            color = DeckBuilderColors.OnSurfaceDim,
         )
-    } else {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(DeckBuilderColors.SurfaceContainerHigh)
-                .padding(horizontal = 8.dp, vertical = 3.dp),
-        ) {
-            Text(
-                text = "×$count",
-                style = MaterialTheme.typography.labelMedium,
-                color = DeckBuilderColors.OnSurfaceDim,
-            )
-        }
     }
 }
