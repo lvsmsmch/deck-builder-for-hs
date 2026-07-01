@@ -82,6 +82,7 @@ fun DeckViewScreen(
     code: String,
     initialSavedName: String? = null,
     onBack: () -> Unit,
+    onEditDeck: () -> Unit = {},
     onCardClick: (Card) -> Unit = {},
     viewModel: DeckViewViewModel = koinViewModel(parameters = { parametersOf(code, initialSavedName.orEmpty()) }),
 ) {
@@ -119,6 +120,7 @@ fun DeckViewScreen(
                 savedName = state.savedName,
                 isSaved = state.isSaved,
                 onRename = viewModel::rename,
+                onEditDeck = onEditDeck,
                 onCardClick = onCardClick,
                 onCopyCode = { copyToClipboard(context, deckState.data.code) },
             )
@@ -194,6 +196,7 @@ private fun Body(
     savedName: String?,
     isSaved: Boolean,
     onRename: (String) -> Unit,
+    onEditDeck: () -> Unit,
     onCardClick: (Card) -> Unit,
     onCopyCode: () -> Unit,
 ) {
@@ -207,6 +210,7 @@ private fun Body(
                 savedName = savedName,
                 isSaved = isSaved,
                 onRename = onRename,
+                onEditDeck = onEditDeck,
             )
         }
 
@@ -270,6 +274,7 @@ private fun HeroHeader(
     savedName: String?,
     isSaved: Boolean,
     onRename: (String) -> Unit,
+    onEditDeck: () -> Unit,
 ) {
     val classSlug = deck.heroClass?.slug
     val heroCardId = deck.hero?.slug?.takeIf { it.startsWith("HERO_") }
@@ -293,12 +298,31 @@ private fun HeroHeader(
                 contentDescription = deck.heroClass?.name,
                 modifier = Modifier.fillMaxSize(),
             )
+            if (isSaved) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DeckBuilderColors.SurfaceContainer.copy(alpha = 0.92f))
+                        .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
+                        .clickable(onClick = onEditDeck),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = stringResource(R.string.action_edit),
+                        tint = DeckBuilderColors.OnSurface,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
         }
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             EditableTitle(
                 text = displayName,
-                editable = isSaved,
+                editable = false,
                 onCommit = onRename,
             )
             Spacer(Modifier.height(4.dp))

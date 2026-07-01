@@ -1,7 +1,9 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -34,6 +36,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
  * we render them at the row height while letting the tile crop horizontally
  * rather than stretch — earlier `FillBounds` made art look squished).
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeckCardRow(
     entry: DeckCardEntry,
@@ -48,7 +51,10 @@ fun DeckCardRow(
         modifier = modifier
             .fillMaxWidth()
             .height(40.dp)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -116,9 +122,11 @@ fun DeckCardRow(
 private fun CountPill(count: Int) {
     Box(
         modifier = Modifier
+            .width(38.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(DeckBuilderColors.SurfaceContainerHigh)
             .padding(horizontal = 8.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = "x$count",

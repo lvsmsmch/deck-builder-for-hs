@@ -83,7 +83,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
             composable<Home> {
                 HomeScreen(
                     onOpenDeck = { code, savedName -> navController.navigate(DeckView(code = code, savedName = savedName)) },
-                    onCreateDeck = { navController.navigate(Builder) },
+                    onCreateDeck = { navController.navigate(Builder()) },
                     onOpenSettings = { navController.navigate(Settings) },
                     onOpenCardLibrary = { navController.navigate(Library()) },
                 )
@@ -96,11 +96,14 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                     onCardClick = { card -> navController.navigate(CardDetail(idOrSlug = card.id.toString())) },
                 )
             }
-            composable<Builder> {
+            composable<Builder> { entry ->
+                val args = entry.toRoute<Builder>()
                 DeckBuilderScreen(
+                    editCode = args.editCode,
+                    savedName = args.savedName,
                     onDeckSaved = { code ->
                         navController.navigate(DeckView(code = code)) {
-                            popUpTo(Builder) { inclusive = true }
+                            popUpTo(Builder(args.editCode, args.savedName)) { inclusive = true }
                         }
                     },
                     onExit = { navController.navigateUp() },
@@ -124,6 +127,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                     code = args.code,
                     initialSavedName = args.savedName,
                     onBack = { navController.navigateUp() },
+                    onEditDeck = { navController.navigate(Builder(editCode = args.code, savedName = args.savedName)) },
                     onCardClick = { card ->
                         navController.navigate(CardDetail(idOrSlug = card.id.toString()))
                     },

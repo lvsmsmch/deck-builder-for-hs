@@ -13,6 +13,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.isPrinceRenathal
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
+import com.lvsmsmch.deckbuilder.domain.repositories.SavedDeckRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.AssembleDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
@@ -39,6 +41,10 @@ class DeckBuilderViewModel(
     private val assembleDeck: AssembleDeckUseCase,
     private val saveDeck: SaveDeckUseCase,
     private val rotation: RotationRepository,
+    private val decks: DeckRepository,
+    private val savedDecks: SavedDeckRepository,
+    private val editCode: String? = null,
+    private val savedName: String? = null,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BuilderState())
@@ -50,6 +56,7 @@ class DeckBuilderViewModel(
     private var poolJob: Job? = null
     private var saveJob: Job? = null
     private var pickJob: Job? = null
+    private var editingOriginalCode: String? = editCode
 
     init {
         _state
@@ -59,6 +66,42 @@ class DeckBuilderViewModel(
             .debounce(350L)
             .onEach { reloadPoolFirstPage() }
             .launchIn(viewModelScope)
+
+        editCode?.takeIf { it.isNotBlank() }?.let(::loadDeckForEditing)
+    }
+
+    private fun loadDeckForEditing(code: String) {
+        pickJob?.cancel()
+        pickJob = viewModelScope.launch {
+            when (val result = decks.decodeByCode(code)) {
+                is Result.Success -> {
+                    val deck = result.data
+                    val classSlug = deck.heroClass?.slug ?: deck.hero?.classes?.firstOrNull()?.slug
+                    val meta = deck.heroClass ?: classSlug?.let { ClassMeta(id = 0, slug = it, name = it) }
+                    _state.update {
+                        it.copy(
+                            phase = Phase.Editing,
+                            chosenClass = meta,
+                            heroCardId = deck.hero?.id ?: meta?.slug?.let(DefaultHeroes::dbfIdFor),
+                            format = deck.format.takeUnless { f -> f == GameFormat.UNKNOWN } ?: GameFormat.STANDARD,
+                            deck = deck.cards.associateBy { entry -> entry.card.id },
+                            pool = PoolState(isLoading = true),
+                            saveError = null,
+                        )
+                    }
+                    reloadPoolFirstPage()
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            phase = Phase.ClassPicker,
+                            saveError = result.throwable.message ?: result.throwable.javaClass.simpleName,
+                        )
+                    }
+                    flashToast(result.throwable.message ?: "Could not load deck")
+                }
+            }
+        }
     }
 
     fun pickClassBySlug(slug: String) {
@@ -206,7 +249,13 @@ class DeckBuilderViewModel(
             when (val r = assembleDeck(ids = ids, heroCardId = st.heroCardId, format = st.format)) {
                 is Result.Success -> {
                     val deck = r.data
-                    saveDeck(deck, name = null)
+                    val oldCode = editingOriginalCode
+                    val name = savedName ?: oldCode?.let { savedDecks.get(it)?.name }
+                    saveDeck(deck, name = name)
+                    if (oldCode != null && oldCode != deck.code) {
+                        runCatching { savedDecks.delete(oldCode) }
+                    }
+                    editingOriginalCode = deck.code
                     _state.update { it.copy(isSaving = false) }
                     _effects.trySend(BuilderEffect.DeckSaved(deck.code))
                 }

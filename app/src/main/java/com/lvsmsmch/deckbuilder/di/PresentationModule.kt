@@ -21,7 +21,18 @@ val presentationModule = module {
         )
     }
     viewModelOf(::SavedDecksViewModel)
-    viewModelOf(::DeckBuilderViewModel)
+    viewModel { (editCode: String?, savedName: String?) ->
+        DeckBuilderViewModel(
+            searchCards = get(),
+            assembleDeck = get(),
+            saveDeck = get(),
+            rotation = get(),
+            decks = get(),
+            savedDecks = get(),
+            editCode = editCode,
+            savedName = savedName,
+        )
+    }
     viewModel { (initialPreferences: AppPreferences) ->
         SettingsViewModel(
             observePrefs = get(),

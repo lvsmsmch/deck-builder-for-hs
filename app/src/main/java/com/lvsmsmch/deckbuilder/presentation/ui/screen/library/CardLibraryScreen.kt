@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -30,9 +31,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -69,6 +69,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classShortLabel
@@ -91,6 +92,7 @@ fun CardLibraryScreen(
     val gridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
     var showFilterSheet by remember { mutableStateOf(false) }
+    var previewCard by remember { mutableStateOf<Card?>(null) }
     var seenContentVersion by remember { mutableStateOf(state.contentVersion) }
 
     val notifier: UpdateNotifier = koinInject()
@@ -128,6 +130,7 @@ fun CardLibraryScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DeckBuilderColors.Surface)
+            .statusBarsPadding()
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { focusManager.clearFocus() })
             },
@@ -203,6 +206,7 @@ fun CardLibraryScreen(
                         focusManager.clearFocus()
                         onCardClick(it)
                     },
+                    onCardPreview = { previewCard = it },
                 )
             }
             if (state.isLoadingFirstPage && state.cards.isNotEmpty()) {
@@ -222,6 +226,14 @@ fun CardLibraryScreen(
             current = state.filters,
             onChange = viewModel::applyFilters,
             onDismiss = { showFilterSheet = false },
+        )
+    }
+
+    previewCard?.let { card ->
+        CardPreviewDialog(
+            card = card,
+            onDismiss = { previewCard = null },
+            onMore = { onCardClick(card) },
         )
     }
 }
@@ -251,8 +263,6 @@ private fun Header(
     activeFilterCount: Int,
     onInteraction: () -> Unit,
 ) {
-    var sortMenuOpen by remember { mutableStateOf(false) }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -262,73 +272,37 @@ private fun Header(
         Text(
             text = stringResource(R.string.library_title),
             style = MaterialTheme.typography.titleLarge,
+            color = DeckBuilderColors.OnSurface,
             modifier = Modifier.weight(1f),
         )
 
-        // Sort pill — opens dropdown. No direction arrow: each direction has
-        // its own labelled entry ("Mana asc" / "Mana desc" / "Newest" / "Oldest").
-        Box {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DeckBuilderColors.SurfaceContainer)
-                    .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
-                    .clickable {
-                        onInteraction()
-                        sortMenuOpen = true
-                    }
-                    .height(40.dp)
-                    .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(currentSortLabelRes(sort)),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = DeckBuilderColors.OnSurface,
-                )
-            }
-            DropdownMenu(
-                expanded = sortMenuOpen,
-                onDismissRequest = { sortMenuOpen = false },
-            ) {
-                SortChoices.forEach { opt ->
-                    DropdownMenuItem(
-                        text = { Text(stringResource(opt.labelRes)) },
-                        onClick = {
-                            onSortChange(opt.sort)
-                            sortMenuOpen = false
-                        },
-                    )
-                }
-            }
+        HeaderIconButton(
+            onClick = {
+                onInteraction()
+                val index = SortChoices.indexOfFirst { it.sort == sort }.takeIf { it >= 0 } ?: 0
+                onSortChange(SortChoices[(index + 1) % SortChoices.size].sort)
+            },
+            badge = null,
+        ) {
+            Icon(
+                Icons.Outlined.Sort,
+                contentDescription = stringResource(currentSortLabelRes(sort)),
+                tint = DeckBuilderColors.OnSurface,
+                modifier = Modifier.size(20.dp),
+            )
         }
 
-        Spacer(Modifier.width(4.dp))
-
         Box {
-            IconButton(onClick = onOpenFilters) {
+            HeaderIconButton(
+                onClick = onOpenFilters,
+                badge = activeFilterCount.takeIf { it > 0 }?.toString(),
+            ) {
                 Icon(
                     Icons.Outlined.FilterList,
                     contentDescription = "Filters",
                     tint = DeckBuilderColors.OnSurface,
+                    modifier = Modifier.size(21.dp),
                 )
-            }
-            if (activeFilterCount > 0) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(16.dp)
-                        .clip(CircleShape)
-                        .background(DeckBuilderColors.Primary),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = activeFilterCount.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = DeckBuilderColors.OnPrimary,
-                        fontSize = 9.sp,
-                    )
-                }
             }
         }
     }
@@ -339,6 +313,42 @@ private fun Header(
         color = DeckBuilderColors.OnSurfaceDim,
         modifier = Modifier.padding(start = 20.dp, bottom = 8.dp),
     )
+}
+
+@Composable
+private fun HeaderIconButton(
+    onClick: () -> Unit,
+    badge: String?,
+    content: @Composable () -> Unit,
+) {
+    Box {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            content()
+        }
+        if (badge != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(DeckBuilderColors.Primary),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = badge,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = DeckBuilderColors.OnPrimary,
+                    fontSize = 9.sp,
+                )
+            }
+        }
+    }
 }
 
 private data class SortChoice(val labelRes: Int, val sort: CardSort)
@@ -492,20 +502,25 @@ private fun CardGrid(
     state: CardLibraryState,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     onCardClick: (Card) -> Unit,
+    onCardPreview: (Card) -> Unit,
 ) {
     LazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        columns = GridCells.Fixed(4),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
         items(state.cards, key = { it.id }) { card ->
-            CardThumbnail(card = card, onClick = { onCardClick(card) })
+            CardThumbnail(
+                card = card,
+                onClick = { onCardClick(card) },
+                onLongClick = { onCardPreview(card) },
+            )
         }
         if (state.isLoadingMore || state.hasMore) {
-            item(span = { GridItemSpan(2) }) {
+            item(span = { GridItemSpan(4) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

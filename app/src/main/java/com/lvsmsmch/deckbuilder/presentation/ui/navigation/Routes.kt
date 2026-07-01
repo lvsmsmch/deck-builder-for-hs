@@ -13,7 +13,11 @@ data class Library(
     val initialSetSlug: String? = null,
 ) : Route
 
-@Serializable data object Builder : Route
+@Serializable
+data class Builder(
+    val editCode: String? = null,
+    val savedName: String? = null,
+) : Route
 @Serializable data object Saved : Route
 @Serializable data object More : Route
 

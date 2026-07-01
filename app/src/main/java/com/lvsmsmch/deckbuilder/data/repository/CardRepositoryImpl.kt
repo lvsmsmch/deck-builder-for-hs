@@ -117,6 +117,9 @@ class CardRepositoryImpl(
         val minionTypes = filters.minionTypes.map { it.lowercase() }.toSet()
         val spellSchools = filters.spellSchools.map { it.lowercase() }.toSet()
         val keywords = filters.keywords.map { it.lowercase() }.toSet()
+        val normalizedStandardSets = standardSets.flatMap { set ->
+            listOf(set.toRotationToken(), set.toDomainSlug())
+        }.toSet()
         val expandedManaCosts: Set<Int> = filters.manaCosts
             .flatMap { c -> if (c >= 7) (7..30).toList() else listOf(c) }
             .toSortedSet()
@@ -124,9 +127,11 @@ class CardRepositoryImpl(
 
         return predicate@{ row ->
             if (filters.collectibleOnly && !row.collectible) return@predicate false
+            if (filters.collectibleOnly && row.isCosmeticHeroSkin()) return@predicate false
             if (filters.format != CardFormatFilter.ALL) {
                 val set = row.cardSet ?: return@predicate false
-                val isStandard = set.toRotationToken() in standardSets
+                val isStandard = set.toRotationToken() in normalizedStandardSets ||
+                    set.toDomainSlug() in normalizedStandardSets
                 when (filters.format) {
                     CardFormatFilter.STANDARD -> if (!isStandard) return@predicate false
                     CardFormatFilter.WILD -> if (isStandard) return@predicate false
@@ -236,3 +241,6 @@ class CardRepositoryImpl(
 }
 
 private fun String.toRotationToken(): String = uppercase().replace('-', '_')
+
+private fun HsJsonCardEntity.isCosmeticHeroSkin(): Boolean =
+    type.equals("HERO", ignoreCase = true) && text.isNullOrBlank()

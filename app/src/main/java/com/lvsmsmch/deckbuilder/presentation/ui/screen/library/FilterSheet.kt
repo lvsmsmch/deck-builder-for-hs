@@ -104,7 +104,14 @@ private fun FormatSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             Chip(
                 label = formatFilterLabel(format),
                 active = draft.format == format,
-                onClick = { onChange(draft.copy(format = format)) },
+                onClick = {
+                    val next = if (draft.format == format && format != CardFormatFilter.ALL) {
+                        CardFormatFilter.ALL
+                    } else {
+                        format
+                    }
+                    onChange(draft.copy(format = next))
+                },
             )
         }
     }
@@ -268,7 +275,7 @@ private val SetSlugs = listOf(
 private fun SetSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
     SectionHeader(stringResource(R.string.filters_section_set))
     ChipFlow {
-        SetSlugs.forEach { slug ->
+        SetSlugs.asReversed().forEach { slug ->
             Chip(
                 label = expansionLabel(slug, slug.toSetFallbackLabel()),
                 active = slug in draft.sets,

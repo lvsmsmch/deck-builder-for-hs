@@ -4,8 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -363,7 +368,18 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
             .size(512, 768)
             .build(),
     )
-    var scale by remember { mutableFloatStateOf(1f) }
+    var targetScale by remember { mutableFloatStateOf(1f) }
+    var targetOffset by remember { mutableStateOf(Offset.Zero) }
+    val scale by animateFloatAsState(
+        targetValue = targetScale,
+        animationSpec = tween(durationMillis = 180),
+        label = "fullscreen-card-scale",
+    )
+    val offset by animateOffsetAsState(
+        targetValue = targetOffset,
+        animationSpec = tween(durationMillis = 180),
+        label = "fullscreen-card-offset",
+    )
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -372,7 +388,7 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.96f))
+                .background(DeckBuilderColors.Surface)
                 .statusBarsPadding(),
         ) {
             Image(
@@ -381,20 +397,29 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .align(Alignment.Center)
+                    .padding(bottom = 72.dp)
                     .fillMaxWidth()
                     .aspectRatio(CARD_RENDER_ASPECT)
                     .graphicsLayer {
                         scaleX = scale
                         scaleY = scale
+                        translationX = offset.x
+                        translationY = offset.y
                     }
                     .pointerInput(card.id) {
                         awaitEachGesture {
                             awaitFirstDown()
                             do {
                                 val event = awaitPointerEvent()
-                                scale = (scale * event.calculateZoom()).coerceIn(1f, 3.2f)
+                                val zoom = event.calculateZoom()
+                                val softenedZoom = 1f + ((zoom - 1f) * 0.45f)
+                                targetScale = (targetScale * softenedZoom).coerceIn(1f, 3.2f)
+                                if (event.changes.count { it.pressed } >= 2) {
+                                    targetOffset += event.calculatePan()
+                                }
                             } while (event.changes.any { it.pressed })
-                            scale = 1f
+                            targetScale = 1f
+                            targetOffset = Offset.Zero
                         }
                     },
             )
@@ -535,4 +560,3 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
         }
     }
 }
-
