@@ -24,6 +24,13 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "DB.CardRepo"
+private val FALLBACK_STANDARD_SETS = setOf(
+    "CORE",
+    "WHIZBANGS_WORKSHOP",
+    "ISLAND_VACATION",
+    "SPACE",
+    "THE_LOST_CITY",
+)
 
 class CardRepositoryImpl(
     private val hsJson: HsJsonRepository,
@@ -32,6 +39,7 @@ class CardRepositoryImpl(
     private val rotation: RotationRepository,
 ) : CardRepository {
     private val memoryCache = ConcurrentHashMap<String, Card>()
+    private val searchCache = ConcurrentHashMap<String, List<HsJsonCardEntity>>()
 
     override fun cachedCard(idOrSlug: String): Card? = memoryCache[idOrSlug.lowercase()]
 
@@ -74,14 +82,17 @@ class CardRepositoryImpl(
             val resolved = locales.resolve(locale)
             val snap = hsJson.ensureLoaded(resolved)
             val standardSets = if (filters.format != CardFormatFilter.ALL) {
-                rotation.ensureLoaded().standardSets
+                rotation.ensureLoaded().standardSets.ifEmpty { FALLBACK_STANDARD_SETS }
             } else {
                 emptySet()
             }
-            val pred = buildPredicate(filters, standardSets)
-            val matched = snap.cards.filter(pred)
-            val deduped = dedupeReprints(matched)
-            val sorted = sort(deduped, filters.sort.key, filters.sort.direction)
+            val cacheKey = listOf(resolved, filters, standardSets.sorted()).joinToString("|")
+            val sorted = searchCache.getOrPut(cacheKey) {
+                val pred = buildPredicate(filters, standardSets)
+                val matched = snap.cards.filter(pred)
+                val deduped = dedupeReprints(matched)
+                sort(deduped, filters.sort.key, filters.sort.direction)
+            }
             val total = sorted.size
             val pageCount = if (pageSize > 0 && total > 0) (total + pageSize - 1) / pageSize else 1
             val from = ((page - 1).coerceAtLeast(0)) * pageSize

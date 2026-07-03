@@ -34,6 +34,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Search
@@ -41,6 +43,7 @@ import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -72,8 +75,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Card
@@ -111,11 +117,15 @@ fun DeckBuilderScreen(
     val snackbar = remember { SnackbarHostState() }
     var showExitConfirm by remember { mutableStateOf(false) }
     var showIncompleteSaveConfirm by remember { mutableStateOf(false) }
+    var rememberIncompleteSaveChoice by rememberSaveable { mutableStateOf(false) }
+    var skipIncompleteSaveConfirm by rememberSaveable { mutableStateOf(false) }
+    var rememberExitChoice by rememberSaveable { mutableStateOf(false) }
+    var skipExitConfirm by rememberSaveable { mutableStateOf(false) }
     val requestExit = {
-        if (state.phase == Phase.Editing) showExitConfirm = true else onExit()
+        if (state.phase == Phase.Editing && !skipExitConfirm) showExitConfirm = true else onExit()
     }
     val requestSave = {
-        if (state.cardCount < state.maxDeckSize) {
+        if (state.cardCount < state.maxDeckSize && !skipIncompleteSaveConfirm) {
             showIncompleteSaveConfirm = true
         } else {
             viewModel.save()
@@ -152,7 +162,6 @@ fun DeckBuilderScreen(
                 onSave = requestSave,
                 onSelectFormat = viewModel::setFormat,
                 onSetPoolSort = viewModel::setPoolSort,
-                onTogglePoolMana = viewModel::togglePoolManaCost,
                 onApplyPoolFilters = viewModel::applyPoolFilters,
                 onOpenCard = onOpenCard,
             )
@@ -176,16 +185,46 @@ fun DeckBuilderScreen(
             onDismissRequest = { showExitConfirm = false },
             containerColor = DeckBuilderColors.SurfaceContainer,
             title = { Text(stringResource(R.string.builder_exit_title)) },
-            text = { Text(stringResource(R.string.builder_exit_message)) },
+            text = {
+                Column {
+                    Text(
+                        buildAnnotatedString {
+                            append(stringResource(R.string.builder_exit_message))
+                            if (state.cardCount < state.maxDeckSize) {
+                                append(" ")
+                                append(stringResource(R.string.builder_current_count_prefix))
+                                append(" ")
+                                withStyle(SpanStyle(color = DeckBuilderColors.Error, fontWeight = FontWeight.Bold)) {
+                                    append(state.cardCount.toString())
+                                }
+                                append("/${state.maxDeckSize}.")
+                            }
+                        },
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = rememberExitChoice,
+                            onCheckedChange = { rememberExitChoice = it },
+                        )
+                        Text(
+                            text = stringResource(R.string.action_remember_choice),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = DeckBuilderColors.OnSurface,
+                        )
+                    }
+                }
+            },
             confirmButton = {
                 TextButton(onClick = {
                     showExitConfirm = false
+                    if (rememberExitChoice) skipExitConfirm = true
                     onExit()
                 }) { Text(stringResource(R.string.builder_exit_confirm), color = DeckBuilderColors.Error) }
             },
             dismissButton = {
                 TextButton(onClick = { showExitConfirm = false }) {
-                    Text(stringResource(R.string.action_cancel))
+                    Text(stringResource(R.string.action_cancel), color = DeckBuilderColors.OnSurface)
                 }
             },
         )
@@ -197,23 +236,42 @@ fun DeckBuilderScreen(
             containerColor = DeckBuilderColors.SurfaceContainer,
             title = { Text(stringResource(R.string.builder_incomplete_save_title)) },
             text = {
-                Text(
-                    stringResource(
-                        R.string.builder_incomplete_save_message,
-                        state.cardCount,
-                        state.maxDeckSize,
-                    ),
-                )
+                Column {
+                    Text(
+                        buildAnnotatedString {
+                            append(stringResource(R.string.builder_incomplete_save_prefix))
+                            append(" ")
+                            withStyle(SpanStyle(color = DeckBuilderColors.Error, fontWeight = FontWeight.Bold)) {
+                                append(state.cardCount.toString())
+                            }
+                            append("/${state.maxDeckSize}. ")
+                            append(stringResource(R.string.builder_incomplete_save_suffix))
+                        },
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = rememberIncompleteSaveChoice,
+                            onCheckedChange = { rememberIncompleteSaveChoice = it },
+                        )
+                        Text(
+                            text = stringResource(R.string.action_remember_choice),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = DeckBuilderColors.OnSurface,
+                        )
+                    }
+                }
             },
             confirmButton = {
                 TextButton(onClick = {
                     showIncompleteSaveConfirm = false
+                    if (rememberIncompleteSaveChoice) skipIncompleteSaveConfirm = true
                     viewModel.save()
-                }) { Text(stringResource(R.string.builder_incomplete_save_confirm)) }
+                }) { Text(stringResource(R.string.builder_incomplete_save_confirm), color = DeckBuilderColors.Primary) }
             },
             dismissButton = {
                 TextButton(onClick = { showIncompleteSaveConfirm = false }) {
-                    Text(stringResource(R.string.action_cancel))
+                    Text(stringResource(R.string.action_cancel), color = DeckBuilderColors.OnSurface)
                 }
             },
         )
@@ -302,7 +360,6 @@ private fun EditingView(
     onSave: () -> Unit,
     onSelectFormat: (GameFormat) -> Unit,
     onSetPoolSort: (SortKey, SortDir) -> Unit,
-    onTogglePoolMana: (Int) -> Unit,
     onApplyPoolFilters: (CardFilters) -> Unit,
     onOpenCard: (Card) -> Unit,
 ) {
@@ -314,16 +371,9 @@ private fun EditingView(
     Column(modifier = Modifier.fillMaxSize()) {
         Header(
             chosenClass = state.chosenClass,
-            cardCount = state.cardCount,
-            maxDeckSize = state.maxDeckSize,
             format = state.format,
-            activeTab = activeTab,
-            sort = state.pool.filters.sort,
-            activeFilterCount = state.pool.activeFilterCount,
             onBack = onBack,
             onSelectFormat = onSelectFormat,
-            onSetSort = onSetPoolSort,
-            onOpenFilters = { showFilters = true },
         )
 
         TabBar(
@@ -344,7 +394,8 @@ private fun EditingView(
                     onAdd = onAdd,
                     onRemove = onRemove,
                     onLoadMore = onLoadMore,
-                    onToggleMana = onTogglePoolMana,
+                    onSetSort = onSetPoolSort,
+                    onOpenFilters = { showFilters = true },
                     onPreviewCard = { previewCard = it },
                 )
                 EditingTab.Deck -> DeckPane(
@@ -361,6 +412,8 @@ private fun EditingView(
                 canSave = state.canSave,
                 isSaving = state.isSaving,
                 error = state.saveError,
+                cardCount = state.cardCount,
+                maxDeckSize = state.maxDeckSize,
                 onSave = onSave,
             )
         }
@@ -371,6 +424,7 @@ private fun EditingView(
             current = state.pool.filters,
             onChange = onApplyPoolFilters,
             onDismiss = { showFilters = false },
+            classScopeLabel = state.chosenClass?.slug?.let { classLabel(it) },
         )
     }
 
@@ -388,16 +442,9 @@ private enum class EditingTab { Pool, Deck }
 @Composable
 private fun Header(
     chosenClass: ClassMeta?,
-    cardCount: Int,
-    maxDeckSize: Int,
     format: GameFormat,
-    activeTab: EditingTab,
-    sort: CardSort,
-    activeFilterCount: Int,
     onBack: () -> Unit,
     onSelectFormat: (GameFormat) -> Unit,
-    onSetSort: (SortKey, SortDir) -> Unit,
-    onOpenFilters: () -> Unit,
 ) {
     val color = colorForClassSlug(chosenClass?.slug)
     var formatMenuOpen by remember { mutableStateOf(false) }
@@ -476,31 +523,6 @@ private fun Header(
             }
         }
 
-        if (activeTab == EditingTab.Pool) {
-            HeaderIconButton(
-                onClick = { cycleSort(sort, onSetSort) },
-                badge = null,
-            ) {
-                Icon(
-                    Icons.Outlined.Sort,
-                    contentDescription = stringResource(poolSortLabel(sort)),
-                    tint = DeckBuilderColors.OnSurface,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-            Spacer(Modifier.width(4.dp))
-            HeaderIconButton(
-                onClick = onOpenFilters,
-                badge = activeFilterCount.takeIf { it > 0 }?.toString(),
-            ) {
-                Icon(
-                    Icons.Outlined.FilterList,
-                    contentDescription = null,
-                    tint = DeckBuilderColors.OnSurface,
-                    modifier = Modifier.size(21.dp),
-                )
-            }
-        }
     }
 }
 
@@ -537,12 +559,6 @@ private fun HeaderIconButton(
             }
         }
     }
-}
-
-private fun cycleSort(current: CardSort, onSetSort: (SortKey, SortDir) -> Unit) {
-    val index = PoolSortChoices.indexOfFirst { it.sort == current }.takeIf { it >= 0 } ?: 0
-    val next = PoolSortChoices[(index + 1) % PoolSortChoices.size].sort
-    onSetSort(next.key, next.direction)
 }
 
 @Composable
@@ -639,7 +655,8 @@ private fun PoolPane(
     onAdd: (Card) -> Unit,
     onRemove: (Card) -> Unit,
     onLoadMore: () -> Unit,
-    onToggleMana: (Int) -> Unit,
+    onSetSort: (SortKey, SortDir) -> Unit,
+    onOpenFilters: () -> Unit,
     onPreviewCard: (Card) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -675,38 +692,32 @@ private fun PoolPane(
                 detectTapGestures(onTap = { focusManager.clearFocus() })
             },
     ) {
-        TextField(
+        PoolSearchRow(
             value = state.pool.filters.textQuery,
+            activeFilterCount = state.pool.activeFilterCount,
             onValueChange = onSetQuery,
-            placeholder = { Text(stringResource(R.string.builder_search_pool), color = DeckBuilderColors.OnSurfaceDimmer) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            leadingIcon = { Icon(Icons.Outlined.Search, null, tint = DeckBuilderColors.OnSurfaceDim) },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = DeckBuilderColors.SurfaceContainer,
-                unfocusedContainerColor = DeckBuilderColors.SurfaceContainer,
-                focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                focusedTextColor = DeckBuilderColors.OnSurface,
-                unfocusedTextColor = DeckBuilderColors.OnSurface,
-                cursorColor = DeckBuilderColors.Primary,
-            ),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+            onOpenFilters = {
+                focusManager.clearFocus()
+                onOpenFilters()
+            },
         )
 
         PoolControls(
-            totalCount = state.pool.totalCount,
+            sort = state.pool.filters.sort,
+            onSortChange = {
+                focusManager.clearFocus()
+                onSetSort(it.key, it.direction)
+            },
         )
 
-        if (state.pool.isLoading && state.pool.cards.isNotEmpty()) {
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                color = DeckBuilderColors.Primary,
-                trackColor = DeckBuilderColors.PrimarySoft,
-            )
+        Box(modifier = Modifier.fillMaxWidth().height(3.dp)) {
+            if (state.pool.isLoading && state.pool.cards.isNotEmpty()) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = DeckBuilderColors.Primary,
+                    trackColor = DeckBuilderColors.PrimarySoft,
+                )
+            }
         }
 
         if (state.pool.isLoading && state.pool.cards.isEmpty()) {
@@ -812,21 +823,119 @@ private fun PoolCard(
 }
 
 @Composable
-private fun PoolControls(
-    totalCount: Int,
+private fun PoolSearchRow(
+    value: String,
+    activeFilterCount: Int,
+    onValueChange: (String) -> Unit,
+    onOpenFilters: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = stringResource(R.string.library_count_format, totalCount),
-            style = MaterialTheme.typography.bodySmall,
-            color = DeckBuilderColors.OnSurfaceDim,
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text(stringResource(R.string.library_search_hint), color = DeckBuilderColors.OnSurfaceDimmer) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            leadingIcon = { Icon(Icons.Outlined.Search, null, tint = DeckBuilderColors.OnSurfaceDim) },
+            trailingIcon = {
+                if (value.isNotEmpty()) {
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = stringResource(R.string.action_clear),
+                        tint = DeckBuilderColors.OnSurfaceDim,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable { onValueChange("") }
+                            .padding(4.dp),
+                    )
+                }
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = DeckBuilderColors.SurfaceContainer,
+                unfocusedContainerColor = DeckBuilderColors.SurfaceContainer,
+                focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                focusedTextColor = DeckBuilderColors.OnSurface,
+                unfocusedTextColor = DeckBuilderColors.OnSurface,
+                cursorColor = DeckBuilderColors.Primary,
+            ),
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.weight(1f),
         )
+        HeaderIconButton(
+            onClick = onOpenFilters,
+            badge = activeFilterCount.takeIf { it > 0 }?.toString(),
+        ) {
+            Icon(
+                Icons.Outlined.FilterList,
+                contentDescription = stringResource(R.string.filters_title),
+                tint = DeckBuilderColors.OnSurface,
+                modifier = Modifier.size(21.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PoolControls(
+    sort: CardSort,
+    onSortChange: (CardSort) -> Unit,
+) {
+    var sortMenuOpen by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .height(40.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
+                .clickable { sortMenuOpen = true }
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Outlined.ArrowDropDown,
+                contentDescription = null,
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(poolSortLabel(sort)),
+                color = DeckBuilderColors.OnSurface,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                Icons.Outlined.Sort,
+                contentDescription = null,
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        DropdownMenu(
+            expanded = sortMenuOpen,
+            onDismissRequest = { sortMenuOpen = false },
+        ) {
+            PoolSortChoices.forEach { choice ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(choice.labelRes)) },
+                    onClick = {
+                        onSortChange(choice.sort)
+                        sortMenuOpen = false
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -928,8 +1037,11 @@ private fun BottomActions(
     canSave: Boolean,
     isSaving: Boolean,
     error: String?,
+    cardCount: Int,
+    maxDeckSize: Int,
     onSave: () -> Unit,
 ) {
+    val incomplete = cardCount < maxDeckSize
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -949,13 +1061,13 @@ private fun BottomActions(
                 onClick = onSave,
                 enabled = canSave,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = DeckBuilderColors.Primary,
+                    containerColor = if (incomplete) DeckBuilderColors.Error else DeckBuilderColors.Primary,
                     contentColor = DeckBuilderColors.OnPrimary,
                 ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp),
+                    .height(56.dp),
             ) {
                 if (isSaving) {
                     CircularProgressIndicator(
@@ -964,7 +1076,7 @@ private fun BottomActions(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text(stringResource(R.string.action_save_deck))
+                    Text("${stringResource(R.string.action_save_deck)} $cardCount/$maxDeckSize")
                 }
             }
         }

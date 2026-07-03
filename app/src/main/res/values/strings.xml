@@ -46,6 +46,7 @@
     <string name="action_edit">Edit</string>
     <string name="action_remove_card">Remove one copy</string>
     <string name="action_view_card">View card</string>
+    <string name="action_remember_choice">Remember choice</string>
     <string name="action_press_back_again_exit">Press Back again to exit</string>
 
     <!-- Sort options -->
@@ -59,6 +60,7 @@
     <!-- Filter sheet -->
     <string name="filters_title">Filters</string>
     <string name="filters_section_format">Format</string>
+    <string name="filters_section_card_pool">Card pool</string>
     <string name="filters_section_mana">Mana cost</string>
     <string name="filters_section_rarity">Rarity</string>
     <string name="filters_section_type">Type</string>
@@ -68,6 +70,9 @@
     <string name="filters_section_show_noncollectible">Show non-collectible</string>
     <string name="filters_collectible_only">Collectible only</string>
     <string name="filters_all_cards">All cards</string>
+    <string name="filters_pool_all">All cards</string>
+    <string name="filters_pool_class_only">%1$s cards only</string>
+    <string name="filters_pool_neutral_only">Neutral cards only</string>
 
     <!-- Builder -->
     <string name="builder_new_deck">New deck</string>
@@ -85,9 +90,12 @@
     <string name="builder_toast_deck_full">Deck is full (%1$d/%1$d)</string>
     <string name="builder_exit_title">Leave deck builder?</string>
     <string name="builder_exit_message">Your current deck draft will be discarded.</string>
+    <string name="builder_current_count_prefix">Current size:</string>
     <string name="builder_exit_confirm">Leave</string>
     <string name="builder_incomplete_save_title">Save incomplete deck?</string>
     <string name="builder_incomplete_save_message">This deck has only %1$d/%2$d cards. Save it anyway?</string>
+    <string name="builder_incomplete_save_prefix">This deck has only</string>
+    <string name="builder_incomplete_save_suffix">Save it anyway?</string>
     <string name="builder_incomplete_save_confirm">Save anyway</string>
 
     <!-- Saved Decks -->

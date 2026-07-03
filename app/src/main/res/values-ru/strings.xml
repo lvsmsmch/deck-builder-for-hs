@@ -46,6 +46,7 @@
     <string name="action_edit">Редактировать</string>
     <string name="action_remove_card">Убрать одну копию</string>
     <string name="action_view_card">Посмотреть карту</string>
+    <string name="action_remember_choice">Запомнить выбор</string>
     <string name="action_press_back_again_exit">Нажмите «Назад» ещё раз для выхода</string>
 
     <!-- Sort options -->
@@ -59,6 +60,7 @@
     <!-- Filter sheet -->
     <string name="filters_title">Фильтры</string>
     <string name="filters_section_format">Формат</string>
+    <string name="filters_section_card_pool">Пул карт</string>
     <string name="filters_section_mana">Стоимость</string>
     <string name="filters_section_rarity">Редкость</string>
     <string name="filters_section_type">Тип</string>
@@ -68,6 +70,9 @@
     <string name="filters_section_show_noncollectible">Показывать недоступные</string>
     <string name="filters_collectible_only">Только доступные</string>
     <string name="filters_all_cards">Все карты</string>
+    <string name="filters_pool_all">Все карты</string>
+    <string name="filters_pool_class_only">Только карты %1$s</string>
+    <string name="filters_pool_neutral_only">Только нейтральные</string>
 
     <!-- Builder -->
     <string name="builder_new_deck">Новая колода</string>
@@ -85,9 +90,12 @@
     <string name="builder_toast_deck_full">Колода заполнена (%1$d/%1$d)</string>
     <string name="builder_exit_title">Выйти из создания колоды?</string>
     <string name="builder_exit_message">Текущий черновик колоды будет сброшен.</string>
+    <string name="builder_current_count_prefix">Сейчас в колоде:</string>
     <string name="builder_exit_confirm">Выйти</string>
     <string name="builder_incomplete_save_title">Сохранить неполную колоду?</string>
     <string name="builder_incomplete_save_message">В колоде только %1$d/%2$d карт. Всё равно сохранить?</string>
+    <string name="builder_incomplete_save_prefix">В колоде только</string>
+    <string name="builder_incomplete_save_suffix">Всё равно сохранить?</string>
     <string name="builder_incomplete_save_confirm">Сохранить</string>
 
     <!-- Saved Decks -->

@@ -3,6 +3,7 @@ package com.lvsmsmch.deckbuilder.domain.entities
 /** Stable representation of a card library query. */
 data class CardFilters(
     val classes: Set<String> = emptySet(),
+    val classScope: CardClassScope = CardClassScope.ALL,
     val sets: Set<String> = emptySet(),
     val format: CardFormatFilter = CardFormatFilter.ALL,
     val rarities: Set<String> = emptySet(),
@@ -17,6 +18,7 @@ data class CardFilters(
 ) {
     val hasFilters: Boolean
         get() = classes.isNotEmpty() ||
+            classScope != CardClassScope.ALL ||
             sets.isNotEmpty() ||
             format != CardFormatFilter.ALL ||
             rarities.isNotEmpty() ||
@@ -27,6 +29,12 @@ data class CardFilters(
             manaCosts.isNotEmpty() ||
             !collectibleOnly ||
             textQuery.isNotBlank()
+}
+
+enum class CardClassScope {
+    ALL,
+    CLASS_ONLY,
+    NEUTRAL_ONLY,
 }
 
 enum class CardFormatFilter {

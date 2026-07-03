@@ -102,8 +102,14 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                     editCode = args.editCode,
                     savedName = args.savedName,
                     onDeckSaved = { code ->
-                        navController.navigate(DeckView(code = code)) {
-                            popUpTo(Builder(args.editCode, args.savedName)) { inclusive = true }
+                        navController.navigate(DeckView(code = code, savedName = args.savedName)) {
+                            if (args.editCode != null) {
+                                popUpTo(DeckView(code = args.editCode, savedName = args.savedName)) {
+                                    inclusive = true
+                                }
+                            } else {
+                                popUpTo(Builder(args.editCode, args.savedName)) { inclusive = true }
+                            }
                         }
                     },
                     onExit = { navController.navigateUp() },

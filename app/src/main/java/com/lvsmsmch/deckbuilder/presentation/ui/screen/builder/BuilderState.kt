@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.builder
 
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
+import com.lvsmsmch.deckbuilder.domain.entities.CardClassScope
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
@@ -49,6 +50,7 @@ data class PoolState(
 internal fun CardFilters.activeFilterCount(): Int {
     var n = 0
     if (classes.isNotEmpty()) n++
+    if (classScope != CardClassScope.ALL) n++
     if (sets.isNotEmpty()) n++
     if (format != com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter.ALL) n++
     if (rarities.isNotEmpty()) n++

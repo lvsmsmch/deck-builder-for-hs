@@ -3,6 +3,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.builder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lvsmsmch.deckbuilder.domain.common.Result
+import com.lvsmsmch.deckbuilder.domain.entities.CardClassScope
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
@@ -47,7 +48,10 @@ class DeckBuilderViewModel(
     private val savedName: String? = null,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(BuilderState())
+    private val _state = MutableStateFlow(
+        if (editCode.isNullOrBlank()) BuilderState()
+        else BuilderState(phase = Phase.Editing, pool = PoolState(isLoading = true)),
+    )
     val state: StateFlow<BuilderState> = _state.asStateFlow()
 
     private val _effects = Channel<BuilderEffect>(Channel.BUFFERED)
@@ -185,9 +189,6 @@ class DeckBuilderViewModel(
         }
         val target = (existingCount + count).coerceAtMost(cap)
         if (target == existingCount) {
-            if (st.singleton || card.isLegendary()) {
-                flashToast(if (st.singleton) "Highlander mode (×1)" else "Legendary limit (×1)")
-            }
             return
         }
         val resultingMaxSize = if (card.isPrinceRenathal) 40 else st.maxDeckSize
@@ -230,7 +231,6 @@ class DeckBuilderViewModel(
     fun setFormat(format: GameFormat) {
         if (format == _state.value.format) return
         _state.update { it.copy(format = format) }
-        reloadPoolFirstPage()
     }
 
     fun dismissToast() {
@@ -287,9 +287,14 @@ class DeckBuilderViewModel(
         }
         val st = _state.value
         val clsSlug = st.chosenClass?.slug ?: return
+        val classes = when (st.pool.filters.classScope) {
+            CardClassScope.ALL -> setOf(clsSlug, "neutral")
+            CardClassScope.CLASS_ONLY -> setOf(clsSlug)
+            CardClassScope.NEUTRAL_ONLY -> setOf("neutral")
+        }
         poolJob = viewModelScope.launch {
             val filters = st.pool.filters.copy(
-                classes = setOf(clsSlug, "neutral"),
+                classes = classes,
                 collectibleOnly = true,
             )
             val result = searchCards(filters, page = targetPage)

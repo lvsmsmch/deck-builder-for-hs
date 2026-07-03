@@ -298,25 +298,6 @@ private fun HeroHeader(
                 contentDescription = deck.heroClass?.name,
                 modifier = Modifier.fillMaxSize(),
             )
-            if (isSaved) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DeckBuilderColors.SurfaceContainer.copy(alpha = 0.92f))
-                        .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
-                        .clickable(onClick = onEditDeck),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Outlined.Edit,
-                        contentDescription = stringResource(R.string.action_edit),
-                        tint = DeckBuilderColors.OnSurface,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
         }
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -344,6 +325,25 @@ private fun HeroHeader(
                     text = "$heroClassLabel \u00B7 ${deck.cardCount}/${deck.maxCardCount}",
                     style = MaterialTheme.typography.bodySmall,
                     color = DeckBuilderColors.OnSurfaceDim,
+                )
+            }
+        }
+        if (isSaved) {
+            Spacer(Modifier.width(10.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DeckBuilderColors.SurfaceContainer)
+                    .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onEditDeck),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Outlined.Edit,
+                    contentDescription = stringResource(R.string.action_edit),
+                    tint = DeckBuilderColors.OnSurface,
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }

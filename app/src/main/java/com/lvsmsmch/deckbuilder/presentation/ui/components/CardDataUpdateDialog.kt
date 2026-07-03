@@ -100,7 +100,30 @@ fun CardDataUpdateDialog(
     }
 
     when (mode) {
-        CardDataDialogMode.Checking, CardDataDialogMode.Done -> Unit
+        CardDataDialogMode.Done -> Unit
+        CardDataDialogMode.Checking -> {
+            AlertDialog(
+                onDismissRequest = {},
+                containerColor = DeckBuilderColors.SurfaceContainer,
+                title = { Text(stringResource(R.string.card_data_dialog_title)) },
+                text = {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = stringResource(R.string.library_loading_resolving),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = DeckBuilderColors.OnSurfaceDim,
+                        )
+                        Spacer(Modifier.height(14.dp))
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = DeckBuilderColors.Primary,
+                            trackColor = DeckBuilderColors.SurfaceContainerHigh,
+                        )
+                    }
+                },
+                confirmButton = {},
+            )
+        }
         CardDataDialogMode.Running -> {
             AlertDialog(
                 onDismissRequest = {},
@@ -153,7 +176,10 @@ fun CardDataUpdateDialog(
                 },
                 dismissButton = {
                     TextButton(onClick = { closeOrExit() }) {
-                        Text(stringResource(if (required) R.string.action_exit else R.string.action_cancel))
+                        Text(
+                            stringResource(if (required) R.string.action_exit else R.string.action_cancel),
+                            color = DeckBuilderColors.OnSurface,
+                        )
                     }
                 },
             )
@@ -171,7 +197,10 @@ fun CardDataUpdateDialog(
                 },
                 dismissButton = {
                     TextButton(onClick = { closeOrExit() }) {
-                        Text(stringResource(if (required) R.string.action_exit else R.string.action_close))
+                        Text(
+                            stringResource(if (required) R.string.action_exit else R.string.action_close),
+                            color = DeckBuilderColors.OnSurface,
+                        )
                     }
                 },
             )
@@ -189,7 +218,10 @@ fun CardDataUpdateDialog(
                 },
                 dismissButton = {
                     TextButton(onClick = { closeOrExit() }) {
-                        Text(stringResource(if (required) R.string.action_exit else R.string.action_close))
+                        Text(
+                            stringResource(if (required) R.string.action_exit else R.string.action_close),
+                            color = DeckBuilderColors.OnSurface,
+                        )
                     }
                 },
             )

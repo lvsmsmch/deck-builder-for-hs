@@ -28,11 +28,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -136,18 +139,6 @@ fun CardLibraryScreen(
             },
     ) {
         Header(
-            totalCount = state.totalCount,
-            sort = state.filters.sort,
-            onSortChange = {
-                focusManager.clearFocus()
-                viewModel.setSort(it.key, it.direction)
-            },
-            onOpenFilters = {
-                focusManager.clearFocus()
-                showFilterSheet = true
-            },
-            activeFilterCount = state.filters.activeFilterCount(),
-            onInteraction = { focusManager.clearFocus() },
         )
 
         rotationStatus?.takeIf { it.isOutdated }?.let { status ->
@@ -165,16 +156,21 @@ fun CardLibraryScreen(
             )
         }
 
-        SearchField(
+        SearchRow(
             query = state.filters.textQuery,
             onQueryChange = viewModel::setTextQuery,
+            activeFilterCount = state.filters.activeFilterCount(),
+            onOpenFilters = {
+                focusManager.clearFocus()
+                showFilterSheet = true
+            },
         )
 
-        ManaChips(
-            selected = state.filters.manaCosts,
-            onToggle = {
+        SortControls(
+            sort = state.filters.sort,
+            onSortChange = {
                 focusManager.clearFocus()
-                viewModel.toggleManaCost(it)
+                viewModel.setSort(it.key, it.direction)
             },
         )
 
@@ -256,62 +252,14 @@ private fun com.lvsmsmch.deckbuilder.domain.entities.CardFilters.activeFilterCou
 
 @Composable
 private fun Header(
-    totalCount: Int,
-    sort: CardSort,
-    onSortChange: (CardSort) -> Unit,
-    onOpenFilters: () -> Unit,
-    activeFilterCount: Int,
-    onInteraction: () -> Unit,
 ) {
-    Row(
+    Text(
+        text = stringResource(R.string.library_title),
+        style = MaterialTheme.typography.titleLarge,
+        color = DeckBuilderColors.OnSurface,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = stringResource(R.string.library_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = DeckBuilderColors.OnSurface,
-            modifier = Modifier.weight(1f),
-        )
-
-        HeaderIconButton(
-            onClick = {
-                onInteraction()
-                val index = SortChoices.indexOfFirst { it.sort == sort }.takeIf { it >= 0 } ?: 0
-                onSortChange(SortChoices[(index + 1) % SortChoices.size].sort)
-            },
-            badge = null,
-        ) {
-            Icon(
-                Icons.Outlined.Sort,
-                contentDescription = stringResource(currentSortLabelRes(sort)),
-                tint = DeckBuilderColors.OnSurface,
-                modifier = Modifier.size(20.dp),
-            )
-        }
-
-        Box {
-            HeaderIconButton(
-                onClick = onOpenFilters,
-                badge = activeFilterCount.takeIf { it > 0 }?.toString(),
-            ) {
-                Icon(
-                    Icons.Outlined.FilterList,
-                    contentDescription = "Filters",
-                    tint = DeckBuilderColors.OnSurface,
-                    modifier = Modifier.size(21.dp),
-                )
-            }
-        }
-    }
-
-    Text(
-        text = stringResource(R.string.library_count_format, totalCount),
-        style = MaterialTheme.typography.bodySmall,
-        color = DeckBuilderColors.OnSurfaceDim,
-        modifier = Modifier.padding(start = 20.dp, bottom = 8.dp),
+            .padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
     )
 }
 
@@ -366,47 +314,126 @@ private fun currentSortLabelRes(current: CardSort): Int =
     SortChoices.firstOrNull { it.sort == current }?.labelRes ?: R.string.sort_mana_asc
 
 @Composable
-private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
-    TextField(
-        value = query,
-        onValueChange = onQueryChange,
-        placeholder = { Text(stringResource(R.string.library_search_hint), color = DeckBuilderColors.OnSurfaceDimmer) },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        leadingIcon = {
-            Icon(
-                Icons.Outlined.Search,
-                contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDim,
-            )
-        },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                Icon(
-                    Icons.Outlined.Close,
-                    contentDescription = "Clear",
-                    tint = DeckBuilderColors.OnSurfaceDim,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable { onQueryChange("") }
-                        .padding(4.dp),
-                )
-            }
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = DeckBuilderColors.SurfaceContainer,
-            unfocusedContainerColor = DeckBuilderColors.SurfaceContainer,
-            focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-            unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-            focusedTextColor = DeckBuilderColors.OnSurface,
-            unfocusedTextColor = DeckBuilderColors.OnSurface,
-            cursorColor = DeckBuilderColors.Primary,
-        ),
-        shape = RoundedCornerShape(14.dp),
+private fun SearchRow(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    activeFilterCount: Int,
+    onOpenFilters: () -> Unit,
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-    )
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text(stringResource(R.string.library_search_hint), color = DeckBuilderColors.OnSurfaceDimmer) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            leadingIcon = {
+                Icon(
+                    Icons.Outlined.Search,
+                    contentDescription = null,
+                    tint = DeckBuilderColors.OnSurfaceDim,
+                )
+            },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = stringResource(R.string.action_clear),
+                        tint = DeckBuilderColors.OnSurfaceDim,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable { onQueryChange("") }
+                            .padding(4.dp),
+                    )
+                }
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = DeckBuilderColors.SurfaceContainer,
+                unfocusedContainerColor = DeckBuilderColors.SurfaceContainer,
+                focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                focusedTextColor = DeckBuilderColors.OnSurface,
+                unfocusedTextColor = DeckBuilderColors.OnSurface,
+                cursorColor = DeckBuilderColors.Primary,
+            ),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.weight(1f),
+        )
+        HeaderIconButton(
+            onClick = onOpenFilters,
+            badge = activeFilterCount.takeIf { it > 0 }?.toString(),
+        ) {
+            Icon(
+                Icons.Outlined.FilterList,
+                contentDescription = stringResource(R.string.filters_title),
+                tint = DeckBuilderColors.OnSurface,
+                modifier = Modifier.size(21.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SortControls(
+    sort: CardSort,
+    onSortChange: (CardSort) -> Unit,
+) {
+    var sortMenuOpen by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 10.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .height(40.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
+                .clickable { sortMenuOpen = true }
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Outlined.ArrowDropDown,
+                contentDescription = null,
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(currentSortLabelRes(sort)),
+                color = DeckBuilderColors.OnSurface,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                Icons.Outlined.Sort,
+                contentDescription = null,
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        DropdownMenu(
+            expanded = sortMenuOpen,
+            onDismissRequest = { sortMenuOpen = false },
+        ) {
+            SortChoices.forEach { choice ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(choice.labelRes)) },
+                    onClick = {
+                        onSortChange(choice.sort)
+                        sortMenuOpen = false
+                    },
+                )
+            }
+        }
+    }
 }
 
 @Composable

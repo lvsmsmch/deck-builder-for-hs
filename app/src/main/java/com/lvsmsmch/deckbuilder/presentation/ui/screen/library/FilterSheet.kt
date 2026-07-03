@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.domain.entities.CardClassScope
 import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForRaritySlug
@@ -54,6 +55,7 @@ fun FilterSheet(
     current: CardFilters,
     onChange: (CardFilters) -> Unit,
     onDismiss: () -> Unit,
+    classScopeLabel: String? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -82,6 +84,9 @@ fun FilterSheet(
                     .heightIn(max = 560.dp)
                     .padding(horizontal = 20.dp),
             ) {
+                classScopeLabel?.let { label ->
+                    item { ClassScopeSection(label, current, onChange) }
+                }
                 item { FormatSection(current, onChange) }
                 item { ManaSection(current, onChange) }
                 item { RaritySection(current, onChange) }
@@ -93,6 +98,32 @@ fun FilterSheet(
                 item { Spacer(Modifier.height(20.dp)) }
             }
         }
+    }
+}
+
+@Composable
+private fun ClassScopeSection(
+    classLabel: String,
+    draft: CardFilters,
+    onChange: (CardFilters) -> Unit,
+) {
+    SectionHeader(stringResource(R.string.filters_section_card_pool))
+    ChipFlow {
+        Chip(
+            label = stringResource(R.string.filters_pool_all),
+            active = draft.classScope == CardClassScope.ALL,
+            onClick = { onChange(draft.copy(classScope = CardClassScope.ALL)) },
+        )
+        Chip(
+            label = stringResource(R.string.filters_pool_class_only, classLabel),
+            active = draft.classScope == CardClassScope.CLASS_ONLY,
+            onClick = { onChange(draft.copy(classScope = CardClassScope.CLASS_ONLY)) },
+        )
+        Chip(
+            label = stringResource(R.string.filters_pool_neutral_only),
+            active = draft.classScope == CardClassScope.NEUTRAL_ONLY,
+            onClick = { onChange(draft.copy(classScope = CardClassScope.NEUTRAL_ONLY)) },
+        )
     }
 }
 

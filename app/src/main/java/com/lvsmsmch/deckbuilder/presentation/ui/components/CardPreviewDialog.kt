@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +60,8 @@ fun CardPreviewDialog(
             .build(),
     )
     val state by painter.state.collectAsState()
+    val backgroundInteraction = remember { MutableInteractionSource() }
+    val contentInteraction = remember { MutableInteractionSource() }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -67,14 +71,22 @@ fun CardPreviewDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .background(DeckBuilderColors.Surface.copy(alpha = 0.88f))
-                .clickable(onClick = onDismiss),
+                .clickable(
+                    interactionSource = backgroundInteraction,
+                    indication = null,
+                    onClick = onDismiss,
+                ),
             contentAlignment = Alignment.Center,
         ) {
             Column(
                 modifier = Modifier
                     .padding(horizontal = 32.dp)
                     .widthIn(max = 360.dp)
-                    .clickable(onClick = {}),
+                    .clickable(
+                        interactionSource = contentInteraction,
+                        indication = null,
+                        onClick = {},
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(

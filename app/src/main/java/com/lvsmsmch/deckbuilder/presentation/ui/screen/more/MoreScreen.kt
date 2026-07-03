@@ -51,16 +51,16 @@ fun MoreScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             HubRow(
-                icon = Icons.Outlined.Settings,
-                title = stringResource(R.string.more_settings),
-                subtitle = stringResource(R.string.more_settings_subtitle),
-                onClick = onOpenSettings,
-            )
-            HubRow(
                 icon = Icons.Outlined.GridView,
                 title = stringResource(R.string.more_card_library),
                 subtitle = stringResource(R.string.more_card_library_subtitle),
                 onClick = onOpenCardLibrary,
+            )
+            HubRow(
+                icon = Icons.Outlined.Settings,
+                title = stringResource(R.string.more_settings),
+                subtitle = stringResource(R.string.more_settings_subtitle),
+                onClick = onOpenSettings,
             )
         }
     }

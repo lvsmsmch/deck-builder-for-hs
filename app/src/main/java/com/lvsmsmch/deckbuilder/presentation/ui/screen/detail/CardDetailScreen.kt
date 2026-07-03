@@ -370,6 +370,7 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
     )
     var targetScale by remember { mutableFloatStateOf(1f) }
     var targetOffset by remember { mutableStateOf(Offset.Zero) }
+    var gestureActive by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = targetScale,
         animationSpec = tween(durationMillis = 180),
@@ -380,6 +381,8 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
         animationSpec = tween(durationMillis = 180),
         label = "fullscreen-card-offset",
     )
+    val renderedScale = if (gestureActive) targetScale else scale
+    val renderedOffset = if (gestureActive) targetOffset else offset
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -401,23 +404,24 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
                     .fillMaxWidth()
                     .aspectRatio(CARD_RENDER_ASPECT)
                     .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                        translationX = offset.x
-                        translationY = offset.y
+                        scaleX = renderedScale
+                        scaleY = renderedScale
+                        translationX = renderedOffset.x
+                        translationY = renderedOffset.y
                     }
                     .pointerInput(card.id) {
                         awaitEachGesture {
                             awaitFirstDown()
+                            gestureActive = true
                             do {
                                 val event = awaitPointerEvent()
                                 val zoom = event.calculateZoom()
-                                val softenedZoom = 1f + ((zoom - 1f) * 0.45f)
-                                targetScale = (targetScale * softenedZoom).coerceIn(1f, 3.2f)
+                                targetScale = (targetScale * zoom).coerceIn(1f, 3.2f)
                                 if (event.changes.count { it.pressed } >= 2) {
                                     targetOffset += event.calculatePan()
                                 }
                             } while (event.changes.any { it.pressed })
+                            gestureActive = false
                             targetScale = 1f
                             targetOffset = Offset.Zero
                         }
