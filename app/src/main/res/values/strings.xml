@@ -10,6 +10,7 @@
 
     <!-- Library -->
     <string name="library_title">Library</string>
+    <string name="library_found_count">%1$d cards found</string>
     <string name="library_search_hint">Search cards by name or text…</string>
     <string name="library_count_format">%1$d cards</string>
     <string name="library_empty_no_filters">No cards loaded yet.</string>
@@ -47,6 +48,7 @@
     <string name="action_remove_card">Remove one copy</string>
     <string name="action_view_card">View card</string>
     <string name="action_remember_choice">Remember choice</string>
+    <string name="cards_label_lowercase">cards</string>
     <string name="action_press_back_again_exit">Press Back again to exit</string>
 
     <!-- Sort options -->

@@ -3,7 +3,6 @@ package com.lvsmsmch.deckbuilder.presentation.ui.screen.saved
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,14 +21,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -51,15 +48,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
+import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
@@ -73,6 +69,7 @@ private val WarningYellow = Color(0xFFE0A23F)
 @Composable
 fun SavedDecksScreen(
     onOpenDeck: (String, String?) -> Unit,
+    onEditDeck: (String, String?) -> Unit,
     onCreateFromScratch: () -> Unit,
     viewModel: SavedDecksViewModel = koinViewModel(),
 ) {
@@ -81,7 +78,6 @@ fun SavedDecksScreen(
     var showChooser by remember { mutableStateOf(false) }
     var showImportSheet by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<DeckPreview?>(null) }
-    var pendingRename by remember { mutableStateOf<DeckPreview?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.navEffects.collect { effect ->
@@ -100,8 +96,8 @@ fun SavedDecksScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showChooser = true },
-                containerColor = DeckBuilderColors.Primary,
-                contentColor = DeckBuilderColors.OnPrimary,
+                containerColor = DeckBuilderColors.OnSurface,
+                contentColor = DeckBuilderColors.Surface,
             ) {
                 Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.new_deck_title))
             }
@@ -125,9 +121,8 @@ fun SavedDecksScreen(
                         SavedDeckRow(
                             deck = deck,
                             onClick = { onOpenDeck(deck.code, deck.name) },
-                            onShare = { shareDeckCode(context, deck) },
                             onCopyCode = { copyDeckCode(context, deck.code) },
-                            onRename = { pendingRename = deck },
+                            onEdit = { onEditDeck(deck.code, deck.name) },
                             onDelete = { pendingDelete = deck },
                         )
                     }
@@ -184,17 +179,6 @@ fun SavedDecksScreen(
             },
         )
     }
-
-    pendingRename?.let { deck ->
-        RenameDeckDialog(
-            initial = deck.name,
-            onDismiss = { pendingRename = null },
-            onSubmit = { newName ->
-                viewModel.rename(deck.code, newName)
-                pendingRename = null
-            },
-        )
-    }
 }
 
 @Composable
@@ -217,9 +201,8 @@ private fun Header() {
 private fun SavedDeckRow(
     deck: DeckPreview,
     onClick: () -> Unit,
-    onShare: () -> Unit,
     onCopyCode: () -> Unit,
-    onRename: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val classColor = colorForClassSlug(deck.classSlug)
@@ -265,7 +248,7 @@ private fun SavedDeckRow(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 2.dp),
                 ) {
-                    FormatChip(formatLabel(deck.format))
+                    FormatChip(deck.format)
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "${classLabel(deck.classSlug)} · ${deck.cardCount}/${deck.maxCardCount}",
@@ -290,9 +273,8 @@ private fun SavedDeckRow(
                 DeckActionsMenu(
                     expanded = menuOpen,
                     onDismiss = { menuOpen = false },
-                    onShare = onShare,
                     onCopyCode = onCopyCode,
-                    onRename = onRename,
+                    onEdit = onEdit,
                     onDelete = onDelete,
                 )
             }
@@ -311,17 +293,11 @@ private fun SavedDeckRow(
 private fun DeckActionsMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
-    onShare: () -> Unit,
     onCopyCode: () -> Unit,
-    onRename: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
-        DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
-            text = { Text(stringResource(R.string.action_share)) },
-            onClick = { onDismiss(); onShare() },
-        )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
             text = { Text(stringResource(R.string.action_copy_code)) },
@@ -329,8 +305,8 @@ private fun DeckActionsMenu(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-            text = { Text(stringResource(R.string.action_rename)) },
-            onClick = { onDismiss(); onRename() },
+            text = { Text(stringResource(R.string.action_edit)) },
+            onClick = { onDismiss(); onEdit() },
         )
         DropdownMenuItem(
             leadingIcon = {
@@ -374,19 +350,28 @@ fun DeckWarning(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun FormatChip(label: String) {
+private fun FormatChip(format: GameFormat) {
+    val color = formatColor(format)
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(DeckBuilderColors.PrimarySoft)
+            .background(color.copy(alpha = 0.16f))
             .padding(horizontal = 8.dp, vertical = 2.dp),
     ) {
         Text(
-            text = label,
+            text = formatLabel(format),
             style = MaterialTheme.typography.labelSmall,
-            color = DeckBuilderColors.Primary,
+            color = color,
         )
     }
+}
+
+private fun formatColor(format: GameFormat): Color = when (format) {
+    GameFormat.STANDARD -> Color(0xFF3E8BFF)
+    GameFormat.WILD -> Color(0xFFE09F3E)
+    GameFormat.TWIST -> Color(0xFF9B6CFF)
+    GameFormat.CLASSIC -> Color(0xFF5EC28A)
+    GameFormat.UNKNOWN -> Color(0xFF8B929C)
 }
 
 @Composable
@@ -412,65 +397,6 @@ private fun EmptyState() {
             textAlign = TextAlign.Center,
         )
     }
-}
-
-@Composable
-private fun RenameDeckDialog(
-    initial: String,
-    onDismiss: () -> Unit,
-    onSubmit: (String) -> Unit,
-) {
-    var value by remember { mutableStateOf(initial) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = DeckBuilderColors.SurfaceContainer,
-        title = { Text(stringResource(R.string.rename_deck_title)) },
-        text = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DeckBuilderColors.SurfaceContainerHigh)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-            ) {
-                BasicTextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    singleLine = true,
-                    textStyle = TextStyle(color = DeckBuilderColors.OnSurface),
-                    cursorBrush = SolidColor(DeckBuilderColors.Primary),
-                    modifier = Modifier.fillMaxWidth(),
-                    decorationBox = { inner ->
-                        if (value.isEmpty()) {
-                            Text(
-                                stringResource(R.string.rename_deck_hint),
-                                color = DeckBuilderColors.OnSurfaceDimmer,
-                            )
-                        }
-                        inner()
-                    },
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSubmit(value) },
-                enabled = value.trim().isNotEmpty(),
-            ) { Text(stringResource(R.string.action_save)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
-        },
-    )
-}
-
-private fun shareDeckCode(context: android.content.Context, deck: DeckPreview) {
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, deck.name)
-        putExtra(Intent.EXTRA_TEXT, "${deck.name}\n\n${deck.code}")
-    }
-    context.startActivity(Intent.createChooser(intent, deck.name))
 }
 
 private fun copyDeckCode(context: Context, code: String) {

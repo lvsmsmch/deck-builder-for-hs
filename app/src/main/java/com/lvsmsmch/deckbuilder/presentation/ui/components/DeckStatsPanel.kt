@@ -181,4 +181,4 @@ private fun computeStats(deck: Deck): DeckStats {
 }
 
 private fun formatDust(value: Int): String =
-    if (value >= 1000) "${value / 1000}.${(value % 1000) / 100}k" else value.toString()
+    value.toString()

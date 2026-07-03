@@ -25,7 +25,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -142,6 +146,7 @@ fun SettingsScreen(
                             title = stringResource(R.string.settings_privacy_policy),
                             subtitle = stringResource(R.string.settings_privacy_policy_subtitle),
                             value = "",
+                            trailingIcon = Icons.Outlined.Language,
                             onClick = { context.openInBrowser(PRIVACY_POLICY_URL) },
                         )
                     }
@@ -154,6 +159,7 @@ fun SettingsScreen(
                             title = stringResource(R.string.more_card_data),
                             subtitle = stringResource(R.string.more_card_data_subtitle),
                             value = "",
+                            trailingIcon = Icons.Outlined.Refresh,
                             onClick = onOpenCardData,
                         )
                         Divider()
@@ -161,6 +167,7 @@ fun SettingsScreen(
                             title = stringResource(R.string.settings_image_cache),
                             subtitle = stringResource(R.string.settings_image_cache_subtitle),
                             value = formatBytes(imageCacheBytes),
+                            trailingIcon = null,
                             onClick = { showClearImageCacheConfirm = true },
                         )
                     }
@@ -172,7 +179,8 @@ fun SettingsScreen(
                         DialogRow(
                             title = stringResource(R.string.settings_contact_developer),
                             subtitle = stringResource(R.string.settings_contact_developer_subtitle),
-                            value = "iamajavagod@gmail.com",
+                            value = "",
+                            trailingIcon = Icons.Outlined.Email,
                             onClick = { context.openEmail("iamajavagod@gmail.com") },
                         )
                         Divider()
@@ -181,6 +189,7 @@ fun SettingsScreen(
                                 title = stringResource(R.string.settings_debug_copy_logs),
                                 subtitle = stringResource(R.string.settings_debug_copy_logs_subtitle),
                                 value = "",
+                                trailingIcon = null,
                                 onClick = { context.copyLogs(sessionLog.dump()) },
                             )
                             Divider()
@@ -341,6 +350,7 @@ private fun DialogRow(
     title: String,
     subtitle: String,
     value: String,
+    trailingIcon: ImageVector? = Icons.Outlined.KeyboardArrowRight,
     onClick: () -> Unit,
 ) {
     Row(
@@ -372,12 +382,14 @@ private fun DialogRow(
             )
             Spacer(Modifier.size(6.dp))
         }
-        Icon(
-            imageVector = Icons.Outlined.KeyboardArrowRight,
-            contentDescription = null,
-            tint = DeckBuilderColors.OnSurfaceDimmer,
-            modifier = Modifier.size(18.dp),
-        )
+        if (trailingIcon != null) {
+            Icon(
+                imageVector = trailingIcon,
+                contentDescription = null,
+                tint = DeckBuilderColors.OnSurfaceDimmer,
+                modifier = Modifier.size(18.dp),
+            )
+        }
     }
 }
 

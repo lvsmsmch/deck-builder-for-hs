@@ -159,19 +159,26 @@ fun CardLibraryScreen(
         SearchRow(
             query = state.filters.textQuery,
             onQueryChange = viewModel::setTextQuery,
+        )
+
+        SortControls(
+            sort = state.filters.sort,
             activeFilterCount = state.filters.activeFilterCount(),
             onOpenFilters = {
                 focusManager.clearFocus()
                 showFilterSheet = true
             },
-        )
-
-        SortControls(
-            sort = state.filters.sort,
             onSortChange = {
                 focusManager.clearFocus()
                 viewModel.setSort(it.key, it.direction)
             },
+        )
+
+        Text(
+            text = stringResource(R.string.library_found_count, state.totalCount),
+            style = MaterialTheme.typography.labelSmall,
+            color = DeckBuilderColors.OnSurfaceDim,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
         )
 
         ClassChips(
@@ -317,8 +324,6 @@ private fun currentSortLabelRes(current: CardSort): Int =
 private fun SearchRow(
     query: String,
     onQueryChange: (String) -> Unit,
-    activeFilterCount: Int,
-    onOpenFilters: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -365,6 +370,24 @@ private fun SearchRow(
             shape = RoundedCornerShape(14.dp),
             modifier = Modifier.weight(1f),
         )
+    }
+}
+
+@Composable
+private fun SortControls(
+    sort: CardSort,
+    activeFilterCount: Int,
+    onOpenFilters: () -> Unit,
+    onSortChange: (CardSort) -> Unit,
+) {
+    var sortMenuOpen by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         HeaderIconButton(
             onClick = onOpenFilters,
             badge = activeFilterCount.takeIf { it > 0 }?.toString(),
@@ -376,19 +399,7 @@ private fun SearchRow(
                 modifier = Modifier.size(21.dp),
             )
         }
-    }
-}
-
-@Composable
-private fun SortControls(
-    sort: CardSort,
-    onSortChange: (CardSort) -> Unit,
-) {
-    var sortMenuOpen by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 10.dp),
-    ) {
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
         Row(
             modifier = Modifier
                 .height(40.dp)
@@ -432,6 +443,7 @@ private fun SortControls(
                     },
                 )
             }
+        }
         }
     }
 }

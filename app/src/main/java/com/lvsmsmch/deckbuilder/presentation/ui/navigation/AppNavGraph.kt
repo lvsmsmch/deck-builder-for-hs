@@ -32,6 +32,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.data.update.UpdateEvent
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
@@ -55,10 +56,15 @@ private const val SCREEN_FADE_OUT_MS = 220
 fun AppNavGraph(currentPreferences: AppPreferences) {
     val navController = rememberNavController()
     val notifier: UpdateNotifier = koinInject()
+    val hsJson: HsJsonRepository = koinInject()
     val snackbarHostState = remember { SnackbarHostState() }
     val cardsUpdatedTemplate = stringResource(R.string.snackbar_cards_updated)
     val context = LocalContext.current
-    var showStartupCardDataDialog by remember { mutableStateOf(true) }
+    var showStartupCardDataDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentPreferences.cardLocale) {
+        showStartupCardDataDialog = hsJson.cached(currentPreferences.cardLocale) == null
+    }
 
     LaunchedEffect(notifier) {
         notifier.events.collect { event ->
@@ -83,6 +89,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
             composable<Home> {
                 HomeScreen(
                     onOpenDeck = { code, savedName -> navController.navigate(DeckView(code = code, savedName = savedName)) },
+                    onEditDeck = { code, savedName -> navController.navigate(Builder(editCode = code, savedName = savedName)) },
                     onCreateDeck = { navController.navigate(Builder()) },
                     onOpenSettings = { navController.navigate(Settings) },
                     onOpenCardLibrary = { navController.navigate(Library()) },
@@ -181,6 +188,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
 @Composable
 private fun HomeScreen(
     onOpenDeck: (String, String?) -> Unit,
+    onEditDeck: (String, String?) -> Unit,
     onCreateDeck: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenCardLibrary: () -> Unit,
@@ -218,6 +226,7 @@ private fun HomeScreen(
             composable<Saved> {
                 SavedDecksScreen(
                     onOpenDeck = onOpenDeck,
+                    onEditDeck = onEditDeck,
                     onCreateFromScratch = onCreateDeck,
                 )
             }

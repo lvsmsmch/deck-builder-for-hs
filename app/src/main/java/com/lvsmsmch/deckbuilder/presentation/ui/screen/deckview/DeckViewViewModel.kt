@@ -87,6 +87,13 @@ class DeckViewViewModel(
         }
     }
 
+    fun deleteSavedDeck() {
+        viewModelScope.launch {
+            deleteDeck(code)
+            _state.update { it.copy(isSaved = false, savedName = null) }
+        }
+    }
+
     fun rename(newName: String) {
         val trimmed = newName.trim()
         if (trimmed.isEmpty() || !state.value.isSaved) return

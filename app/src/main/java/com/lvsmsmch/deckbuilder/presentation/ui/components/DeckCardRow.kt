@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -96,20 +97,28 @@ fun DeckCardRow(
             )
         }
 
+        if (card.rarity?.slug.equals("legendary", ignoreCase = true)) {
+            Icon(
+                imageVector = Icons.Outlined.Star,
+                contentDescription = null,
+                tint = DeckBuilderColors.Rarity.Legendary,
+                modifier = Modifier.size(28.dp),
+            )
+        }
         CountPill(count = entry.count)
         if (onRemove != null) {
             Box(
                 modifier = Modifier
                     .size(30.dp)
                     .clip(CircleShape)
-                    .background(DeckBuilderColors.SurfaceContainerHigh)
+                    .background(DeckBuilderColors.OnSurface.copy(alpha = 0.88f))
                     .clickable(onClick = onRemove),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Remove,
                     contentDescription = null,
-                    tint = DeckBuilderColors.OnSurface,
+                    tint = DeckBuilderColors.Surface,
                     modifier = Modifier.size(18.dp),
                 )
             }
@@ -123,9 +132,10 @@ private fun CountPill(count: Int) {
     Box(
         modifier = Modifier
             .width(38.dp)
+            .height(30.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(DeckBuilderColors.SurfaceContainerHigh)
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+            .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(

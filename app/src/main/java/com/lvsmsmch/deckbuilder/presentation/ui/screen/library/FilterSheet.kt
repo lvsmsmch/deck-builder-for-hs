@@ -56,6 +56,7 @@ fun FilterSheet(
     onChange: (CardFilters) -> Unit,
     onDismiss: () -> Unit,
     classScopeLabel: String? = null,
+    showFormatSection: Boolean = true,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -87,7 +88,9 @@ fun FilterSheet(
                 classScopeLabel?.let { label ->
                     item { ClassScopeSection(label, current, onChange) }
                 }
-                item { FormatSection(current, onChange) }
+                if (showFormatSection) {
+                    item { FormatSection(current, onChange) }
+                }
                 item { ManaSection(current, onChange) }
                 item { RaritySection(current, onChange) }
                 item { TypeSection(current, onChange) }

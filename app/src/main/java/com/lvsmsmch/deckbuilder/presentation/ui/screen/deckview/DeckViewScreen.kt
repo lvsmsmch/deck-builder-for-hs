@@ -31,6 +31,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -65,6 +67,7 @@ import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
+import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
@@ -121,6 +124,10 @@ fun DeckViewScreen(
                 isSaved = state.isSaved,
                 onRename = viewModel::rename,
                 onEditDeck = onEditDeck,
+                onDeleteDeck = {
+                    viewModel.deleteSavedDeck()
+                    onBack()
+                },
                 onCardClick = onCardClick,
                 onCopyCode = { copyToClipboard(context, deckState.data.code) },
             )
@@ -197,6 +204,7 @@ private fun Body(
     isSaved: Boolean,
     onRename: (String) -> Unit,
     onEditDeck: () -> Unit,
+    onDeleteDeck: () -> Unit,
     onCardClick: (Card) -> Unit,
     onCopyCode: () -> Unit,
 ) {
@@ -210,12 +218,16 @@ private fun Body(
                 savedName = savedName,
                 isSaved = isSaved,
                 onRename = onRename,
-                onEditDeck = onEditDeck,
+                onCopyCode = onCopyCode,
             )
         }
 
         item {
-            ActionsRow(onCopyCode = onCopyCode)
+            ActionsRow(
+                isSaved = isSaved,
+                onEditDeck = onEditDeck,
+                onDeleteDeck = onDeleteDeck,
+            )
         }
 
         item { DeckWarnings(deck) }
@@ -274,13 +286,14 @@ private fun HeroHeader(
     savedName: String?,
     isSaved: Boolean,
     onRename: (String) -> Unit,
-    onEditDeck: () -> Unit,
+    onCopyCode: () -> Unit,
 ) {
     val classSlug = deck.heroClass?.slug
     val heroCardId = deck.hero?.slug?.takeIf { it.startsWith("HERO_") }
         ?: DefaultHeroes.cardIdFor(classSlug)
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
     val heroClassLabel = classLabel(deck.heroClass?.slug)
+    val formatColor = formatColor(deck.format)
 
     Row(
         modifier = Modifier
@@ -311,13 +324,13 @@ private fun HeroHeader(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(DeckBuilderColors.PrimarySoft)
+                        .background(formatColor.copy(alpha = 0.16f))
                         .padding(horizontal = 8.dp, vertical = 2.dp),
                 ) {
                     Text(
                         text = formatLabel(deck.format),
                         style = MaterialTheme.typography.labelSmall,
-                        color = DeckBuilderColors.Primary,
+                        color = formatColor,
                     )
                 }
                 Spacer(Modifier.width(8.dp))
@@ -336,12 +349,12 @@ private fun HeroHeader(
                     .clip(RoundedCornerShape(12.dp))
                     .background(DeckBuilderColors.SurfaceContainer)
                     .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
-                    .clickable(onClick = onEditDeck),
+                    .clickable(onClick = onCopyCode),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    Icons.Outlined.Edit,
-                    contentDescription = stringResource(R.string.action_edit),
+                    Icons.Outlined.ContentCopy,
+                    contentDescription = stringResource(R.string.action_copy_code),
                     tint = DeckBuilderColors.OnSurface,
                     modifier = Modifier.size(18.dp),
                 )
@@ -427,7 +440,11 @@ private fun EditableTitle(
 }
 
 @Composable
-private fun ActionsRow(onCopyCode: () -> Unit) {
+private fun ActionsRow(
+    isSaved: Boolean,
+    onEditDeck: () -> Unit,
+    onDeleteDeck: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -435,17 +452,31 @@ private fun ActionsRow(onCopyCode: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         OutlinedButton(
-            onClick = onCopyCode,
+            onClick = onEditDeck,
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.weight(1f),
         ) {
             Icon(
-                Icons.Outlined.ContentCopy,
+                Icons.Outlined.Edit,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
             )
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_copy_code))
+            Text(stringResource(R.string.action_edit))
+        }
+        OutlinedButton(
+            onClick = onDeleteDeck,
+            enabled = isSaved,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1f),
+        ) {
+            Icon(
+                Icons.Outlined.DeleteOutline,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.action_delete))
         }
     }
 }
@@ -492,4 +523,12 @@ private fun copyToClipboard(context: Context, code: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     clipboard.setPrimaryClip(ClipData.newPlainText("Hearthstone deck code", code))
     Toast.makeText(context, context.getString(R.string.deck_view_copied), Toast.LENGTH_SHORT).show()
+}
+
+private fun formatColor(format: GameFormat): Color = when (format) {
+    GameFormat.STANDARD -> Color(0xFF3E8BFF)
+    GameFormat.WILD -> Color(0xFFE09F3E)
+    GameFormat.TWIST -> Color(0xFF9B6CFF)
+    GameFormat.CLASSIC -> Color(0xFF5EC28A)
+    GameFormat.UNKNOWN -> Color(0xFF8B929C)
 }

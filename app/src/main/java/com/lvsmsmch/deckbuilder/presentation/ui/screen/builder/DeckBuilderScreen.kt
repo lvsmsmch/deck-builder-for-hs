@@ -72,6 +72,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -94,6 +95,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroPortrait
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
@@ -195,17 +197,32 @@ fun DeckBuilderScreen(
                                 append(stringResource(R.string.builder_current_count_prefix))
                                 append(" ")
                                 withStyle(SpanStyle(color = DeckBuilderColors.Error, fontWeight = FontWeight.Bold)) {
-                                    append(state.cardCount.toString())
+                                    append("${state.cardCount}/${state.maxDeckSize}")
                                 }
-                                append("/${state.maxDeckSize}.")
+                                append(" ")
+                                append(stringResource(R.string.cards_label_lowercase))
+                                append(".")
                             }
                         },
                     )
                     Spacer(Modifier.height(10.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                val next = !rememberExitChoice
+                                rememberExitChoice = next
+                                skipExitConfirm = next
+                            }
+                            .padding(end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Checkbox(
                             checked = rememberExitChoice,
-                            onCheckedChange = { rememberExitChoice = it },
+                            onCheckedChange = {
+                                rememberExitChoice = it
+                                skipExitConfirm = it
+                            },
                         )
                         Text(
                             text = stringResource(R.string.action_remember_choice),
@@ -242,17 +259,32 @@ fun DeckBuilderScreen(
                             append(stringResource(R.string.builder_incomplete_save_prefix))
                             append(" ")
                             withStyle(SpanStyle(color = DeckBuilderColors.Error, fontWeight = FontWeight.Bold)) {
-                                append(state.cardCount.toString())
+                                append("${state.cardCount}/${state.maxDeckSize}")
                             }
-                            append("/${state.maxDeckSize}. ")
+                            append(" ")
+                            append(stringResource(R.string.cards_label_lowercase))
+                            append(". ")
                             append(stringResource(R.string.builder_incomplete_save_suffix))
                         },
                     )
                     Spacer(Modifier.height(10.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                val next = !rememberIncompleteSaveChoice
+                                rememberIncompleteSaveChoice = next
+                                skipIncompleteSaveConfirm = next
+                            }
+                            .padding(end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Checkbox(
                             checked = rememberIncompleteSaveChoice,
-                            onCheckedChange = { rememberIncompleteSaveChoice = it },
+                            onCheckedChange = {
+                                rememberIncompleteSaveChoice = it
+                                skipIncompleteSaveConfirm = it
+                            },
                         )
                         Text(
                             text = stringResource(R.string.action_remember_choice),
@@ -425,6 +457,7 @@ private fun EditingView(
             onChange = onApplyPoolFilters,
             onDismiss = { showFilters = false },
             classScopeLabel = state.chosenClass?.slug?.let { classLabel(it) },
+            showFormatSection = false,
         )
     }
 
@@ -447,6 +480,7 @@ private fun Header(
     onSelectFormat: (GameFormat) -> Unit,
 ) {
     val color = colorForClassSlug(chosenClass?.slug)
+    val selectedFormatColor = formatColor(format)
     var formatMenuOpen by remember { mutableStateOf(false) }
 
     Row(
@@ -492,7 +526,7 @@ private fun Header(
                     Text(
                         text = formatLabel(format),
                         style = MaterialTheme.typography.bodySmall,
-                        color = DeckBuilderColors.Primary,
+                        color = selectedFormatColor,
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
@@ -524,6 +558,14 @@ private fun Header(
         }
 
     }
+}
+
+private fun formatColor(format: GameFormat): Color = when (format) {
+    GameFormat.STANDARD -> Color(0xFF3E8BFF)
+    GameFormat.WILD -> Color(0xFFE09F3E)
+    GameFormat.TWIST -> Color(0xFF9B6CFF)
+    GameFormat.CLASSIC -> Color(0xFF5EC28A)
+    GameFormat.UNKNOWN -> Color(0xFF8B929C)
 }
 
 @Composable
@@ -694,16 +736,16 @@ private fun PoolPane(
     ) {
         PoolSearchRow(
             value = state.pool.filters.textQuery,
-            activeFilterCount = state.pool.activeFilterCount,
             onValueChange = onSetQuery,
-            onOpenFilters = {
-                focusManager.clearFocus()
-                onOpenFilters()
-            },
         )
 
         PoolControls(
             sort = state.pool.filters.sort,
+            activeFilterCount = state.pool.activeFilterCount,
+            onOpenFilters = {
+                focusManager.clearFocus()
+                onOpenFilters()
+            },
             onSortChange = {
                 focusManager.clearFocus()
                 onSetSort(it.key, it.direction)
@@ -825,9 +867,7 @@ private fun PoolCard(
 @Composable
 private fun PoolSearchRow(
     value: String,
-    activeFilterCount: Int,
     onValueChange: (String) -> Unit,
-    onOpenFilters: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -868,6 +908,24 @@ private fun PoolSearchRow(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.weight(1f),
         )
+    }
+}
+
+@Composable
+private fun PoolControls(
+    sort: CardSort,
+    activeFilterCount: Int,
+    onOpenFilters: () -> Unit,
+    onSortChange: (CardSort) -> Unit,
+) {
+    var sortMenuOpen by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         HeaderIconButton(
             onClick = onOpenFilters,
             badge = activeFilterCount.takeIf { it > 0 }?.toString(),
@@ -879,19 +937,7 @@ private fun PoolSearchRow(
                 modifier = Modifier.size(21.dp),
             )
         }
-    }
-}
-
-@Composable
-private fun PoolControls(
-    sort: CardSort,
-    onSortChange: (CardSort) -> Unit,
-) {
-    var sortMenuOpen by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
-    ) {
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
         Row(
             modifier = Modifier
                 .height(40.dp)
@@ -935,6 +981,7 @@ private fun PoolControls(
                     },
                 )
             }
+        }
         }
     }
 }
@@ -1021,6 +1068,17 @@ private fun DeckPane(
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 24.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DeckBuilderColors.SurfaceContainer),
+            ) {
+                ManaCurve(entries = state.deckEntries)
+            }
+        }
         items(state.deckEntries, key = { it.card.id }) { entry ->
             DeckCardRow(
                 entry = entry,
