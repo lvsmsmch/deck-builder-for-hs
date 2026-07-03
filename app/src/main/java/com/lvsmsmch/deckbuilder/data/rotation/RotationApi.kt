@@ -14,12 +14,14 @@ private const val TAG = "DB.Rotation.Api"
  * Thin OkHttp wrapper. Two endpoints:
  *
  * - raw enums.py source from `raw.githubusercontent.com`
+ * - raw utils/__init__.py source from `raw.githubusercontent.com`
  * - latest commit metadata for that file from the GitHub commits API
  */
 class RotationApi(
     private val client: OkHttpClient,
     private val json: Json,
     private val rawUrl: String = DEFAULT_RAW_URL,
+    private val utilsUrl: String = DEFAULT_UTILS_URL,
     private val commitsUrl: String = DEFAULT_COMMITS_URL,
 ) {
 
@@ -32,6 +34,15 @@ class RotationApi(
             resp.body?.string() ?: error("empty body")
         }
     }.onFailure { Log.w(TAG, "fetchEnumsSource failed: ${it.message}") }
+        .getOrNull()
+
+    suspend fun fetchUtilsSource(): String? = runCatching {
+        val req = Request.Builder().url(utilsUrl).get().build()
+        client.newCall(req).execute().use { resp ->
+            if (!resp.isSuccessful) error("HTTP ${resp.code}")
+            resp.body?.string() ?: error("empty body")
+        }
+    }.onFailure { Log.w(TAG, "fetchUtilsSource failed: ${it.message}") }
         .getOrNull()
 
     suspend fun fetchLatestCommit(): CommitInfo? = runCatching {
@@ -55,6 +66,8 @@ class RotationApi(
     companion object {
         const val DEFAULT_RAW_URL =
             "https://raw.githubusercontent.com/HearthSim/python-hearthstone/master/hearthstone/enums.py"
+        const val DEFAULT_UTILS_URL =
+            "https://raw.githubusercontent.com/HearthSim/python-hearthstone/master/hearthstone/utils/__init__.py"
         const val DEFAULT_COMMITS_URL =
             "https://api.github.com/repos/HearthSim/python-hearthstone/commits?path=hearthstone/enums.py&per_page=1"
     }

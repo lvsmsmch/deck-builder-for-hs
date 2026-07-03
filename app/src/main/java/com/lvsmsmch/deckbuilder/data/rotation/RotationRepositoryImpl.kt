@@ -35,13 +35,16 @@ class RotationRepositoryImpl(
     }
 
     private suspend fun fetchAndStore(): StandardRotation? {
-        val source = api.fetchEnumsSource() ?: return null
-        val standard = EnumsParser.parseStandardSets(source)
+        val enumsSource = api.fetchEnumsSource() ?: return null
+        val utilsSource = api.fetchUtilsSource()
+        val standard = EnumsParser.parseStandardSets(enumsSource).ifEmpty {
+            utilsSource?.let { EnumsParser.parseStandardSets(it) }.orEmpty()
+        }
         if (standard.isEmpty()) {
             Log.w(TAG, "fetchAndStore: STANDARD_SETS parsed empty — refusing to overwrite cache")
             return null
         }
-        val known = EnumsParser.parseCardSetEnum(source)
+        val known = EnumsParser.parseCardSetEnum(enumsSource)
         val commit = api.fetchLatestCommit()
         val rotation = StandardRotation(
             standardSets = standard,

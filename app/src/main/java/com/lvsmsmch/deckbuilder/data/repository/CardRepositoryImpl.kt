@@ -24,14 +24,6 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "DB.CardRepo"
-private val FALLBACK_STANDARD_SETS = setOf(
-    "CORE",
-    "WHIZBANGS_WORKSHOP",
-    "ISLAND_VACATION",
-    "SPACE",
-    "THE_LOST_CITY",
-)
-
 class CardRepositoryImpl(
     private val hsJson: HsJsonRepository,
     private val locales: CurrentLocaleProvider,
@@ -82,7 +74,7 @@ class CardRepositoryImpl(
             val resolved = locales.resolve(locale)
             val snap = hsJson.ensureLoaded(resolved)
             val standardSets = if (filters.format != CardFormatFilter.ALL) {
-                rotation.ensureLoaded().standardSets.ifEmpty { FALLBACK_STANDARD_SETS }
+                rotation.ensureLoaded().standardSets
             } else {
                 emptySet()
             }
