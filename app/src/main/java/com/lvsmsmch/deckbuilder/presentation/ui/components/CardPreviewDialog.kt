@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -109,6 +111,23 @@ fun CardPreviewDialog(
                             text = stringResource(R.string.card_image_loading),
                             color = DeckBuilderColors.OnSurfaceDim,
                             style = MaterialTheme.typography.labelLarge,
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(10.dp)
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(99.dp))
+                            .background(DeckBuilderColors.OnSurface)
+                            .clickable(onClick = onDismiss),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = stringResource(R.string.action_close),
+                            tint = DeckBuilderColors.Surface,
+                            modifier = Modifier.size(18.dp),
                         )
                     }
                 }

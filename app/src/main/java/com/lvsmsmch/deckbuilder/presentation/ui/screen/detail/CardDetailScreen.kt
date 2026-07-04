@@ -453,7 +453,7 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
                 Icon(
                     Icons.Outlined.Close,
                     contentDescription = stringResource(R.string.action_close),
-                    tint = Color.White,
+                    tint = DeckBuilderColors.OnSurface,
                 )
             }
         }

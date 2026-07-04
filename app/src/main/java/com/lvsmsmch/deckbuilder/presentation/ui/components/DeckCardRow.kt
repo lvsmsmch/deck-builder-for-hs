@@ -89,7 +89,7 @@ fun DeckCardRow(
             Text(
                 text = card.name,
                 style = MaterialTheme.typography.titleSmall,
-                color = DeckBuilderColors.OnSurface,
+                color = androidx.compose.ui.graphics.Color.White,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
@@ -99,7 +99,7 @@ fun DeckCardRow(
             if (card.rarity?.slug.equals("legendary", ignoreCase = true)) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.CenterEnd)
                         .padding(4.dp)
                         .size(20.dp)
                         .clip(CircleShape)

@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,9 +70,6 @@ import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
-import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
-import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
-import com.lvsmsmch.deckbuilder.presentation.ui.labels.classShortLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -174,15 +169,7 @@ fun CardLibraryScreen(
             text = stringResource(R.string.library_found_count, state.totalCount),
             style = MaterialTheme.typography.labelSmall,
             color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
-        )
-
-        ClassChips(
-            selected = state.filters.classes,
-            onToggle = {
-                focusManager.clearFocus()
-                viewModel.toggleClass(it)
-            },
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 8.dp),
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -378,7 +365,7 @@ private fun SearchRow(
             shape = RoundedCornerShape(14.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(50.dp),
+                .height(56.dp),
         )
         HeaderIconButton(
             onClick = onOpenFilters,
@@ -472,57 +459,6 @@ private fun ManaChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
                     text = if (cost == 7) "7+" else cost.toString(),
                     color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
                     style = MaterialTheme.typography.labelLarge,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ClassChips(
-    selected: Set<String>,
-    onToggle: (String) -> Unit,
-) {
-    val slugs = remember { CardLabels.ClassOrder + "neutral" }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(start = 16.dp, end = 16.dp, bottom = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        slugs.forEach { slug ->
-            val label = classShortLabel(slug)
-            val active = slug in selected
-            val color = colorForClassSlug(slug)
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(99.dp))
-                    .background(
-                        if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer,
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OutlineSoft,
-                        shape = RoundedCornerShape(99.dp),
-                    )
-                    .clickable { onToggle(slug) }
-                    .height(40.dp)
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(color),
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
-                    fontSize = 12.sp,
                 )
             }
         }

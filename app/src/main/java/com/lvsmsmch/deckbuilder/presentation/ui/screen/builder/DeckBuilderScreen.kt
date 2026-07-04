@@ -990,7 +990,7 @@ private fun PoolSearchRow(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(50.dp),
+                .height(56.dp),
         )
         HeaderIconButton(
             onClick = onOpenFilters,

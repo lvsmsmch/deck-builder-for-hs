@@ -33,6 +33,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -75,6 +76,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.DeckActionsMenu
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.DeckWarning
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
@@ -123,6 +125,11 @@ fun DeckViewScreen(
                 savedName = state.savedName,
                 isSaved = state.isSaved,
                 onRename = viewModel::rename,
+                onEditDeck = onEditDeck,
+                onDeleteDeck = {
+                    viewModel.deleteSavedDeck()
+                    onBack()
+                },
                 onCardClick = onCardClick,
                 onCopyCode = { copyToClipboard(context, deckState.data.code) },
             )
@@ -198,10 +205,13 @@ private fun Body(
     savedName: String?,
     isSaved: Boolean,
     onRename: (String) -> Unit,
+    onEditDeck: () -> Unit,
+    onDeleteDeck: () -> Unit,
     onCardClick: (Card) -> Unit,
     onCopyCode: () -> Unit,
 ) {
     var copied by remember(deck.code) { mutableStateOf(false) }
+    var menuOpen by remember { mutableStateOf(false) }
     LaunchedEffect(deck.code) { copied = false }
 
     LazyColumn(
@@ -215,6 +225,35 @@ private fun Body(
                 isSaved = isSaved,
                 onRename = onRename,
             )
+        }
+        item {
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DeckBuilderColors.SurfaceContainer)
+                        .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
+                        .clickable { menuOpen = true }
+                        .padding(10.dp),
+                ) {
+                    Icon(
+                        Icons.Outlined.MoreVert,
+                        contentDescription = stringResource(R.string.action_more),
+                        tint = DeckBuilderColors.OnSurface,
+                    )
+                }
+                DeckActionsMenu(
+                    expanded = menuOpen,
+                    onDismiss = { menuOpen = false },
+                    onCopyCode = {
+                        onCopyCode()
+                        copied = true
+                    },
+                    onEdit = onEditDeck,
+                    onDelete = onDeleteDeck,
+                )
+            }
         }
 
         item {
@@ -424,7 +463,7 @@ private fun ActionsRow(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
+                .height(46.dp),
         ) {
             Icon(
                 if (copied) Icons.Outlined.Check else Icons.Outlined.ContentCopy,

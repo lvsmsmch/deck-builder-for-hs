@@ -174,7 +174,7 @@ fun SavedDecksScreen(
             },
             dismissButton = {
                 TextButton(onClick = { pendingDelete = null }) {
-                    Text(stringResource(R.string.action_cancel))
+                    Text(stringResource(R.string.action_cancel), color = DeckBuilderColors.OnSurface)
                 }
             },
         )
@@ -290,7 +290,7 @@ private fun SavedDeckRow(
 }
 
 @Composable
-private fun DeckActionsMenu(
+fun DeckActionsMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
     onCopyCode: () -> Unit,
