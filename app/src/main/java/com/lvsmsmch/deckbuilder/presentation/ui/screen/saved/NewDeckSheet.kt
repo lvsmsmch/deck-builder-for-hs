@@ -104,10 +104,10 @@ private fun Choice(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(DeckBuilderColors.PrimarySoft),
+                .background(DeckBuilderColors.OnSurface.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = DeckBuilderColors.Primary)
+            Icon(icon, contentDescription = null, tint = DeckBuilderColors.OnSurface)
         }
         Spacer(Modifier.size(14.dp))
         Column(modifier = Modifier.weight(1f)) {

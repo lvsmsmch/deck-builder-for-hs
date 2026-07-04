@@ -133,14 +133,14 @@ fun ImportDeckSheet(
                     enabled = !isImporting,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f),
-                ) { Text(stringResource(R.string.action_cancel)) }
+                ) { Text(stringResource(R.string.action_cancel), color = DeckBuilderColors.OnSurface) }
 
                 Button(
                     onClick = { onSubmit(code) },
                     enabled = !isImporting && code.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = DeckBuilderColors.Primary,
-                        contentColor = DeckBuilderColors.OnPrimary,
+                        containerColor = DeckBuilderColors.OnSurface,
+                        contentColor = DeckBuilderColors.Surface,
                     ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f),
@@ -148,7 +148,7 @@ fun ImportDeckSheet(
                     if (isImporting) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
-                            color = DeckBuilderColors.OnPrimary,
+                            color = DeckBuilderColors.Surface,
                             strokeWidth = 2.dp,
                         )
                     } else {

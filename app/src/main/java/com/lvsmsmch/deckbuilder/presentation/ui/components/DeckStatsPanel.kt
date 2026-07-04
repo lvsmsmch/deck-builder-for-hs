@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
+import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 data class DeckStats(
@@ -34,7 +35,12 @@ data class DeckStats(
 
 @Composable
 fun DeckStatsPanel(deck: Deck, modifier: Modifier = Modifier) {
-    val stats = remember(deck) { computeStats(deck) }
+    DeckStatsPanel(entries = deck.cards, modifier = modifier)
+}
+
+@Composable
+fun DeckStatsPanel(entries: List<DeckCardEntry>, modifier: Modifier = Modifier) {
+    val stats = remember(entries) { computeStats(entries) }
 
     Column(
         modifier = modifier
@@ -67,6 +73,8 @@ fun DeckStatsPanel(deck: Deck, modifier: Modifier = Modifier) {
             Spacer(Modifier.height(10.dp))
             RarityDistribution(stats.rarityCounts)
         }
+        Spacer(Modifier.height(10.dp))
+        ManaCurve(entries = entries, height = 96.dp)
     }
 }
 
@@ -146,8 +154,8 @@ private fun RarityDistribution(rarityCounts: Map<String, Int>) {
     }
 }
 
-private fun computeStats(deck: Deck): DeckStats {
-    if (deck.cards.isEmpty()) return DeckStats(0.0, 0, emptyMap(), emptyMap())
+private fun computeStats(entries: List<DeckCardEntry>): DeckStats {
+    if (entries.isEmpty()) return DeckStats(0.0, 0, emptyMap(), emptyMap())
 
     var totalMana = 0
     var totalCount = 0
@@ -155,7 +163,7 @@ private fun computeStats(deck: Deck): DeckStats {
     val rarityCounts = mutableMapOf<String, Int>()
     val typeCounts = mutableMapOf<String, Int>()
 
-    deck.cards.forEach { entry ->
+    entries.forEach { entry ->
         val n = entry.count
         totalCount += n
         totalMana += entry.card.manaCost * n

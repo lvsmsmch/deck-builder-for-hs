@@ -1,6 +1,7 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -95,16 +96,26 @@ fun DeckCardRow(
                     .padding(start = 10.dp, end = 8.dp),
                 maxLines = 1,
             )
+            if (card.rarity?.slug.equals("legendary", ignoreCase = true)) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(20.dp)
+                        .clip(CircleShape)
+                        .background(DeckBuilderColors.Surface.copy(alpha = 0.82f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Star,
+                        contentDescription = null,
+                        tint = DeckBuilderColors.Rarity.Legendary,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
         }
 
-        if (card.rarity?.slug.equals("legendary", ignoreCase = true)) {
-            Icon(
-                imageVector = Icons.Outlined.Star,
-                contentDescription = null,
-                tint = DeckBuilderColors.Rarity.Legendary,
-                modifier = Modifier.size(28.dp),
-            )
-        }
         CountPill(count = entry.count)
         if (onRemove != null) {
             Box(
@@ -133,8 +144,9 @@ private fun CountPill(count: Int) {
         modifier = Modifier
             .width(38.dp)
             .height(30.dp)
-            .clip(RoundedCornerShape(6.dp))
+            .clip(CircleShape)
             .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.OutlineSoft, CircleShape)
             .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {

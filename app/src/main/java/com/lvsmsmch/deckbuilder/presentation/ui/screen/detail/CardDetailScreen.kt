@@ -33,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -170,7 +171,7 @@ private fun TopBar(title: String, onBack: () -> Unit) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleSmall,
-            color = DeckBuilderColors.OnSurfaceDim,
+            color = DeckBuilderColors.OnSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
@@ -281,8 +282,7 @@ private fun CardImagePanel(
                 .height(280.dp)
                 .clip(RoundedCornerShape(18.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp))
-                .clickable(onClick = onOpenFullscreen),
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp)),
         ) {
             if (!lowUrl.isNullOrBlank()) {
                 Image(
@@ -304,6 +304,23 @@ private fun CardImagePanel(
                 is AsyncImagePainter.State.Error -> CardImageErrorOverlay(onRetry = { highPainter.restart() })
                 is AsyncImagePainter.State.Success -> Unit
                 else -> CardImageLoadingOverlay()
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(10.dp)
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(DeckBuilderColors.OnSurface)
+                    .clickable(onClick = onOpenFullscreen),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.OpenInFull,
+                    contentDescription = stringResource(R.string.action_more),
+                    tint = DeckBuilderColors.Surface,
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
     }
@@ -391,7 +408,7 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DeckBuilderColors.Surface)
+                .background(DeckBuilderColors.Surface.copy(alpha = 0.88f))
                 .statusBarsPadding(),
         ) {
             Image(

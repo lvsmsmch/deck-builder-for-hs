@@ -30,13 +30,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,7 +73,6 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
-import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.DeckWarning
@@ -123,11 +123,6 @@ fun DeckViewScreen(
                 savedName = state.savedName,
                 isSaved = state.isSaved,
                 onRename = viewModel::rename,
-                onEditDeck = onEditDeck,
-                onDeleteDeck = {
-                    viewModel.deleteSavedDeck()
-                    onBack()
-                },
                 onCardClick = onCardClick,
                 onCopyCode = { copyToClipboard(context, deckState.data.code) },
             )
@@ -203,11 +198,12 @@ private fun Body(
     savedName: String?,
     isSaved: Boolean,
     onRename: (String) -> Unit,
-    onEditDeck: () -> Unit,
-    onDeleteDeck: () -> Unit,
     onCardClick: (Card) -> Unit,
     onCopyCode: () -> Unit,
 ) {
+    var copied by remember(deck.code) { mutableStateOf(false) }
+    LaunchedEffect(deck.code) { copied = false }
+
     LazyColumn(
         contentPadding = PaddingValues(bottom = 24.dp),
         modifier = Modifier.fillMaxSize(),
@@ -218,15 +214,16 @@ private fun Body(
                 savedName = savedName,
                 isSaved = isSaved,
                 onRename = onRename,
-                onCopyCode = onCopyCode,
             )
         }
 
         item {
             ActionsRow(
-                isSaved = isSaved,
-                onEditDeck = onEditDeck,
-                onDeleteDeck = onDeleteDeck,
+                copied = copied,
+                onCopyCode = {
+                    onCopyCode()
+                    copied = true
+                },
             )
         }
 
@@ -235,18 +232,6 @@ private fun Body(
         item {
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 DeckStatsPanel(deck)
-            }
-        }
-
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DeckBuilderColors.SurfaceContainer),
-            ) {
-                ManaCurve(entries = deck.cards)
             }
         }
 
@@ -286,7 +271,6 @@ private fun HeroHeader(
     savedName: String?,
     isSaved: Boolean,
     onRename: (String) -> Unit,
-    onCopyCode: () -> Unit,
 ) {
     val classSlug = deck.heroClass?.slug
     val heroCardId = deck.hero?.slug?.takeIf { it.startsWith("HERO_") }
@@ -338,25 +322,6 @@ private fun HeroHeader(
                     text = "$heroClassLabel \u00B7 ${deck.cardCount}/${deck.maxCardCount}",
                     style = MaterialTheme.typography.bodySmall,
                     color = DeckBuilderColors.OnSurfaceDim,
-                )
-            }
-        }
-        if (isSaved) {
-            Spacer(Modifier.width(10.dp))
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DeckBuilderColors.SurfaceContainer)
-                    .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
-                    .clickable(onClick = onCopyCode),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    Icons.Outlined.ContentCopy,
-                    contentDescription = stringResource(R.string.action_copy_code),
-                    tint = DeckBuilderColors.OnSurface,
-                    modifier = Modifier.size(18.dp),
                 )
             }
         }
@@ -441,9 +406,8 @@ private fun EditableTitle(
 
 @Composable
 private fun ActionsRow(
-    isSaved: Boolean,
-    onEditDeck: () -> Unit,
-    onDeleteDeck: () -> Unit,
+    copied: Boolean,
+    onCopyCode: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -451,32 +415,24 @@ private fun ActionsRow(
             .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        OutlinedButton(
-            onClick = onEditDeck,
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.weight(1f),
+        Button(
+            onClick = onCopyCode,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = DeckBuilderColors.OnSurface,
+                contentColor = DeckBuilderColors.Surface,
+            ),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
         ) {
             Icon(
-                Icons.Outlined.Edit,
+                if (copied) Icons.Outlined.Check else Icons.Outlined.ContentCopy,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
             )
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_edit))
-        }
-        OutlinedButton(
-            onClick = onDeleteDeck,
-            enabled = isSaved,
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.weight(1f),
-        ) {
-            Icon(
-                Icons.Outlined.DeleteOutline,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_delete))
+            Text(stringResource(R.string.action_copy_code))
         }
     }
 }

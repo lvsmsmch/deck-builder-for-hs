@@ -82,7 +82,7 @@ class CardRepositoryImpl(
             val sorted = searchCache.getOrPut(cacheKey) {
                 val pred = buildPredicate(filters, standardSets)
                 val matched = snap.cards.filter(pred)
-                sort(matched, filters.sort.key, filters.sort.direction)
+                sort(removeVanillaReprints(matched), filters.sort.key, filters.sort.direction)
             }
             val total = sorted.size
             val pageCount = if (pageSize > 0 && total > 0) (total + pageSize - 1) / pageSize else 1
@@ -182,6 +182,9 @@ class CardRepositoryImpl(
             true
         }
     }
+
+    private fun removeVanillaReprints(rows: List<HsJsonCardEntity>): List<HsJsonCardEntity> =
+        rows.filterNot { it.cardSet.equals("VANILLA", ignoreCase = true) }
 
     private fun sort(rows: List<HsJsonCardEntity>, key: SortKey, dir: SortDir): List<HsJsonCardEntity> {
         // DATE_ADDED uses dbfId as a proxy: higher dbfId == newer, so DESC = Newest, ASC = Oldest.

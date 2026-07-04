@@ -87,6 +87,7 @@ class DeckBuilderViewModel(
                         it.copy(
                             phase = Phase.Editing,
                             chosenClass = meta,
+                            deckName = savedName ?: savedDecks.get(code)?.name,
                             heroCardId = deck.hero?.id ?: meta?.slug?.let(DefaultHeroes::dbfIdFor),
                             format = deck.format.takeUnless { f -> f == GameFormat.UNKNOWN } ?: GameFormat.STANDARD,
                             deck = deck.cards.associateBy { entry -> entry.card.id },
@@ -118,6 +119,7 @@ class DeckBuilderViewModel(
                 it.copy(
                     phase = Phase.Editing,
                     chosenClass = meta,
+                    deckName = null,
                     heroCardId = canonicalDbf,
                     deck = emptyMap(),
                     pool = PoolState(isLoading = true),
@@ -135,6 +137,7 @@ class DeckBuilderViewModel(
             it.copy(
                 phase = Phase.ClassPicker,
                 chosenClass = null,
+                deckName = null,
                 heroCardId = null,
                 deck = emptyMap(),
                 pool = PoolState(),
@@ -235,6 +238,10 @@ class DeckBuilderViewModel(
         reloadPoolFirstPage()
     }
 
+    fun renameDeck(name: String) {
+        _state.update { it.copy(deckName = name.trim().takeIf { value -> value.isNotEmpty() }) }
+    }
+
     fun dismissToast() {
         _state.update { it.copy(toast = null) }
     }
@@ -252,7 +259,7 @@ class DeckBuilderViewModel(
                 is Result.Success -> {
                     val deck = r.data
                     val oldCode = editingOriginalCode
-                    val name = savedName ?: oldCode?.let { savedDecks.get(it)?.name }
+                    val name = st.deckName ?: savedName ?: oldCode?.let { savedDecks.get(it)?.name }
                     saveDeck(deck, name = name)
                     if (oldCode != null && oldCode != deck.code) {
                         runCatching { savedDecks.delete(oldCode) }

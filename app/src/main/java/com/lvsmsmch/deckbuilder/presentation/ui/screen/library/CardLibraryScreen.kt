@@ -32,7 +32,6 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -139,6 +138,11 @@ fun CardLibraryScreen(
             },
     ) {
         Header(
+            sort = state.filters.sort,
+            onSortChange = {
+                focusManager.clearFocus()
+                viewModel.setSort(it.key, it.direction)
+            },
         )
 
         rotationStatus?.takeIf { it.isOutdated }?.let { status ->
@@ -159,18 +163,10 @@ fun CardLibraryScreen(
         SearchRow(
             query = state.filters.textQuery,
             onQueryChange = viewModel::setTextQuery,
-        )
-
-        SortControls(
-            sort = state.filters.sort,
             activeFilterCount = state.filters.activeFilterCount(),
             onOpenFilters = {
                 focusManager.clearFocus()
                 showFilterSheet = true
-            },
-            onSortChange = {
-                focusManager.clearFocus()
-                viewModel.setSort(it.key, it.direction)
             },
         )
 
@@ -259,15 +255,23 @@ private fun com.lvsmsmch.deckbuilder.domain.entities.CardFilters.activeFilterCou
 
 @Composable
 private fun Header(
+    sort: CardSort,
+    onSortChange: (CardSort) -> Unit,
 ) {
-    Text(
-        text = stringResource(R.string.library_title),
-        style = MaterialTheme.typography.titleLarge,
-        color = DeckBuilderColors.OnSurface,
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-    )
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.library_title),
+            style = MaterialTheme.typography.titleLarge,
+            color = DeckBuilderColors.OnSurface,
+            modifier = Modifier.weight(1f),
+        )
+        SortMenuButton(sort = sort, onSortChange = onSortChange)
+    }
 }
 
 @Composable
@@ -281,6 +285,8 @@ private fun HeaderIconButton(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
+                .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
@@ -324,6 +330,8 @@ private fun currentSortLabelRes(current: CardSort): Int =
 private fun SearchRow(
     query: String,
     onQueryChange: (String) -> Unit,
+    activeFilterCount: Int,
+    onOpenFilters: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -368,26 +376,10 @@ private fun SearchRow(
                 cursorColor = DeckBuilderColors.Primary,
             ),
             shape = RoundedCornerShape(14.dp),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .height(50.dp),
         )
-    }
-}
-
-@Composable
-private fun SortControls(
-    sort: CardSort,
-    activeFilterCount: Int,
-    onOpenFilters: () -> Unit,
-    onSortChange: (CardSort) -> Unit,
-) {
-    var sortMenuOpen by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
         HeaderIconButton(
             onClick = onOpenFilters,
             badge = activeFilterCount.takeIf { it > 0 }?.toString(),
@@ -399,7 +391,16 @@ private fun SortControls(
                 modifier = Modifier.size(21.dp),
             )
         }
-        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+    }
+}
+
+@Composable
+private fun SortMenuButton(
+    sort: CardSort,
+    onSortChange: (CardSort) -> Unit,
+) {
+    var sortMenuOpen by remember { mutableStateOf(false) }
+    Box {
         Row(
             modifier = Modifier
                 .height(40.dp)
@@ -410,24 +411,17 @@ private fun SortControls(
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                Icons.Outlined.ArrowDropDown,
-                contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDim,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(Modifier.width(4.dp))
             Text(
                 text = stringResource(currentSortLabelRes(sort)),
                 color = DeckBuilderColors.OnSurface,
                 style = MaterialTheme.typography.labelLarge,
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(4.dp))
             Icon(
-                Icons.Outlined.Sort,
+                Icons.Outlined.ArrowDropDown,
                 contentDescription = null,
                 tint = DeckBuilderColors.OnSurfaceDim,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(20.dp),
             )
         }
         DropdownMenu(
@@ -443,7 +437,6 @@ private fun SortControls(
                     },
                 )
             }
-        }
         }
     }
 }

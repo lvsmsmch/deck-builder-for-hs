@@ -116,7 +116,7 @@ fun CardPreviewDialog(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(99.dp))
-                        .background(DeckBuilderColors.Primary)
+                        .background(DeckBuilderColors.OnSurface)
                         .clickable {
                             onDismiss()
                             onMore()
@@ -126,14 +126,14 @@ fun CardPreviewDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = stringResource(R.string.action_more),
-                            color = DeckBuilderColors.OnPrimary,
+                            color = DeckBuilderColors.Surface,
                             style = MaterialTheme.typography.labelLarge,
                         )
                         Spacer(Modifier.width(6.dp))
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                             contentDescription = null,
-                            tint = DeckBuilderColors.OnPrimary,
+                            tint = DeckBuilderColors.Surface,
                         )
                     }
                 }

@@ -68,9 +68,9 @@ private inline fun <reified T : Route> RowScope.TabItem(
         icon = { Icon(icon, contentDescription = null) },
         label = { Text(stringResource(labelRes)) },
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = DeckBuilderColors.Primary,
-            selectedTextColor = DeckBuilderColors.Primary,
-            indicatorColor = DeckBuilderColors.PrimarySoft,
+            selectedIconColor = DeckBuilderColors.OnSurface,
+            selectedTextColor = DeckBuilderColors.OnSurface,
+            indicatorColor = DeckBuilderColors.SurfaceContainerHigh,
             unselectedIconColor = DeckBuilderColors.OnSurfaceDimmer,
             unselectedTextColor = DeckBuilderColors.OnSurfaceDimmer,
         ),

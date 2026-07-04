@@ -25,10 +25,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -159,7 +157,6 @@ fun SettingsScreen(
                             title = stringResource(R.string.more_card_data),
                             subtitle = stringResource(R.string.more_card_data_subtitle),
                             value = "",
-                            trailingIcon = Icons.Outlined.Refresh,
                             onClick = onOpenCardData,
                         )
                         Divider()
@@ -180,7 +177,7 @@ fun SettingsScreen(
                             title = stringResource(R.string.settings_contact_developer),
                             subtitle = stringResource(R.string.settings_contact_developer_subtitle),
                             value = "",
-                            trailingIcon = Icons.Outlined.Email,
+                            trailingIcon = null,
                             onClick = { context.openEmail("iamajavagod@gmail.com") },
                         )
                         Divider()
@@ -453,7 +450,7 @@ private fun ThemePickerDialog(
                             selected = current == mode,
                             onClick = { onPick(mode) },
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = DeckBuilderColors.Primary,
+                                selectedColor = DeckBuilderColors.OnSurface,
                                 unselectedColor = DeckBuilderColors.OnSurfaceDim,
                             ),
                         )
@@ -523,7 +520,7 @@ private fun LocalePickerDialog(
                             selected = code == current,
                             onClick = { onPick(code) },
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = DeckBuilderColors.Primary,
+                                selectedColor = DeckBuilderColors.OnSurface,
                                 unselectedColor = DeckBuilderColors.OnSurfaceDim,
                             ),
                         )

@@ -14,6 +14,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 data class BuilderState(
     val phase: Phase = Phase.ClassPicker,
     val chosenClass: ClassMeta? = null,
+    val deckName: String? = null,
     val heroCardId: Int? = null,
     val format: GameFormat = GameFormat.STANDARD,
     val deck: Map<Int, DeckCardEntry> = emptyMap(),
