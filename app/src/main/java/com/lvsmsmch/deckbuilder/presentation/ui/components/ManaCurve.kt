@@ -65,7 +65,7 @@ fun ManaCurve(
                     fraction = count.toFloat() / maxValue.toFloat(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(height - 38.dp),
+                        .height(height - 30.dp),
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(

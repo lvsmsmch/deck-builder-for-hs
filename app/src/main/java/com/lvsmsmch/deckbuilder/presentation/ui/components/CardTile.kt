@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
@@ -36,7 +37,7 @@ fun CardTile(
 ) {
     val url = cardArtUrl(slug)
     val yBias = (verticalFocus.coerceIn(0f, 1f) * 2f) - 1f
-    Box(modifier = modifier.background(DeckBuilderColors.SurfaceContainer)) {
+    Box(modifier = modifier.clipToBounds().background(DeckBuilderColors.SurfaceContainer)) {
         if (url != null) {
             AsyncImage(
                 model = url,

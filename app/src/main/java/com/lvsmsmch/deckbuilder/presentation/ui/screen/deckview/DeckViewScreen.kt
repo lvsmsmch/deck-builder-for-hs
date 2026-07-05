@@ -520,7 +520,7 @@ private fun DeckWarnings(deck: Deck) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 24.dp, vertical = 6.dp),
     ) {
         DeckWarning(
             text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, deck.maxCardCount),

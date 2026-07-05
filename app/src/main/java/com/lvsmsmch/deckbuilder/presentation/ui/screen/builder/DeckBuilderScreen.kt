@@ -70,6 +70,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -1009,24 +1010,23 @@ private fun PoolCard(
                 )
             }
         }
-        if (canAdd) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(5.dp)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.92f))
-                    .clickable(onClick = onAdd),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.action_add),
-                    tint = Color.Black,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(5.dp)
+                .size(28.dp)
+                .alpha(if (canAdd) 1f else 0.5f)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.92f))
+                .clickable(enabled = canAdd, onClick = onAdd),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.action_add),
+                tint = Color.Black,
+                modifier = Modifier.size(17.dp),
+            )
         }
     }
 }

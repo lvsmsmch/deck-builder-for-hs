@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
+
+private val SegmentWidth = 36.dp
 
 @Composable
 fun DeckCardRow(
@@ -44,14 +47,14 @@ fun DeckCardRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp),
+            .height(46.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(46.dp)
+                .height(42.dp)
                 .clip(rowShape)
                 .background(DeckBuilderColors.SurfaceContainer)
                 .clickable(onClick = onClick),
@@ -61,7 +64,8 @@ fun DeckCardRow(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .clipToBounds(),
                 ) {
                     CardTile(
                         slug = card.slug,
@@ -130,19 +134,15 @@ fun DeckCardRow(
 private fun ManaSegment(cost: Int) {
     Box(
         modifier = Modifier
-            .width(42.dp)
+            .width(SegmentWidth)
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(DeckBuilderColors.SurfaceContainerHigh, DeckBuilderColors.Surface),
-                ),
-            )
-            .padding(horizontal = 6.dp),
+            .background(StatGemPalette.Mana)
+            .padding(horizontal = 3.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = cost.toString(),
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.labelMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -156,14 +156,14 @@ private fun ManaSegment(cost: Int) {
 private fun CountSegment(count: Int) {
     Box(
         modifier = Modifier
-            .width(42.dp)
+            .width(SegmentWidth)
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
                     listOf(DeckBuilderColors.SurfaceContainerHigh, DeckBuilderColors.Surface),
                 ),
             )
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
