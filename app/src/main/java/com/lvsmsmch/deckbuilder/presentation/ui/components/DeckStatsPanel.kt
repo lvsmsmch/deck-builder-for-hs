@@ -60,16 +60,10 @@ fun DeckStatsPanel(entries: List<DeckCardEntry>, modifier: Modifier = Modifier) 
             label = stringResource(R.string.deck_stats_dust),
             value = formatDust(stats.totalDust),
             valueStyle = MaterialTheme.typography.titleSmall,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(122.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(10.dp))
-        SectionBlock(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(122.dp),
-        ) {
+        SectionBlock {
             Text(
                 text = stringResource(R.string.deck_stats_mana_curve),
                 style = MaterialTheme.typography.labelSmall,

@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
@@ -66,7 +67,7 @@ fun DeckCardRow(
                         slug = card.slug,
                         contentDescription = card.name,
                         verticalFocus = 0.24f,
-                        cropZoom = 1.46f,
+                        cropZoom = 1.52f,
                         modifier = Modifier.fillMaxSize(),
                     )
                     Box(
@@ -131,10 +132,23 @@ private fun ManaSegment(cost: Int) {
         modifier = Modifier
             .width(42.dp)
             .fillMaxSize()
-            .background(DeckBuilderColors.SurfaceContainerHigh),
+            .background(
+                Brush.verticalGradient(
+                    listOf(DeckBuilderColors.SurfaceContainerHigh, DeckBuilderColors.Surface),
+                ),
+            )
+            .padding(horizontal = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        ManaGem(cost = cost, size = 30.dp)
+        Text(
+            text = cost.toString(),
+            style = MaterialTheme.typography.titleSmall,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
