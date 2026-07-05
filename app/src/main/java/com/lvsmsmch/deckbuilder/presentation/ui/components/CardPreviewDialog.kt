@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -78,8 +79,14 @@ fun CardPreviewDialog(
     var targetScale by remember(card.id) { mutableFloatStateOf(1f) }
     var targetOffset by remember(card.id) { mutableStateOf(Offset.Zero) }
     var gestureActive by remember(card.id) { mutableStateOf(false) }
+    var zoomChromeHidden by remember(card.id) { mutableStateOf(false) }
     val scale by animateFloatAsState(targetScale, tween(180), label = "preview-card-scale")
     val offset by animateOffsetAsState(targetOffset, tween(180), label = "preview-card-offset")
+    val chromeAlpha by animateFloatAsState(
+        targetValue = if (zoomChromeHidden) 0f else 1f,
+        animationSpec = tween(160),
+        label = "preview-card-chrome-alpha",
+    )
     val renderedScale = if (gestureActive) targetScale else scale
     val renderedOffset = if (gestureActive) targetOffset else offset
 
@@ -135,13 +142,16 @@ fun CardPreviewDialog(
                                     gestureActive = true
                                     do {
                                         val event = awaitPointerEvent()
+                                        val pressedCount = event.changes.count { it.pressed }
                                         val zoom = event.calculateZoom()
                                         targetScale = (targetScale * zoom).coerceIn(1f, 3.2f)
-                                        if (event.changes.count { it.pressed } >= 2) {
+                                        zoomChromeHidden = pressedCount >= 2 || targetScale > 1.01f
+                                        if (pressedCount >= 2) {
                                             targetOffset += event.calculatePan()
                                         }
                                     } while (event.changes.any { it.pressed })
                                     gestureActive = false
+                                    zoomChromeHidden = false
                                     targetScale = 1f
                                     targetOffset = Offset.Zero
                                 }
@@ -157,23 +167,30 @@ fun CardPreviewDialog(
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(top = 2.dp, end = 4.dp)
+                            .offset(y = (-8).dp)
+                            .padding(end = 4.dp)
                             .size(44.dp)
+                            .graphicsLayer { alpha = chromeAlpha }
                             .clip(RoundedCornerShape(99.dp))
                             .background(DeckBuilderColors.OnSurface)
-                            .clickable(onClick = onDismiss),
+                            .clickable(enabled = chromeAlpha > 0.5f, onClick = onDismiss),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
                             contentDescription = stringResource(R.string.action_close),
                             tint = DeckBuilderColors.Surface,
-                            modifier = Modifier.size(18.dp),
+                            modifier = Modifier.size(22.dp),
                         )
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                CardPreviewMetadata(card = card, modifier = Modifier.zIndex(0f))
+                CardPreviewMetadata(
+                    card = card,
+                    modifier = Modifier
+                        .zIndex(0f)
+                        .graphicsLayer { alpha = chromeAlpha },
+                )
             }
         }
     }
@@ -186,7 +203,6 @@ private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
         card.classes.joinToString("/") { it.name }.takeIf { it.isNotBlank() },
         card.cardType.name.takeIf { it.isNotBlank() },
         card.cardSet?.name?.takeIf { it.isNotBlank() },
-        card.artistName?.takeIf { it.isNotBlank() }?.let { "Artist: $it" },
     )
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -194,14 +210,23 @@ private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = parts.joinToString(" • "),
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
             color = androidx.compose.ui.graphics.Color.White,
             textAlign = TextAlign.Center,
         )
-        card.flavorText?.takeIf { it.isNotBlank() }?.let { flavor ->
+        card.artistName?.takeIf { it.isNotBlank() }?.let { artist ->
             Spacer(Modifier.height(8.dp))
             Text(
-                text = flavor,
+                text = "Artist: $artist",
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+                color = androidx.compose.ui.graphics.Color.White,
+                textAlign = TextAlign.Center,
+            )
+        }
+        card.flavorText?.takeIf { it.isNotBlank() }?.let { flavor ->
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "Flavor text: \"$flavor\"",
                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
                 color = androidx.compose.ui.graphics.Color.White,
                 textAlign = TextAlign.Center,

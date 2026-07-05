@@ -34,12 +34,14 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -213,7 +215,9 @@ private fun Body(
 ) {
     var copied by remember(deck.code) { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
+    var pendingDelete by remember { mutableStateOf(false) }
     var previewCard by remember { mutableStateOf<Card?>(null) }
+    val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
     LaunchedEffect(deck.code) { copied = false }
 
     LazyColumn(
@@ -230,7 +234,7 @@ private fun Body(
                 onOpenMenu = { menuOpen = true },
                 onDismissMenu = { menuOpen = false },
                 onEditDeck = onEditDeck,
-                onDeleteDeck = onDeleteDeck,
+                onDeleteDeck = { pendingDelete = true },
             )
         }
 
@@ -285,6 +289,26 @@ private fun Body(
         CardPreviewDialog(
             card = card,
             onDismiss = { previewCard = null },
+        )
+    }
+
+    if (pendingDelete) {
+        AlertDialog(
+            onDismissRequest = { pendingDelete = false },
+            containerColor = DeckBuilderColors.SurfaceContainer,
+            title = { Text(stringResource(R.string.saved_delete_title)) },
+            text = { Text(stringResource(R.string.saved_delete_message, displayName)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingDelete = false
+                    onDeleteDeck()
+                }) { Text(stringResource(R.string.action_delete), color = DeckBuilderColors.Error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = false }) {
+                    Text(stringResource(R.string.action_cancel), color = DeckBuilderColors.OnSurface)
+                }
+            },
         )
     }
 }
@@ -438,7 +462,7 @@ private fun EditableTitle(
                 style = titleStyle,
                 color = DeckBuilderColors.OnSurface,
                 modifier = Modifier.weight(1f),
-                maxLines = 3,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             if (editable) {

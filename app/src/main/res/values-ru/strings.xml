@@ -183,9 +183,8 @@
     <string name="format_twist">Твист</string>
     <string name="format_unknown">—</string>
     <string name="deck_stats_title">СТАТИСТИКА</string>
-    <string name="deck_stats_avg_mana">Средняя мана</string>
     <string name="deck_stats_dust">Пыль</string>
-    <string name="deck_stats_spells">Заклинания</string>
+    <string name="deck_stats_mana_curve">КРИВАЯ МАНЫ</string>
     <string name="deck_stats_rarity">РЕДКОСТЬ</string>
 
     <!-- More -->

@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.domain.repositories
 
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
+import com.lvsmsmch.deckbuilder.domain.entities.SavedDeckSource
 import kotlinx.coroutines.flow.Flow
 
 interface SavedDeckRepository {
@@ -17,4 +18,6 @@ interface SavedDeckRepository {
     suspend fun rename(code: String, name: String)
 
     suspend fun get(code: String): DeckPreview?
+
+    suspend fun getSource(code: String): SavedDeckSource?
 }

@@ -187,9 +187,7 @@
     <string name="format_twist">Twist</string>
     <string name="format_unknown">—</string>
     <string name="deck_stats_title">STATS</string>
-    <string name="deck_stats_avg_mana">Avg mana</string>
     <string name="deck_stats_dust">Dust</string>
-    <string name="deck_stats_spells">Spells</string>
     <string name="deck_stats_mana_curve">MANA CURVE</string>
     <string name="deck_stats_rarity">RARITY</string>
 

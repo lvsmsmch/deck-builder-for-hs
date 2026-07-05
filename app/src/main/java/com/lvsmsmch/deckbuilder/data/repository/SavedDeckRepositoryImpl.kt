@@ -8,6 +8,7 @@ import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringFormat
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import com.lvsmsmch.deckbuilder.domain.entities.SavedDeckSource
 import com.lvsmsmch.deckbuilder.domain.repositories.SavedDeckRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -91,6 +92,18 @@ class SavedDeckRepositoryImpl(
         dao.get(code)?.let(::toPreview)
     }
 
+    override suspend fun getSource(code: String): SavedDeckSource? = withContext(Dispatchers.IO) {
+        dao.get(code)?.let { row ->
+            SavedDeckSource(
+                code = row.code,
+                name = row.name,
+                heroCardId = row.heroCardId.takeIf { it > 0 },
+                format = GameFormat.fromApi(row.format),
+                cardIds = row.cardIdsCsv.toCardIds(),
+            )
+        }
+    }
+
     private fun toPreview(row: SavedDeckEntity): DeckPreview = DeckPreview(
         code = row.code,
         name = row.name,
@@ -109,6 +122,9 @@ class SavedDeckRepositoryImpl(
         return cls?.let { "$it deck" } ?: "Untitled deck"
     }
 }
+
+private fun String.toCardIds(): List<Int> =
+    split(',').mapNotNull { it.trim().toIntOrNull() }
 
 private fun maxCardCountFor(cardIdsCsv: String): Int {
     val ids = cardIdsCsv.split(',').filter { it.isNotBlank() }.toSet()

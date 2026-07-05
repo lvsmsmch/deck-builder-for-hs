@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
@@ -27,10 +29,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 data class DeckStats(
-    val avgMana: Double,
     val totalDust: Int,
     val rarityCounts: Map<String, Int>,
-    val typeCounts: Map<String, Int>,
 )
 
 @Composable
@@ -57,35 +57,56 @@ fun DeckStatsPanel(entries: List<DeckCardEntry>, modifier: Modifier = Modifier) 
         )
         Spacer(Modifier.height(10.dp))
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            StatBlock(label = stringResource(R.string.deck_stats_avg_mana), value = "%.1f".format(stats.avgMana), modifier = Modifier.weight(1f))
-            StatBlock(label = stringResource(R.string.deck_stats_dust), value = formatDust(stats.totalDust), modifier = Modifier.weight(1f))
             StatBlock(
-                label = stringResource(R.string.deck_stats_spells),
-                value = (stats.typeCounts["spell"] ?: 0).toString(),
-                modifier = Modifier.weight(1f),
+                label = stringResource(R.string.deck_stats_dust),
+                value = formatDust(stats.totalDust),
+                valueStyle = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.weight(0.2f),
             )
+            SectionBlock(modifier = Modifier.weight(0.8f)) {
+                Text(
+                    text = stringResource(R.string.deck_stats_mana_curve),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = DeckBuilderColors.OnSurfaceDim,
+                )
+                ManaCurve(entries = entries, height = 88.dp, horizontalPadding = 0.dp, verticalPadding = 0.dp)
+            }
         }
 
         if (stats.rarityCounts.isNotEmpty()) {
             Spacer(Modifier.height(10.dp))
-            RarityDistribution(stats.rarityCounts)
+            SectionBlock {
+                RarityDistribution(stats.rarityCounts)
+            }
         }
-        Spacer(Modifier.height(10.dp))
-        Text(
-            text = stringResource(R.string.deck_stats_mana_curve),
-            style = MaterialTheme.typography.labelSmall,
-            color = DeckBuilderColors.OnSurfaceDim,
-        )
-        Spacer(Modifier.height(4.dp))
-        ManaCurve(entries = entries, height = 96.dp, horizontalPadding = 0.dp)
     }
 }
 
 @Composable
-private fun StatBlock(label: String, value: String, modifier: Modifier = Modifier) {
+private fun SectionBlock(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .padding(10.dp),
+        content = content,
+    )
+}
+
+@Composable
+private fun StatBlock(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    valueStyle: TextStyle = MaterialTheme.typography.titleMedium,
+) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
@@ -100,7 +121,7 @@ private fun StatBlock(label: String, value: String, modifier: Modifier = Modifie
         Spacer(Modifier.height(4.dp))
         Text(
             text = value,
-            style = MaterialTheme.typography.titleMedium,
+            style = valueStyle,
             color = DeckBuilderColors.OnSurface,
         )
     }
@@ -161,36 +182,24 @@ private fun RarityDistribution(rarityCounts: Map<String, Int>) {
 }
 
 private fun computeStats(entries: List<DeckCardEntry>): DeckStats {
-    if (entries.isEmpty()) return DeckStats(0.0, 0, emptyMap(), emptyMap())
+    if (entries.isEmpty()) return DeckStats(0, emptyMap())
 
-    var totalMana = 0
-    var totalCount = 0
     var totalDust = 0
     val rarityCounts = mutableMapOf<String, Int>()
-    val typeCounts = mutableMapOf<String, Int>()
 
     entries.forEach { entry ->
         val n = entry.count
-        totalCount += n
-        totalMana += entry.card.manaCost * n
 
         entry.card.rarity?.let { r ->
             rarityCounts.merge(r.slug, n, Int::plus)
-            // craftingCost: [normal, golden] — use index 0 for normal-quality dust.
             val craft = r.craftingCost.firstOrNull() ?: 0
             totalDust += craft * n
         }
-        entry.card.cardType.slug.takeIf { it.isNotBlank() }?.let { t ->
-            typeCounts.merge(t, n, Int::plus)
-        }
     }
 
-    val avg = if (totalCount > 0) totalMana.toDouble() / totalCount else 0.0
     return DeckStats(
-        avgMana = avg,
         totalDust = totalDust,
         rarityCounts = rarityCounts,
-        typeCounts = typeCounts,
     )
 }
 

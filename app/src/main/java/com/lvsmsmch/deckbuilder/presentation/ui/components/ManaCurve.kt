@@ -36,6 +36,7 @@ fun ManaCurve(
     modifier: Modifier = Modifier,
     height: Dp = 112.dp,
     horizontalPadding: Dp = 16.dp,
+    verticalPadding: Dp = 8.dp,
 ) {
     val buckets = remember(entries) { bucketize(entries) }
     val maxValue = (buckets.maxOrNull() ?: 0).coerceAtLeast(1)
@@ -44,7 +45,7 @@ fun ManaCurve(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .padding(horizontal = horizontalPadding, vertical = 8.dp),
+            .padding(horizontal = horizontalPadding, vertical = verticalPadding),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.Bottom,
     ) {

@@ -52,7 +52,11 @@ class DeckBuilderViewModel(
 
     private val _state = MutableStateFlow(
         if (editCode.isNullOrBlank()) BuilderState()
-        else BuilderState(phase = Phase.Editing, pool = PoolState(isLoading = true)),
+        else BuilderState(
+            phase = Phase.Loading,
+            deckName = savedName?.take(MAX_DECK_NAME_LENGTH),
+            pool = PoolState(isLoading = true),
+        ),
     )
     val state: StateFlow<BuilderState> = _state.asStateFlow()
 
@@ -79,7 +83,17 @@ class DeckBuilderViewModel(
     private fun loadDeckForEditing(code: String) {
         pickJob?.cancel()
         pickJob = viewModelScope.launch {
-            when (val result = decks.decodeByCode(code)) {
+            val savedSource = savedDecks.getSource(code)
+            val result = if (savedSource != null && savedSource.cardIds.isNotEmpty()) {
+                assembleDeck(
+                    ids = savedSource.cardIds,
+                    heroCardId = savedSource.heroCardId,
+                    format = savedSource.format,
+                )
+            } else {
+                decks.decodeByCode(code)
+            }
+            when (result) {
                 is Result.Success -> {
                     val deck = result.data
                     val classSlug = deck.heroClass?.slug ?: deck.hero?.classes?.firstOrNull()?.slug
@@ -88,7 +102,7 @@ class DeckBuilderViewModel(
                         it.copy(
                             phase = Phase.Editing,
                             chosenClass = meta,
-                            deckName = savedName ?: savedDecks.get(code)?.name,
+                            deckName = savedName ?: savedSource?.name ?: savedDecks.get(code)?.name,
                             heroCardId = deck.hero?.id ?: meta?.slug?.let(DefaultHeroes::dbfIdFor),
                             format = deck.format.takeUnless { f -> f == GameFormat.UNKNOWN } ?: GameFormat.STANDARD,
                             deck = deck.cards.associateBy { entry -> entry.card.id },

@@ -85,6 +85,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -156,6 +157,7 @@ fun DeckBuilderScreen(
 
     Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
         when (state.phase) {
+            Phase.Loading -> BuilderLoadingView(onBack = requestExit)
             Phase.ClassPicker -> ClassPickerView(
                 slugs = CardLabels.ClassOrder,
                 onPick = viewModel::pickClassBySlug,
@@ -318,6 +320,29 @@ fun DeckBuilderScreen(
 }
 
 @Composable
+private fun BuilderLoadingView(onBack: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 4.dp, top = 4.dp),
+        ) {
+            Icon(
+                Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = stringResource(R.string.action_back),
+                tint = DeckBuilderColors.OnSurface,
+            )
+        }
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.Center),
+            color = DeckBuilderColors.OnSurface,
+            strokeWidth = 2.dp,
+        )
+    }
+}
+
+@Composable
 private fun ClassPickerView(
     slugs: List<String>,
     onPick: (String) -> Unit,
@@ -410,12 +435,14 @@ private fun EditingView(
     var showRenameDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Header(
-            chosenClass = state.chosenClass,
-            deckName = state.deckName,
-            format = state.format,
-            showSort = activeTab == EditingTab.Pool,
-            sort = state.pool.filters.sort,
+            Header(
+                chosenClass = state.chosenClass,
+                deckName = state.deckName,
+                format = state.format,
+                cardCount = state.cardCount,
+                maxDeckSize = state.maxDeckSize,
+                showSort = activeTab == EditingTab.Pool,
+                sort = state.pool.filters.sort,
             onBack = onBack,
             onSelectFormat = onSelectFormat,
             onSetSort = onSetPoolSort,
@@ -501,6 +528,8 @@ private fun Header(
     chosenClass: ClassMeta?,
     deckName: String?,
     format: GameFormat,
+    cardCount: Int,
+    maxDeckSize: Int,
     showSort: Boolean,
     sort: CardSort,
     onBack: () -> Unit,
@@ -510,12 +539,13 @@ private fun Header(
 ) {
     val color = colorForClassSlug(chosenClass?.slug)
     val selectedFormatColor = formatColor(format)
+    val classText = chosenClass?.slug?.let { classLabel(it) }.orEmpty()
     var formatMenuOpen by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 8.dp),
+            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack) {
@@ -543,28 +573,32 @@ private fun Header(
                 text = deckName ?: chosenClass?.let { classLabel(it.slug) } ?: "Deck",
                 style = MaterialTheme.typography.titleMedium,
                 color = DeckBuilderColors.OnSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
                     .clickable(onClick = onRenameDeck)
                     .padding(end = 8.dp),
             )
+            Spacer(Modifier.height(4.dp))
             Box {
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(selectedFormatColor.copy(alpha = 0.16f))
-                        .clickable { formatMenuOpen = true }
-                        .padding(horizontal = 8.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(selectedFormatColor.copy(alpha = 0.16f))
+                            .clickable { formatMenuOpen = true }
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
+                    ) {
+                        Text(
+                            text = formatLabel(format),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = selectedFormatColor,
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = formatLabel(format),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = selectedFormatColor,
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "\u25BE",
+                        text = "$classText \u00B7 $cardCount/$maxDeckSize",
                         style = MaterialTheme.typography.bodySmall,
                         color = DeckBuilderColors.OnSurfaceDim,
                     )

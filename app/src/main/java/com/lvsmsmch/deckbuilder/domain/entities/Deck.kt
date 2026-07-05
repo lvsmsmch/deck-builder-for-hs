@@ -42,6 +42,14 @@ data class DeckPreview(
     val savedAtMs: Long,
 )
 
+data class SavedDeckSource(
+    val code: String,
+    val name: String,
+    val heroCardId: Int?,
+    val format: GameFormat,
+    val cardIds: List<Int>,
+)
+
 val Card.isPrinceRenathal: Boolean
     get() = slug.equals("REV_018", ignoreCase = true) ||
         slug.equals("CORE_REV_018", ignoreCase = true)

@@ -37,7 +37,7 @@ data class BuilderState(
         get() = deck.values.sortedWith(compareBy({ it.card.manaCost }, { it.card.name }))
 }
 
-enum class Phase { ClassPicker, Editing }
+enum class Phase { ClassPicker, Loading, Editing }
 
 data class PoolState(
     val cards: List<Card> = emptyList(),
