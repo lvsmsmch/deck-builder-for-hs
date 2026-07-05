@@ -38,7 +38,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,12 +56,9 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 private val WarningYellow = Color(0xFFE0A23F)
-private const val CREATE_DECK_SHEET_DISMISS_DELAY_MS = 280L
 
 @Composable
 fun SavedDecksScreen(
@@ -72,7 +68,6 @@ fun SavedDecksScreen(
     viewModel: SavedDecksViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
     var showChooser by remember { mutableStateOf(false) }
     var showImportSheet by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<DeckPreview?>(null) }
@@ -132,11 +127,8 @@ fun SavedDecksScreen(
         NewDeckSheet(
             onDismiss = { showChooser = false },
             onCreateFromScratch = {
+                showChooser = false
                 onCreateFromScratch()
-                coroutineScope.launch {
-                    delay(CREATE_DECK_SHEET_DISMISS_DELAY_MS)
-                    showChooser = false
-                }
             },
             onPasteCode = {
                 showChooser = false

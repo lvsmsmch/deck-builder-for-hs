@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -57,22 +58,30 @@ fun DeckStatsPanel(entries: List<DeckCardEntry>, modifier: Modifier = Modifier) 
         )
         Spacer(Modifier.height(10.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(122.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             StatBlock(
                 label = stringResource(R.string.deck_stats_dust),
                 value = formatDust(stats.totalDust),
                 valueStyle = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.weight(0.2f),
+                modifier = Modifier
+                    .weight(0.2f)
+                    .fillMaxHeight(),
             )
-            SectionBlock(modifier = Modifier.weight(0.8f)) {
+            SectionBlock(
+                modifier = Modifier
+                    .weight(0.8f)
+                    .fillMaxHeight(),
+            ) {
                 Text(
                     text = stringResource(R.string.deck_stats_mana_curve),
                     style = MaterialTheme.typography.labelSmall,
                     color = DeckBuilderColors.OnSurfaceDim,
                 )
-                ManaCurve(entries = entries, height = 88.dp, horizontalPadding = 0.dp, verticalPadding = 0.dp)
+                ManaCurve(entries = entries, height = 92.dp, horizontalPadding = 0.dp, verticalPadding = 0.dp)
             }
         }
 
@@ -112,6 +121,7 @@ private fun StatBlock(
             .clip(RoundedCornerShape(10.dp))
             .background(DeckBuilderColors.SurfaceContainerHigh)
             .padding(10.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
             text = label.uppercase(),

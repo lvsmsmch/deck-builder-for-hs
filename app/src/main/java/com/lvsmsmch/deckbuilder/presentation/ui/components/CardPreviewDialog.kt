@@ -67,13 +67,19 @@ fun CardPreviewDialog(
     val highUrl = card.image.takeIf { it.isNotBlank() }?.replace("/256x/", "/512x/") ?: card.cropImage
     val fallbackUrl = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
     val context = LocalContext.current
-    val painter = rememberAsyncImagePainter(
+    val lowPainter = rememberAsyncImagePainter(
+        ImageRequest.Builder(context)
+            .data(fallbackUrl)
+            .size(256, 384)
+            .build(),
+    )
+    val highPainter = rememberAsyncImagePainter(
         ImageRequest.Builder(context)
             .data(highUrl ?: fallbackUrl)
             .size(512, 768)
             .build(),
     )
-    val state by painter.state.collectAsState()
+    val highState by highPainter.state.collectAsState()
     val backgroundInteraction = remember { MutableInteractionSource() }
     val contentInteraction = remember { MutableInteractionSource() }
     var targetScale by remember(card.id) { mutableFloatStateOf(1f) }
@@ -123,10 +129,7 @@ fun CardPreviewDialog(
                         .zIndex(if (renderedScale > 1.01f) 10f else 0f),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Image(
-                        painter = painter,
-                        contentDescription = card.name,
-                        contentScale = ContentScale.Fit,
+                    Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .graphicsLayer {
@@ -156,8 +159,23 @@ fun CardPreviewDialog(
                                     targetOffset = Offset.Zero
                                 }
                             },
-                    )
-                    if (state is AsyncImagePainter.State.Loading) {
+                    ) {
+                        Image(
+                            painter = lowPainter,
+                            contentDescription = card.name,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        if (highState is AsyncImagePainter.State.Success) {
+                            Image(
+                                painter = highPainter,
+                                contentDescription = card.name,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                    }
+                    if (highState !is AsyncImagePainter.State.Success) {
                         Text(
                             text = stringResource(R.string.card_image_loading),
                             color = DeckBuilderColors.OnSurfaceDim,

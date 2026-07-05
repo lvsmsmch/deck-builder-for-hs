@@ -1,11 +1,11 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -57,6 +57,7 @@ fun DeckCardRow(
         ) {
             Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 ManaSegment(cost = card.manaCost)
+                SegmentDivider()
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -66,7 +67,7 @@ fun DeckCardRow(
                         slug = card.slug,
                         contentDescription = card.name,
                         verticalFocus = 0.24f,
-                        cropZoom = 1.24f,
+                        cropZoom = 1.36f,
                         modifier = Modifier.fillMaxSize(),
                     )
                     Box(
@@ -101,6 +102,7 @@ fun DeckCardRow(
                         )
                     }
                 }
+                SegmentDivider()
                 CountSegment(count = entry.count)
             }
         }
@@ -131,12 +133,21 @@ private fun ManaSegment(cost: Int) {
         modifier = Modifier
             .width(38.dp)
             .fillMaxSize()
-            .background(DeckBuilderColors.SurfaceContainerHigh)
-            .border(1.dp, DeckBuilderColors.OutlineSoft),
+            .background(DeckBuilderColors.SurfaceContainerHigh),
         contentAlignment = Alignment.Center,
     ) {
         ManaGem(cost = cost, size = 30.dp)
     }
+}
+
+@Composable
+private fun SegmentDivider() {
+    Box(
+        modifier = Modifier
+            .width(1.dp)
+            .fillMaxHeight()
+            .background(DeckBuilderColors.OutlineSoft.copy(alpha = 0.65f)),
+    )
 }
 
 @Composable
@@ -147,10 +158,9 @@ private fun CountSegment(count: Int) {
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    listOf(Color(0xFF5B6470), Color(0xFF242932)),
+                    listOf(DeckBuilderColors.SurfaceContainerHigh, DeckBuilderColors.Surface),
                 ),
             )
-            .border(1.dp, DeckBuilderColors.OutlineSoft)
             .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {

@@ -47,21 +47,19 @@ fun ManaCurve(
             .height(height)
             .padding(horizontal = horizontalPadding, vertical = verticalPadding),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.Bottom,
+        verticalAlignment = Alignment.Top,
     ) {
         buckets.forEachIndexed { index, count ->
             Column(
                 modifier = Modifier.width(28.dp),
-                verticalArrangement = Arrangement.Bottom,
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                if (count > 0) {
-                    Text(
-                        text = "×$count",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = DeckBuilderColors.OnSurfaceDim,
-                    )
-                }
+                Text(
+                    text = if (count > 0) "×$count" else "×0",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (count > 0) DeckBuilderColors.OnSurfaceDim else Color.Transparent,
+                )
                 Spacer(Modifier.height(3.dp))
                 ManaBar(
                     fraction = count.toFloat() / maxValue.toFloat(),
