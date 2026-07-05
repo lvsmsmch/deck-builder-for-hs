@@ -35,6 +35,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardClassScope
 import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForRaritySlug
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.classShortLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.expansionLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatFilterLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.raceLabel
@@ -57,6 +59,7 @@ fun FilterSheet(
     onDismiss: () -> Unit,
     classScopeLabel: String? = null,
     showFormatSection: Boolean = true,
+    showClassSection: Boolean = true,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -88,6 +91,9 @@ fun FilterSheet(
                 classScopeLabel?.let { label ->
                     item { ClassScopeSection(label, current, onChange) }
                 }
+                if (showClassSection) {
+                    item { ClassSection(current, onChange) }
+                }
                 if (showFormatSection) {
                     item { FormatSection(current, onChange) }
                 }
@@ -100,6 +106,23 @@ fun FilterSheet(
                 item { SetSection(current, onChange) }
                 item { Spacer(Modifier.height(20.dp)) }
             }
+        }
+    }
+}
+
+@Composable
+private fun ClassSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
+    SectionHeader(stringResource(R.string.filters_section_class))
+    ChipFlow {
+        CardLabels.ClassOrder.forEach { slug ->
+            Chip(
+                label = classShortLabel(slug),
+                active = slug in draft.classes,
+                onClick = {
+                    val next = if (slug in draft.classes) draft.classes - slug else draft.classes + slug
+                    onChange(draft.copy(classes = next))
+                },
+            )
         }
     }
 }

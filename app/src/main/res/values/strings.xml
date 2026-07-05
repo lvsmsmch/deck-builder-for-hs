@@ -42,6 +42,7 @@
     <string name="action_paste">Paste</string>
     <string name="action_reset_all">Reset all</string>
     <string name="action_dismiss">Dismiss</string>
+    <string name="action_add">Add</string>
     <string name="action_rename">Rename</string>
     <string name="action_more">More</string>
     <string name="action_edit">Edit</string>
@@ -61,6 +62,7 @@
 
     <!-- Filter sheet -->
     <string name="filters_title">Filters</string>
+    <string name="filters_section_class">Class</string>
     <string name="filters_section_format">Format</string>
     <string name="filters_section_card_pool">Card pool</string>
     <string name="filters_section_mana">Mana cost</string>
@@ -99,6 +101,7 @@
     <string name="builder_incomplete_save_prefix">This deck has only</string>
     <string name="builder_incomplete_save_suffix">Save it anyway?</string>
     <string name="builder_incomplete_save_confirm">Save anyway</string>
+    <string name="builder_pool_hint">Add cards from the Pool tab.</string>
 
     <!-- Saved Decks -->
     <string name="saved_title">Saved decks</string>
@@ -188,6 +191,7 @@
     <string name="deck_stats_avg_mana">Avg mana</string>
     <string name="deck_stats_dust">Dust</string>
     <string name="deck_stats_spells">Spells</string>
+    <string name="deck_stats_mana_curve">MANA CURVE</string>
     <string name="deck_stats_rarity">RARITY</string>
 
     <!-- More -->

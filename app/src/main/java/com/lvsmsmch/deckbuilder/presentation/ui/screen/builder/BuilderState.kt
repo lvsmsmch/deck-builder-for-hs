@@ -8,6 +8,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.isPrinceRenathal
+import com.lvsmsmch.deckbuilder.domain.entities.isWhizbangDeck
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 
@@ -25,7 +26,12 @@ data class BuilderState(
     val singleton: Boolean = false,
 ) {
     val cardCount: Int get() = deck.values.sumOf { it.count }
-    val maxDeckSize: Int get() = if (deck.values.any { it.card.isPrinceRenathal }) 40 else 30
+    val maxDeckSize: Int
+        get() = when {
+            deck.values.any { it.card.isWhizbangDeck } -> 1
+            deck.values.any { it.card.isPrinceRenathal } -> 40
+            else -> 30
+        }
     val canSave: Boolean get() = cardCount > 0 && chosenClass != null && !isSaving
     val deckEntries: List<DeckCardEntry>
         get() = deck.values.sortedWith(compareBy({ it.card.manaCost }, { it.card.name }))

@@ -12,6 +12,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.isPrinceRenathal
+import com.lvsmsmch.deckbuilder.domain.entities.isWhizbangDeck
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
@@ -195,7 +196,11 @@ class DeckBuilderViewModel(
         if (target == existingCount) {
             return
         }
-        val resultingMaxSize = if (card.isPrinceRenathal) 40 else st.maxDeckSize
+        val resultingMaxSize = when {
+            card.isWhizbangDeck -> 1
+            card.isPrinceRenathal -> 40
+            else -> st.maxDeckSize
+        }
         if (st.cardCount + (target - existingCount) > resultingMaxSize) {
             flashToast("Deck is full (${st.maxDeckSize}/${st.maxDeckSize})")
             return

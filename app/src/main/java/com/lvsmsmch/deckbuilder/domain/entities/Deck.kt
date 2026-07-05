@@ -10,7 +10,12 @@ data class Deck(
     val invalidCardIds: List<Int> = emptyList(),
 ) {
     val cardCount: Int get() = cards.sumOf { it.count }
-    val maxCardCount: Int get() = if (cards.any { it.card.isPrinceRenathal }) 40 else 30
+    val maxCardCount: Int
+        get() = when {
+            cards.any { it.card.isWhizbangDeck } -> 1
+            cards.any { it.card.isPrinceRenathal } -> 40
+            else -> 30
+        }
 }
 
 data class DeckCardEntry(
@@ -40,6 +45,10 @@ data class DeckPreview(
 val Card.isPrinceRenathal: Boolean
     get() = slug.equals("REV_018", ignoreCase = true) ||
         slug.equals("CORE_REV_018", ignoreCase = true)
+
+val Card.isWhizbangDeck: Boolean
+    get() = name.equals("Splendiferous Whizbang", ignoreCase = true) ||
+        name.equals("Whizbang the Wonderful", ignoreCase = true)
 
 enum class GameFormat(val apiSlug: String) {
     STANDARD("standard"),

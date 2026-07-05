@@ -52,7 +52,7 @@ fun DeckCardRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(40.dp)
+            .height(52.dp)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
@@ -60,12 +60,10 @@ fun DeckCardRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ManaGem(cost = card.manaCost, size = 24.dp)
-
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(36.dp)
+                .height(46.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(DeckBuilderColors.SurfaceContainer),
         ) {
@@ -86,6 +84,13 @@ fun DeckCardRow(
                         ),
                     ),
             )
+            ManaGem(
+                cost = card.manaCost,
+                size = 26.dp,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 6.dp),
+            )
             Text(
                 text = card.name,
                 style = MaterialTheme.typography.titleSmall,
@@ -93,26 +98,19 @@ fun DeckCardRow(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .padding(start = 10.dp, end = 8.dp),
+                    .padding(start = 40.dp, end = 30.dp),
                 maxLines = 1,
             )
             if (card.rarity?.slug.equals("legendary", ignoreCase = true)) {
-                Box(
+                Icon(
+                    imageVector = Icons.Outlined.Star,
+                    contentDescription = null,
+                    tint = DeckBuilderColors.Rarity.Legendary,
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(4.dp)
-                        .size(20.dp)
-                        .clip(CircleShape)
-                        .background(DeckBuilderColors.Surface.copy(alpha = 0.82f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Star,
-                        contentDescription = null,
-                        tint = DeckBuilderColors.Rarity.Legendary,
-                        modifier = Modifier.size(14.dp),
-                    )
-                }
+                        .padding(end = 6.dp)
+                        .size(20.dp),
+                )
             }
         }
 

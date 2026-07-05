@@ -1,9 +1,15 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,10 +33,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -64,6 +76,13 @@ fun CardPreviewDialog(
     val state by painter.state.collectAsState()
     val backgroundInteraction = remember { MutableInteractionSource() }
     val contentInteraction = remember { MutableInteractionSource() }
+    var targetScale by remember(card.id) { mutableFloatStateOf(1f) }
+    var targetOffset by remember(card.id) { mutableStateOf(Offset.Zero) }
+    var gestureActive by remember(card.id) { mutableStateOf(false) }
+    val scale by animateFloatAsState(targetScale, tween(180), label = "preview-card-scale")
+    val offset by animateOffsetAsState(targetOffset, tween(180), label = "preview-card-offset")
+    val renderedScale = if (gestureActive) targetScale else scale
+    val renderedOffset = if (gestureActive) targetOffset else offset
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -94,17 +113,38 @@ fun CardPreviewDialog(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(CARD_RENDER_ASPECT)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(DeckBuilderColors.SurfaceContainer)
-                        .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp)),
+                        .aspectRatio(CARD_RENDER_ASPECT),
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
                         painter = painter,
                         contentDescription = card.name,
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                scaleX = renderedScale
+                                scaleY = renderedScale
+                                translationX = renderedOffset.x
+                                translationY = renderedOffset.y
+                            }
+                            .pointerInput(card.id) {
+                                awaitEachGesture {
+                                    awaitFirstDown()
+                                    gestureActive = true
+                                    do {
+                                        val event = awaitPointerEvent()
+                                        val zoom = event.calculateZoom()
+                                        targetScale = (targetScale * zoom).coerceIn(1f, 3.2f)
+                                        if (event.changes.count { it.pressed } >= 2) {
+                                            targetOffset += event.calculatePan()
+                                        }
+                                    } while (event.changes.any { it.pressed })
+                                    gestureActive = false
+                                    targetScale = 1f
+                                    targetOffset = Offset.Zero
+                                }
+                            },
                     )
                     if (state is AsyncImagePainter.State.Loading) {
                         Text(
@@ -116,8 +156,8 @@ fun CardPreviewDialog(
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(10.dp)
-                            .size(36.dp)
+                            .padding(top = 2.dp, end = 4.dp)
+                            .size(44.dp)
                             .clip(RoundedCornerShape(99.dp))
                             .background(DeckBuilderColors.OnSurface)
                             .clickable(onClick = onDismiss),

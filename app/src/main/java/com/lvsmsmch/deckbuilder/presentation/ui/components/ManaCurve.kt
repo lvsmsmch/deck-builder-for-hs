@@ -26,6 +26,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
@@ -33,7 +34,8 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 fun ManaCurve(
     entries: List<DeckCardEntry>,
     modifier: Modifier = Modifier,
-    height: androidx.compose.ui.unit.Dp = 112.dp,
+    height: Dp = 112.dp,
+    horizontalPadding: Dp = 16.dp,
 ) {
     val buckets = remember(entries) { bucketize(entries) }
     val maxValue = (buckets.maxOrNull() ?: 0).coerceAtLeast(1)
@@ -42,7 +44,7 @@ fun ManaCurve(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = horizontalPadding, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.Bottom,
     ) {

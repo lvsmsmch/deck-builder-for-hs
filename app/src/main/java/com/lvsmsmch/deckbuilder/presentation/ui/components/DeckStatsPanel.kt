@@ -74,7 +74,13 @@ fun DeckStatsPanel(entries: List<DeckCardEntry>, modifier: Modifier = Modifier) 
             RarityDistribution(stats.rarityCounts)
         }
         Spacer(Modifier.height(10.dp))
-        ManaCurve(entries = entries, height = 96.dp)
+        Text(
+            text = stringResource(R.string.deck_stats_mana_curve),
+            style = MaterialTheme.typography.labelSmall,
+            color = DeckBuilderColors.OnSurfaceDim,
+        )
+        Spacer(Modifier.height(4.dp))
+        ManaCurve(entries = entries, height = 96.dp, horizontalPadding = 0.dp)
     }
 }
 

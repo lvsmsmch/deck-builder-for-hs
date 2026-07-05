@@ -70,6 +70,7 @@ import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
@@ -107,13 +108,11 @@ fun DeckViewScreen(
                 }
             },
     ) {
-        TopBar(
-            title = (state.deck as? UiState.Loaded)?.data?.let { it.heroClass?.name ?: "Deck" } ?: "",
-            onBack = onBack,
-        )
-
         when (val deckState = state.deck) {
-            UiState.Idle, UiState.Loading -> DeckLoadingShell()
+            UiState.Idle, UiState.Loading -> {
+                TopBar(title = "", onBack = onBack)
+                DeckLoadingShell()
+            }
 
             is UiState.Failed -> ErrorState(
                 message = deckState.throwable.message ?: deckState.throwable.javaClass.simpleName,
@@ -125,6 +124,7 @@ fun DeckViewScreen(
                 savedName = state.savedName,
                 isSaved = state.isSaved,
                 onRename = viewModel::rename,
+                onBack = onBack,
                 onEditDeck = onEditDeck,
                 onDeleteDeck = {
                     viewModel.deleteSavedDeck()
@@ -205,6 +205,7 @@ private fun Body(
     savedName: String?,
     isSaved: Boolean,
     onRename: (String) -> Unit,
+    onBack: () -> Unit,
     onEditDeck: () -> Unit,
     onDeleteDeck: () -> Unit,
     onCardClick: (Card) -> Unit,
@@ -212,6 +213,7 @@ private fun Body(
 ) {
     var copied by remember(deck.code) { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
+    var previewCard by remember { mutableStateOf<Card?>(null) }
     LaunchedEffect(deck.code) { copied = false }
 
     LazyColumn(
@@ -219,40 +221,28 @@ private fun Body(
         modifier = Modifier.fillMaxSize(),
     ) {
         item {
-            HeroHeader(
+            DeckToolbar(
                 deck = deck,
                 savedName = savedName,
-                isSaved = isSaved,
                 onRename = onRename,
+                onBack = onBack,
+                onOpenMenu = { menuOpen = true },
             )
-        }
-        item {
             Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DeckBuilderColors.SurfaceContainer)
-                        .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
-                        .clickable { menuOpen = true }
-                        .padding(10.dp),
-                ) {
-                    Icon(
-                        Icons.Outlined.MoreVert,
-                        contentDescription = stringResource(R.string.action_more),
-                        tint = DeckBuilderColors.OnSurface,
-                    )
-                }
                 DeckActionsMenu(
                     expanded = menuOpen,
                     onDismiss = { menuOpen = false },
-                    onCopyCode = {
-                        onCopyCode()
-                        copied = true
-                    },
                     onEdit = onEditDeck,
                     onDelete = onDeleteDeck,
                 )
+            }
+        }
+
+        item { DeckWarnings(deck) }
+
+        item {
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                DeckStatsPanel(deck)
             }
         }
 
@@ -264,14 +254,6 @@ private fun Body(
                     copied = true
                 },
             )
-        }
-
-        item { DeckWarnings(deck) }
-
-        item {
-            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                DeckStatsPanel(deck)
-            }
         }
 
         item {
@@ -286,7 +268,8 @@ private fun Body(
         items(deck.cards, key = { it.card.id }) { entry ->
             DeckCardRow(
                 entry = entry,
-                onClick = { onCardClick(entry.card) },
+                onClick = { previewCard = entry.card },
+                onLongClick = { previewCard = entry.card },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
             )
         }
@@ -302,14 +285,23 @@ private fun Body(
             }
         }
     }
+
+    previewCard?.let { card ->
+        CardPreviewDialog(
+            card = card,
+            onDismiss = { previewCard = null },
+            onMore = { onCardClick(card) },
+        )
+    }
 }
 
 @Composable
-private fun HeroHeader(
+private fun DeckToolbar(
     deck: Deck,
     savedName: String?,
-    isSaved: Boolean,
     onRename: (String) -> Unit,
+    onBack: () -> Unit,
+    onOpenMenu: () -> Unit,
 ) {
     val classSlug = deck.heroClass?.slug
     val heroCardId = deck.hero?.slug?.takeIf { it.startsWith("HERO_") }
@@ -321,13 +313,21 @@ private fun HeroHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        IconButton(onClick = onBack) {
+            Icon(
+                Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = stringResource(R.string.action_back),
+                tint = DeckBuilderColors.OnSurface,
+            )
+        }
         Box(
             modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(14.dp)),
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(10.dp)),
         ) {
             HeroTile(
                 cardId = heroCardId,
@@ -335,7 +335,7 @@ private fun HeroHeader(
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        Spacer(Modifier.width(14.dp))
+        Spacer(Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             EditableTitle(
                 text = displayName,
@@ -363,6 +363,13 @@ private fun HeroHeader(
                     color = DeckBuilderColors.OnSurfaceDim,
                 )
             }
+        }
+        IconButton(onClick = onOpenMenu) {
+            Icon(
+                Icons.Outlined.MoreVert,
+                contentDescription = stringResource(R.string.action_more),
+                tint = DeckBuilderColors.OnSurface,
+            )
         }
     }
 }

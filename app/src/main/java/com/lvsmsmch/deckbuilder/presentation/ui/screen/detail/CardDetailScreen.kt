@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +34,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -188,7 +188,6 @@ private fun Body(
     onRelatedClick: (Card) -> Unit,
 ) {
     val rarityColor = rarityColor(card.rarity)
-    var fullscreenImage by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -198,7 +197,6 @@ private fun Body(
     ) {
         CardImagePanel(
             card = card,
-            onOpenFullscreen = { fullscreenImage = true },
         )
 
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -225,8 +223,6 @@ private fun Body(
                 }
             }
             SubtitleRow(card, isStandardLegal)
-            Spacer(Modifier.height(14.dp))
-            CardTextBlock(card.text)
             Spacer(Modifier.height(8.dp))
             FlavorTextBlock(card.flavorText)
         }
@@ -241,9 +237,6 @@ private fun Body(
         }
     }
 
-    if (fullscreenImage) {
-        FullscreenCardImage(card = card, onDismiss = { fullscreenImage = false })
-    }
 }
 
 private const val CARD_RENDER_ASPECT = 0.72f
@@ -251,7 +244,6 @@ private const val CARD_RENDER_ASPECT = 0.72f
 @Composable
 private fun CardImagePanel(
     card: Card,
-    onOpenFullscreen: () -> Unit,
 ) {
     val lowUrl = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
     val highUrl = card.image.takeIf { it.isNotBlank() }?.replace("/256x/", "/512x/") ?: card.cropImage
@@ -278,11 +270,9 @@ private fun CardImagePanel(
     ) {
         Box(
             modifier = Modifier
+                .widthIn(max = 360.dp)
                 .fillMaxWidth()
-                .height(280.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(18.dp)),
+                .aspectRatio(CARD_RENDER_ASPECT),
         ) {
             if (!lowUrl.isNullOrBlank()) {
                 Image(
@@ -304,23 +294,6 @@ private fun CardImagePanel(
                 is AsyncImagePainter.State.Error -> CardImageErrorOverlay(onRetry = { highPainter.restart() })
                 is AsyncImagePainter.State.Success -> Unit
                 else -> CardImageLoadingOverlay()
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(10.dp)
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(DeckBuilderColors.OnSurface)
-                    .clickable(onClick = onOpenFullscreen),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.OpenInFull,
-                    contentDescription = stringResource(R.string.action_more),
-                    tint = DeckBuilderColors.Surface,
-                    modifier = Modifier.size(20.dp),
-                )
             }
         }
     }

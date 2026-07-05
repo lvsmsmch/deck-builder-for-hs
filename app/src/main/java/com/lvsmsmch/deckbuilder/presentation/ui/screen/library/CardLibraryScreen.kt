@@ -190,7 +190,7 @@ fun CardLibraryScreen(
                     gridState = gridState,
                     onCardClick = {
                         focusManager.clearFocus()
-                        onCardClick(it)
+                        previewCard = it
                     },
                     onCardPreview = { previewCard = it },
                 )
@@ -270,10 +270,9 @@ private fun HeaderIconButton(
     Box {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .size(width = 48.dp, height = 52.dp)
+                .clip(RoundedCornerShape(14.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(12.dp))
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
@@ -365,7 +364,7 @@ private fun SearchRow(
             shape = RoundedCornerShape(14.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(56.dp),
+                .height(52.dp),
         )
         HeaderIconButton(
             onClick = onOpenFilters,
@@ -390,12 +389,12 @@ private fun SortMenuButton(
     Box {
         Row(
             modifier = Modifier
-                .height(40.dp)
+                .height(36.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
                 .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
                 .clickable { sortMenuOpen = true }
-                .padding(horizontal = 12.dp),
+                .padding(start = 10.dp, end = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -474,7 +473,7 @@ private fun CardGrid(
 ) {
     LazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -488,7 +487,7 @@ private fun CardGrid(
             )
         }
         if (state.isLoadingMore || state.hasMore) {
-            item(span = { GridItemSpan(4) }) {
+            item(span = { GridItemSpan(2) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

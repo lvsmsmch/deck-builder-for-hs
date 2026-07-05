@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
@@ -121,7 +120,6 @@ fun SavedDecksScreen(
                         SavedDeckRow(
                             deck = deck,
                             onClick = { onOpenDeck(deck.code, deck.name) },
-                            onCopyCode = { copyDeckCode(context, deck.code) },
                             onEdit = { onEditDeck(deck.code, deck.name) },
                             onDelete = { pendingDelete = deck },
                         )
@@ -201,7 +199,6 @@ private fun Header() {
 private fun SavedDeckRow(
     deck: DeckPreview,
     onClick: () -> Unit,
-    onCopyCode: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -273,7 +270,6 @@ private fun SavedDeckRow(
                 DeckActionsMenu(
                     expanded = menuOpen,
                     onDismiss = { menuOpen = false },
-                    onCopyCode = onCopyCode,
                     onEdit = onEdit,
                     onDelete = onDelete,
                 )
@@ -293,16 +289,10 @@ private fun SavedDeckRow(
 fun DeckActionsMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
-    onCopyCode: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
-        DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
-            text = { Text(stringResource(R.string.action_copy_code)) },
-            onClick = { onDismiss(); onCopyCode() },
-        )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
             text = { Text(stringResource(R.string.action_edit)) },
@@ -397,10 +387,4 @@ private fun EmptyState() {
             textAlign = TextAlign.Center,
         )
     }
-}
-
-private fun copyDeckCode(context: Context, code: String) {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    clipboard.setPrimaryClip(ClipData.newPlainText("Hearthstone deck code", code))
-    Toast.makeText(context, context.getString(R.string.deck_view_copied), Toast.LENGTH_SHORT).show()
 }
