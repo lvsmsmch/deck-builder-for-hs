@@ -36,6 +36,7 @@ are not required.
 - WorkManager
 - Firebase Crashlytics and Analytics
 
+
 ## Data Sources
 
 - [HearthstoneJSON](https://hearthstonejson.com/)
