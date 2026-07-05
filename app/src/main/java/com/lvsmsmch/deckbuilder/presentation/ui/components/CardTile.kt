@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.BiasAlignment
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
@@ -40,12 +39,7 @@ fun CardTile(
             AsyncImage(
                 model = url,
                 contentDescription = contentDescription,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        scaleX = 1.67f
-                        scaleY = 1.67f
-                    },
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
                 alignment = BiasAlignment(horizontalBias = 0f, verticalBias = yBias),
             )

@@ -128,6 +128,8 @@ class CardRepositoryImpl(
         val q = filters.textQuery.trim().takeIf { it.isNotBlank() }?.lowercase()
 
         return predicate@{ row ->
+            val rowSetSlug = row.cardSet?.toDomainSlug()
+            if (rowSetSlug != null && rowSetSlug.isExcludedSetSlug()) return@predicate false
             if (filters.collectibleOnly && !row.collectible) return@predicate false
             if (filters.collectibleOnly && row.isCosmeticHeroSkin()) return@predicate false
             if (filters.format != CardFormatFilter.ALL) {
@@ -146,7 +148,7 @@ class CardRepositoryImpl(
                 if (rowClasses.none { it in classes }) return@predicate false
             }
             if (sets.isNotEmpty()) {
-                val s = row.cardSet?.toDomainSlug() ?: return@predicate false
+                val s = rowSetSlug ?: return@predicate false
                 if (s !in sets) return@predicate false
             }
             if (rarities.isNotEmpty()) {
@@ -204,6 +206,15 @@ class CardRepositoryImpl(
 }
 
 private fun String.toRotationToken(): String = uppercase().replace('-', '_')
+
+private val ExcludedSetSlugs = setOf(
+    "expert1",
+    "vanilla",
+    "legacy",
+)
+
+private fun String.isExcludedSetSlug(): Boolean =
+    this in ExcludedSetSlugs || startsWith("placeholder")
 
 private fun HsJsonCardEntity.isCosmeticHeroSkin(): Boolean =
     type.equals("HERO", ignoreCase = true) && text.isNullOrBlank()

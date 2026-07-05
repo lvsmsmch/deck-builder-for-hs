@@ -292,7 +292,6 @@ private val RaritySlugs = listOf("common", "rare", "epic", "legendary")
 
 private val SetSlugs = listOf(
     "core",
-    "expert1",
     "naxx",
     "gvg",
     "brm",

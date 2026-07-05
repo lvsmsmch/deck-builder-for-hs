@@ -13,7 +13,6 @@ import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,11 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,9 +43,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
@@ -62,7 +62,6 @@ private const val CARD_RENDER_ASPECT = 0.72f
 fun CardPreviewDialog(
     card: Card,
     onDismiss: () -> Unit,
-    onMore: () -> Unit,
 ) {
     val highUrl = card.image.takeIf { it.isNotBlank() }?.replace("/256x/", "/512x/") ?: card.cropImage
     val fallbackUrl = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
@@ -113,7 +112,8 @@ fun CardPreviewDialog(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(CARD_RENDER_ASPECT),
+                        .aspectRatio(CARD_RENDER_ASPECT)
+                        .zIndex(if (renderedScale > 1.01f) 10f else 0f),
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
@@ -128,6 +128,7 @@ fun CardPreviewDialog(
                                 translationX = renderedOffset.x
                                 translationY = renderedOffset.y
                             }
+                            .zIndex(if (renderedScale > 1.01f) 12f else 0f)
                             .pointerInput(card.id) {
                                 awaitEachGesture {
                                     awaitFirstDown()
@@ -171,32 +172,40 @@ fun CardPreviewDialog(
                         )
                     }
                 }
-                Spacer(Modifier.height(14.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(99.dp))
-                        .background(DeckBuilderColors.OnSurface)
-                        .clickable {
-                            onDismiss()
-                            onMore()
-                        }
-                        .padding(horizontal = 18.dp, vertical = 10.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(R.string.action_more),
-                            color = DeckBuilderColors.Surface,
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
-                            contentDescription = null,
-                            tint = DeckBuilderColors.Surface,
-                        )
-                    }
-                }
+                Spacer(Modifier.height(12.dp))
+                CardPreviewMetadata(card = card, modifier = Modifier.zIndex(0f))
             }
+        }
+    }
+}
+
+@Composable
+private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
+    val parts = listOfNotNull(
+        card.name,
+        card.classes.joinToString("/") { it.name }.takeIf { it.isNotBlank() },
+        card.cardType.name.takeIf { it.isNotBlank() },
+        card.cardSet?.name?.takeIf { it.isNotBlank() },
+        card.artistName?.takeIf { it.isNotBlank() }?.let { "Artist: $it" },
+    )
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = parts.joinToString(" • "),
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+            color = androidx.compose.ui.graphics.Color.White,
+            textAlign = TextAlign.Center,
+        )
+        card.flavorText?.takeIf { it.isNotBlank() }?.let { flavor ->
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = flavor,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+                color = androidx.compose.ui.graphics.Color.White,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

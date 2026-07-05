@@ -80,11 +80,14 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
@@ -200,7 +203,7 @@ fun DeckBuilderScreen(
                                 append(" ")
                                 append(stringResource(R.string.builder_current_count_prefix))
                                 append(" ")
-                                withStyle(SpanStyle(color = DeckBuilderColors.Error, fontWeight = FontWeight.Bold)) {
+                                withStyle(SpanStyle(color = DeckBuilderColors.Error)) {
                                     append("${state.cardCount}/${state.maxDeckSize}")
                                 }
                                 append(" ")
@@ -262,7 +265,7 @@ fun DeckBuilderScreen(
                         buildAnnotatedString {
                             append(stringResource(R.string.builder_incomplete_save_prefix))
                             append(" ")
-                            withStyle(SpanStyle(color = DeckBuilderColors.Error, fontWeight = FontWeight.Bold)) {
+                            withStyle(SpanStyle(color = DeckBuilderColors.Error)) {
                                 append("${state.cardCount}/${state.maxDeckSize}")
                             }
                             append(" ")
@@ -303,7 +306,7 @@ fun DeckBuilderScreen(
                     showIncompleteSaveConfirm = false
                     if (rememberIncompleteSaveChoice) skipIncompleteSaveConfirm = true
                     viewModel.save()
-                }) { Text(stringResource(R.string.builder_incomplete_save_confirm), color = DeckBuilderColors.Primary) }
+                }) { Text(stringResource(R.string.builder_incomplete_save_confirm), color = DeckBuilderColors.Error) }
             },
             dismissButton = {
                 TextButton(onClick = { showIncompleteSaveConfirm = false }) {
@@ -400,72 +403,64 @@ private fun EditingView(
     onRenameDeck: (String) -> Unit,
     onOpenCard: (Card) -> Unit,
 ) {
-    var activeTab by rememberSaveable { mutableStateOf(if (state.deck.isNotEmpty()) EditingTab.Deck else EditingTab.Pool) }
+    var activeTab by rememberSaveable { mutableStateOf(EditingTab.Deck) }
     val poolGridState = rememberLazyGridState()
     var showFilters by remember { mutableStateOf(false) }
     var previewCard by remember { mutableStateOf<Card?>(null) }
     var showRenameDialog by remember { mutableStateOf(false) }
-    var showPoolHint by rememberSaveable { mutableStateOf(true) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Header(
-                chosenClass = state.chosenClass,
-                deckName = state.deckName,
-                format = state.format,
-                showSort = activeTab == EditingTab.Pool,
-                sort = state.pool.filters.sort,
-                onBack = onBack,
-                onSelectFormat = onSelectFormat,
-                onSetSort = onSetPoolSort,
-                onRenameDeck = { showRenameDialog = true },
-            )
+    Column(modifier = Modifier.fillMaxSize()) {
+        Header(
+            chosenClass = state.chosenClass,
+            deckName = state.deckName,
+            format = state.format,
+            showSort = activeTab == EditingTab.Pool,
+            sort = state.pool.filters.sort,
+            onBack = onBack,
+            onSelectFormat = onSelectFormat,
+            onSetSort = onSetPoolSort,
+            onRenameDeck = { showRenameDialog = true },
+        )
 
-            TabBar(
-                active = activeTab,
-                poolCount = state.pool.totalCount,
-                poolLoading = state.pool.isLoading && state.pool.totalCount == 0,
-                deckCount = state.cardCount,
-                maxDeckSize = state.maxDeckSize,
-                onSelect = { activeTab = it },
-            )
+        TabBar(
+            active = activeTab,
+            poolCount = state.pool.totalCount,
+            poolLoading = state.pool.isLoading && state.pool.totalCount == 0,
+            deckCount = state.cardCount,
+            maxDeckSize = state.maxDeckSize,
+            onSelect = { activeTab = it },
+        )
 
-            Box(modifier = Modifier.weight(1f)) {
-                when (activeTab) {
-                    EditingTab.Pool -> PoolPane(
-                        state = state,
-                        gridState = poolGridState,
-                        onSetQuery = onSetQuery,
-                        onAdd = onAdd,
-                        onRemove = onRemove,
-                        onLoadMore = onLoadMore,
-                        onOpenFilters = { showFilters = true },
-                        onPreviewCard = { previewCard = it },
-                    )
-                    EditingTab.Deck -> DeckPane(
-                        state = state,
-                        onRemove = onRemove,
-                        onOpenCard = { previewCard = it },
-                        onPreviewCard = { previewCard = it },
-                        onOpenPool = { activeTab = EditingTab.Pool },
-                    )
-                }
-            }
-
-            if (activeTab == EditingTab.Deck) {
-                BottomActions(
-                    canSave = state.canSave,
-                    isSaving = state.isSaving,
-                    error = state.saveError,
-                    cardCount = state.cardCount,
-                    maxDeckSize = state.maxDeckSize,
-                    onSave = onSave,
+        Box(modifier = Modifier.weight(1f)) {
+            when (activeTab) {
+                EditingTab.Pool -> PoolPane(
+                    state = state,
+                    gridState = poolGridState,
+                    onSetQuery = onSetQuery,
+                    onAdd = onAdd,
+                    onRemove = onRemove,
+                    onLoadMore = onLoadMore,
+                    onOpenFilters = { showFilters = true },
+                    onPreviewCard = { previewCard = it },
+                )
+                EditingTab.Deck -> DeckPane(
+                    state = state,
+                    onRemove = onRemove,
+                    onOpenCard = { previewCard = it },
+                    onOpenPool = { activeTab = EditingTab.Pool },
                 )
             }
         }
 
-        if (showPoolHint) {
-            PoolTabHint(onDismiss = { showPoolHint = false })
+        if (activeTab == EditingTab.Deck) {
+            BottomActions(
+                canSave = state.canSave,
+                isSaving = state.isSaving,
+                error = state.saveError,
+                cardCount = state.cardCount,
+                maxDeckSize = state.maxDeckSize,
+                onSave = onSave,
+            )
         }
     }
 
@@ -495,48 +490,11 @@ private fun EditingView(
         CardPreviewDialog(
             card = card,
             onDismiss = { previewCard = null },
-            onMore = { onOpenCard(card) },
         )
     }
 }
 
 private enum class EditingTab { Pool, Deck }
-
-@Composable
-private fun PoolTabHint(onDismiss: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0x99000000))
-            .clickable(onClick = onDismiss),
-    ) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 94.dp, end = 18.dp)
-                .fillMaxWidth(0.54f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = "↓",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-            )
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(DeckBuilderColors.OnSurface)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.builder_pool_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = DeckBuilderColors.Surface,
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun Header(
@@ -594,13 +552,14 @@ private fun Header(
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
+                        .background(selectedFormatColor.copy(alpha = 0.16f))
                         .clickable { formatMenuOpen = true }
-                        .padding(end = 8.dp, top = 2.dp, bottom = 2.dp),
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = formatLabel(format),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         color = selectedFormatColor,
                     )
                     Spacer(Modifier.width(4.dp))
@@ -687,7 +646,10 @@ private fun RenameDeckDialog(
     onDismiss: () -> Unit,
     onSubmit: (String) -> Unit,
 ) {
-    var value by remember(initial) { mutableStateOf(initial) }
+    val initialValue = remember(initial) { initial.take(100) }
+    var value by remember(initialValue) {
+        mutableStateOf(TextFieldValue(initialValue, selection = TextRange(initialValue.length)))
+    }
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
 
@@ -703,17 +665,33 @@ private fun RenameDeckDialog(
         text = {
             TextField(
                 value = value,
-                onValueChange = { value = it.take(100) },
+                onValueChange = { next ->
+                    val clipped = next.text.take(100)
+                    value = next.copy(
+                        text = clipped,
+                        selection = TextRange(
+                            next.selection.start.coerceIn(0, clipped.length),
+                            next.selection.end.coerceIn(0, clipped.length),
+                        ),
+                        composition = null,
+                    )
+                },
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.rename_deck_hint),
+                        color = DeckBuilderColors.OnSurfaceDimmer,
+                    )
+                },
                 singleLine = true,
                 trailingIcon = {
-                    if (value.isNotEmpty()) {
+                    if (value.text.isNotEmpty()) {
                         Icon(
                             Icons.Outlined.Close,
                             contentDescription = stringResource(R.string.action_clear),
                             tint = DeckBuilderColors.OnSurfaceDim,
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .clickable { value = "" }
+                                .clickable { value = TextFieldValue("") }
                                 .padding(4.dp),
                         )
                     }
@@ -733,8 +711,8 @@ private fun RenameDeckDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { onSubmit(value) },
-                enabled = value.trim().isNotEmpty(),
+                onClick = { onSubmit(value.text) },
+                enabled = value.text.trim().isNotEmpty(),
             ) { Text(stringResource(R.string.action_save), color = DeckBuilderColors.OnSurface) }
         },
         dismissButton = {
@@ -925,13 +903,15 @@ private fun PoolPane(
             if (state.pool.isLoadingMore || state.pool.hasMore) {
                 item(span = { GridItemSpan(4) }) {
                     Box(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = DeckBuilderColors.Primary,
-                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(40.dp),
+                            color = Color.White,
+                            strokeWidth = 3.dp,
                         )
                     }
                 }
@@ -959,7 +939,7 @@ private fun PoolCard(
             Modifier
         },
     ) {
-        CardThumbnail(card = card, onClick = onPreview, onLongClick = onPreview)
+        CardThumbnail(card = card, onClick = onPreview)
         if (count > 0) {
             Box(
                 modifier = Modifier
@@ -967,14 +947,14 @@ private fun PoolCard(
                     .padding(5.dp)
                     .size(28.dp)
                     .clip(CircleShape)
-                    .background(DeckBuilderColors.OnSurface)
-                    .border(1.dp, DeckBuilderColors.Surface, CircleShape),
+                    .background(Color(0xCC000000))
+                    .border(1.dp, Color.White, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "x$count",
                     style = MaterialTheme.typography.labelMedium,
-                    color = DeckBuilderColors.Surface,
+                    color = Color.White,
                 )
             }
             Box(
@@ -983,14 +963,14 @@ private fun PoolCard(
                     .padding(top = 37.dp, end = 5.dp)
                     .size(28.dp)
                     .clip(CircleShape)
-                    .background(Color(0xCC000000))
+                    .background(Color.White.copy(alpha = 0.92f))
                     .clickable(onClick = onRemove),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Remove,
                     contentDescription = stringResource(R.string.action_remove_card),
-                    tint = DeckBuilderColors.Surface,
+                    tint = Color.Black,
                     modifier = Modifier.size(17.dp),
                 )
             }
@@ -1002,14 +982,14 @@ private fun PoolCard(
                     .padding(5.dp)
                     .size(28.dp)
                     .clip(CircleShape)
-                    .background(DeckBuilderColors.OnSurface.copy(alpha = 0.92f))
+                    .background(Color.White.copy(alpha = 0.92f))
                     .clickable(onClick = onAdd),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
                     contentDescription = stringResource(R.string.action_add),
-                    tint = DeckBuilderColors.Surface,
+                    tint = Color.Black,
                     modifier = Modifier.size(17.dp),
                 )
             }
@@ -1040,7 +1020,14 @@ private fun PoolSearchRow(
         TextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(stringResource(R.string.library_search_hint), color = DeckBuilderColors.OnSurfaceDimmer) },
+            textStyle = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
+            placeholder = {
+                Text(
+                    stringResource(R.string.library_search_hint),
+                    color = DeckBuilderColors.OnSurfaceDimmer,
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
+                )
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             leadingIcon = { Icon(Icons.Outlined.Search, null, tint = DeckBuilderColors.OnSurfaceDim) },
@@ -1187,7 +1174,6 @@ private fun DeckPane(
     state: BuilderState,
     onRemove: (Card) -> Unit,
     onOpenCard: (Card) -> Unit,
-    onPreviewCard: (Card) -> Unit,
     onOpenPool: () -> Unit,
 ) {
     if (state.deck.isEmpty()) {
@@ -1240,7 +1226,6 @@ private fun DeckPane(
             DeckCardRow(
                 entry = entry,
                 onClick = { onOpenCard(entry.card) },
-                onLongClick = { onPreviewCard(entry.card) },
                 onRemove = { onRemove(entry.card) },
             )
         }

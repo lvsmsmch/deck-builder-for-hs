@@ -2,9 +2,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Remove
@@ -32,18 +29,10 @@ import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
-/**
- * Single row in a deck listing: mana gem, horizontal art tile, card name,
- * count badge. The tile uses [ContentScale.Crop] (HsJson tiles are 256×59,
- * we render them at the row height while letting the tile crop horizontally
- * rather than stretch — earlier `FillBounds` made art look squished).
- */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeckCardRow(
     entry: DeckCardEntry,
     onClick: () -> Unit = {},
-    onLongClick: () -> Unit = {},
     onRemove: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -53,13 +42,14 @@ fun DeckCardRow(
         modifier = modifier
             .fillMaxWidth()
             .height(52.dp)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick,
-            ),
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        ManaGem(
+            cost = card.manaCost,
+            size = 30.dp,
+        )
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -70,6 +60,7 @@ fun DeckCardRow(
             CardTile(
                 slug = card.slug,
                 contentDescription = card.name,
+                verticalFocus = 0.36f,
                 modifier = Modifier.fillMaxSize(),
             )
             // Subtle dark gradient at the left side so the name overlay reads
@@ -84,13 +75,6 @@ fun DeckCardRow(
                         ),
                     ),
             )
-            ManaGem(
-                cost = card.manaCost,
-                size = 26.dp,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 6.dp),
-            )
             Text(
                 text = card.name,
                 style = MaterialTheme.typography.titleSmall,
@@ -98,7 +82,7 @@ fun DeckCardRow(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .padding(start = 40.dp, end = 30.dp),
+                    .padding(start = 10.dp, end = 30.dp),
                 maxLines = 1,
             )
             if (card.rarity?.slug.equals("legendary", ignoreCase = true)) {
@@ -119,7 +103,7 @@ fun DeckCardRow(
             Box(
                 modifier = Modifier
                     .size(30.dp)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(4.dp))
                     .background(DeckBuilderColors.OnSurface.copy(alpha = 0.88f))
                     .clickable(onClick = onRemove),
                 contentAlignment = Alignment.Center,
@@ -141,10 +125,10 @@ private fun CountPill(count: Int) {
     Box(
         modifier = Modifier
             .width(38.dp)
-            .height(30.dp)
-            .clip(CircleShape)
+            .height(46.dp)
+            .clip(RoundedCornerShape(4.dp))
             .background(DeckBuilderColors.SurfaceContainerHigh)
-            .border(1.dp, DeckBuilderColors.OutlineSoft, CircleShape)
+            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(4.dp))
             .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {

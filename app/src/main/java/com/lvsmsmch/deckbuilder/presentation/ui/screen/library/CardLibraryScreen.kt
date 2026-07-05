@@ -52,6 +52,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -192,7 +193,6 @@ fun CardLibraryScreen(
                         focusManager.clearFocus()
                         previewCard = it
                     },
-                    onCardPreview = { previewCard = it },
                 )
             }
             if (state.isLoadingFirstPage && state.cards.isNotEmpty()) {
@@ -219,7 +219,6 @@ fun CardLibraryScreen(
         CardPreviewDialog(
             card = card,
             onDismiss = { previewCard = null },
-            onMore = { onCardClick(card) },
         )
     }
 }
@@ -329,7 +328,14 @@ private fun SearchRow(
         TextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = { Text(stringResource(R.string.library_search_hint), color = DeckBuilderColors.OnSurfaceDimmer) },
+            textStyle = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
+            placeholder = {
+                Text(
+                    stringResource(R.string.library_search_hint),
+                    color = DeckBuilderColors.OnSurfaceDimmer,
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
+                )
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             leadingIcon = {
@@ -469,7 +475,6 @@ private fun CardGrid(
     state: CardLibraryState,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     onCardClick: (Card) -> Unit,
-    onCardPreview: (Card) -> Unit,
 ) {
     LazyVerticalGrid(
         state = gridState,
@@ -483,7 +488,6 @@ private fun CardGrid(
             CardThumbnail(
                 card = card,
                 onClick = { onCardClick(card) },
-                onLongClick = { onCardPreview(card) },
             )
         }
         if (state.isLoadingMore || state.hasMore) {
@@ -491,13 +495,13 @@ private fun CardGrid(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(vertical = 32.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = DeckBuilderColors.Primary,
-                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(40.dp),
+                        color = Color.White,
+                        strokeWidth = 3.dp,
                     )
                 }
             }

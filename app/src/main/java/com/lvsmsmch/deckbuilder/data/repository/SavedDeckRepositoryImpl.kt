@@ -46,10 +46,11 @@ class SavedDeckRepositoryImpl(
             val resolvedName = name?.takeIf { it.isNotBlank() }
                 ?: existing?.name
                 ?: defaultName(deck)
+            val safeName = resolvedName.take(MAX_DECK_NAME_LENGTH)
             dao.upsert(
                 SavedDeckEntity(
                     code = deck.code,
-                    name = resolvedName,
+                    name = safeName,
                     classSlug = deck.heroClass?.slug,
                     className = deck.heroClass?.name,
                     heroCardId = deck.hero?.id ?: 0,
@@ -80,7 +81,7 @@ class SavedDeckRepositoryImpl(
 
     override suspend fun rename(code: String, name: String): Unit = withContext(Dispatchers.IO) {
         require(code.isNotBlank()) { "Deck code is empty — cannot rename" }
-        val trimmed = name.trim()
+        val trimmed = name.trim().take(MAX_DECK_NAME_LENGTH)
         require(trimmed.isNotEmpty()) { "Deck name cannot be empty" }
         dao.rename(code, trimmed, nowMs())
         Log.i(TAG, "rename: OK code='${code.take(12)}…' → '$trimmed'")
@@ -99,13 +100,22 @@ class SavedDeckRepositoryImpl(
         heroSlug = row.heroSlug,
         format = row.formatFromCode(),
         cardCount = row.cardCount,
-        maxCardCount = if (row.cardIdsCsv.split(',').any { it in PRINCE_RENATHAL_DBF_IDS }) 40 else 30,
+        maxCardCount = maxCardCountFor(row.cardIdsCsv),
         savedAtMs = row.updatedAtMs,
     )
 
     private fun defaultName(deck: Deck): String {
         val cls = deck.heroClass?.name?.ifBlank { null }
         return cls?.let { "$it deck" } ?: "Untitled deck"
+    }
+}
+
+private fun maxCardCountFor(cardIdsCsv: String): Int {
+    val ids = cardIdsCsv.split(',').filter { it.isNotBlank() }.toSet()
+    return when {
+        ids.any { it in WHIZBANG_DBF_IDS } -> 1
+        ids.any { it in PRINCE_RENATHAL_DBF_IDS } -> 40
+        else -> 30
     }
 }
 
@@ -121,3 +131,5 @@ private fun DeckstringFormat.toGameFormat(): GameFormat = when (this) {
 }
 
 private val PRINCE_RENATHAL_DBF_IDS = setOf("79767", "111689")
+private val WHIZBANG_DBF_IDS = setOf("50477", "104819")
+private const val MAX_DECK_NAME_LENGTH = 100

@@ -244,7 +244,7 @@ class DeckBuilderViewModel(
     }
 
     fun renameDeck(name: String) {
-        _state.update { it.copy(deckName = name.trim().takeIf { value -> value.isNotEmpty() }) }
+        _state.update { it.copy(deckName = name.trim().take(MAX_DECK_NAME_LENGTH).takeIf { value -> value.isNotEmpty() }) }
     }
 
     fun dismissToast() {
@@ -369,6 +369,8 @@ class DeckBuilderViewModel(
         val CanonicalHeroId = Regex("""^HERO_\d+[a-z]*$""")
     }
 }
+
+private const val MAX_DECK_NAME_LENGTH = 100
 
 private fun GameFormat.toCardFormatFilter(): CardFormatFilter = when (this) {
     GameFormat.STANDARD -> CardFormatFilter.STANDARD

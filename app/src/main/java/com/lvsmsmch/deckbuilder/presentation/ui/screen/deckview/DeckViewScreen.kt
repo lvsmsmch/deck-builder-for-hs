@@ -226,16 +226,12 @@ private fun Body(
                 savedName = savedName,
                 onRename = onRename,
                 onBack = onBack,
+                menuOpen = menuOpen,
                 onOpenMenu = { menuOpen = true },
+                onDismissMenu = { menuOpen = false },
+                onEditDeck = onEditDeck,
+                onDeleteDeck = onDeleteDeck,
             )
-            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                DeckActionsMenu(
-                    expanded = menuOpen,
-                    onDismiss = { menuOpen = false },
-                    onEdit = onEditDeck,
-                    onDelete = onDeleteDeck,
-                )
-            }
         }
 
         item { DeckWarnings(deck) }
@@ -269,7 +265,6 @@ private fun Body(
             DeckCardRow(
                 entry = entry,
                 onClick = { previewCard = entry.card },
-                onLongClick = { previewCard = entry.card },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
             )
         }
@@ -290,7 +285,6 @@ private fun Body(
         CardPreviewDialog(
             card = card,
             onDismiss = { previewCard = null },
-            onMore = { onCardClick(card) },
         )
     }
 }
@@ -301,7 +295,11 @@ private fun DeckToolbar(
     savedName: String?,
     onRename: (String) -> Unit,
     onBack: () -> Unit,
+    menuOpen: Boolean,
     onOpenMenu: () -> Unit,
+    onDismissMenu: () -> Unit,
+    onEditDeck: () -> Unit,
+    onDeleteDeck: () -> Unit,
 ) {
     val classSlug = deck.heroClass?.slug
     val heroCardId = deck.hero?.slug?.takeIf { it.startsWith("HERO_") }
@@ -364,11 +362,19 @@ private fun DeckToolbar(
                 )
             }
         }
-        IconButton(onClick = onOpenMenu) {
-            Icon(
-                Icons.Outlined.MoreVert,
-                contentDescription = stringResource(R.string.action_more),
-                tint = DeckBuilderColors.OnSurface,
+        Box {
+            IconButton(onClick = onOpenMenu) {
+                Icon(
+                    Icons.Outlined.MoreVert,
+                    contentDescription = stringResource(R.string.action_more),
+                    tint = DeckBuilderColors.OnSurface,
+                )
+            }
+            DeckActionsMenu(
+                expanded = menuOpen,
+                onDismiss = onDismissMenu,
+                onEdit = onEditDeck,
+                onDelete = onDeleteDeck,
             )
         }
     }
@@ -387,7 +393,7 @@ private fun EditableTitle(
     var hadFocus by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
-    val titleStyle = MaterialTheme.typography.titleLarge.copy(color = DeckBuilderColors.OnSurface)
+    val titleStyle = MaterialTheme.typography.titleMedium.copy(color = DeckBuilderColors.OnSurface)
 
     LaunchedEffect(editing) {
         if (editing) focusRequester.requestFocus()
