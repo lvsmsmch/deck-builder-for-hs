@@ -269,7 +269,7 @@ private fun Body(
             DeckCardRow(
                 entry = entry,
                 onClick = { previewCard = entry.card },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp),
             )
         }
 

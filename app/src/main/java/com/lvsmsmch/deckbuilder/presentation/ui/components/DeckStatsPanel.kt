@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -57,32 +56,26 @@ fun DeckStatsPanel(entries: List<DeckCardEntry>, modifier: Modifier = Modifier) 
             color = DeckBuilderColors.OnSurfaceDim,
         )
         Spacer(Modifier.height(10.dp))
-        Row(
+        StatBlock(
+            label = stringResource(R.string.deck_stats_dust),
+            value = formatDust(stats.totalDust),
+            valueStyle = MaterialTheme.typography.titleSmall,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(122.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        )
+        Spacer(Modifier.height(10.dp))
+        SectionBlock(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(122.dp),
         ) {
-            StatBlock(
-                label = stringResource(R.string.deck_stats_dust),
-                value = formatDust(stats.totalDust),
-                valueStyle = MaterialTheme.typography.titleSmall,
-                modifier = Modifier
-                    .weight(0.2f)
-                    .fillMaxHeight(),
+            Text(
+                text = stringResource(R.string.deck_stats_mana_curve),
+                style = MaterialTheme.typography.labelSmall,
+                color = DeckBuilderColors.OnSurfaceDim,
             )
-            SectionBlock(
-                modifier = Modifier
-                    .weight(0.8f)
-                    .fillMaxHeight(),
-            ) {
-                Text(
-                    text = stringResource(R.string.deck_stats_mana_curve),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = DeckBuilderColors.OnSurfaceDim,
-                )
-                ManaCurve(entries = entries, height = 92.dp, horizontalPadding = 0.dp, verticalPadding = 0.dp)
-            }
+            ManaCurve(entries = entries, height = 86.dp, horizontalPadding = 0.dp, verticalPadding = 0.dp)
         }
 
         if (stats.rarityCounts.isNotEmpty()) {

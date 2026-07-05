@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,25 +38,25 @@ fun DeckCardRow(
     modifier: Modifier = Modifier,
 ) {
     val card = entry.card
+    val rowShape = RoundedCornerShape(4.dp)
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(52.dp)
-            .clickable(onClick = onClick),
+            .height(50.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(44.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(DeckBuilderColors.SurfaceContainer),
+                .height(46.dp)
+                .clip(rowShape)
+                .background(DeckBuilderColors.SurfaceContainer)
+                .clickable(onClick = onClick),
         ) {
             Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 ManaSegment(cost = card.manaCost)
-                SegmentDivider()
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -67,7 +66,7 @@ fun DeckCardRow(
                         slug = card.slug,
                         contentDescription = card.name,
                         verticalFocus = 0.24f,
-                        cropZoom = 1.36f,
+                        cropZoom = 1.46f,
                         modifier = Modifier.fillMaxSize(),
                     )
                     Box(
@@ -98,11 +97,10 @@ fun DeckCardRow(
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                                 .padding(end = 6.dp)
-                                .size(20.dp),
+                                .size(22.dp),
                         )
                     }
                 }
-                SegmentDivider()
                 CountSegment(count = entry.count)
             }
         }
@@ -131,7 +129,7 @@ fun DeckCardRow(
 private fun ManaSegment(cost: Int) {
     Box(
         modifier = Modifier
-            .width(38.dp)
+            .width(42.dp)
             .fillMaxSize()
             .background(DeckBuilderColors.SurfaceContainerHigh),
         contentAlignment = Alignment.Center,
@@ -141,20 +139,10 @@ private fun ManaSegment(cost: Int) {
 }
 
 @Composable
-private fun SegmentDivider() {
-    Box(
-        modifier = Modifier
-            .width(1.dp)
-            .fillMaxHeight()
-            .background(DeckBuilderColors.OutlineSoft.copy(alpha = 0.65f)),
-    )
-}
-
-@Composable
 private fun CountSegment(count: Int) {
     Box(
         modifier = Modifier
-            .width(38.dp)
+            .width(42.dp)
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
