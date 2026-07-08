@@ -22,8 +22,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -73,7 +75,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
-import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckGridCard
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
@@ -220,11 +222,14 @@ private fun Body(
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
     LaunchedEffect(deck.code) { copied = false }
 
-    LazyColumn(
-        contentPadding = PaddingValues(bottom = 24.dp),
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        item {
+        item(span = { GridItemSpan(4) }) {
             DeckToolbar(
                 deck = deck,
                 savedName = savedName,
@@ -238,15 +243,15 @@ private fun Body(
             )
         }
 
-        item { DeckWarnings(deck) }
+        item(span = { GridItemSpan(4) }) { DeckWarnings(deck) }
 
-        item {
+        item(span = { GridItemSpan(4) }) {
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 DeckStatsPanel(deck)
             }
         }
 
-        item {
+        item(span = { GridItemSpan(4) }) {
             ActionsRow(
                 copied = copied,
                 onCopyCode = {
@@ -256,7 +261,7 @@ private fun Body(
             )
         }
 
-        item {
+        item(span = { GridItemSpan(4) }) {
             Text(
                 text = stringResource(R.string.deck_view_cards_count, deck.cardCount),
                 style = MaterialTheme.typography.labelSmall,
@@ -266,15 +271,16 @@ private fun Body(
         }
 
         items(deck.cards, key = { it.card.id }) { entry ->
-            DeckCardRow(
-                entry = entry,
+            DeckGridCard(
+                card = entry.card,
+                count = entry.count,
+                showCount = true,
                 onClick = { previewCard = entry.card },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp),
             )
         }
 
         if (deck.invalidCardIds.isNotEmpty()) {
-            item {
+            item(span = { GridItemSpan(4) }) {
                 Text(
                     text = stringResource(R.string.deck_view_invalid_format, deck.invalidCardIds.size),
                     style = MaterialTheme.typography.bodySmall,

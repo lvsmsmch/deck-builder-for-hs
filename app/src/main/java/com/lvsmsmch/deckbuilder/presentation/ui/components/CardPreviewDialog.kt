@@ -217,7 +217,6 @@ fun CardPreviewDialog(
 @Composable
 private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
     val parts = listOfNotNull(
-        card.name,
         card.classes.joinToString("/") { it.name }.takeIf { it.isNotBlank() },
         card.cardType.name.takeIf { it.isNotBlank() },
         card.cardSet?.name?.takeIf { it.isNotBlank() },
@@ -229,24 +228,15 @@ private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
         Text(
             text = parts.joinToString(" • "),
             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-            color = androidx.compose.ui.graphics.Color.White,
+            color = DeckBuilderColors.OnSurface,
             textAlign = TextAlign.Center,
         )
-        card.artistName?.takeIf { it.isNotBlank() }?.let { artist ->
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = "Artist: $artist",
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                color = androidx.compose.ui.graphics.Color.White,
-                textAlign = TextAlign.Center,
-            )
-        }
         card.flavorText?.takeIf { it.isNotBlank() }?.let { flavor ->
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(12.dp))
             Text(
-                text = "Flavor text: \"$flavor\"",
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                color = androidx.compose.ui.graphics.Color.White,
+                text = flavor,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                color = DeckBuilderColors.OnSurface,
                 textAlign = TextAlign.Center,
             )
         }

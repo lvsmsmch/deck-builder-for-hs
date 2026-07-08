@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
@@ -81,6 +82,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun CardLibraryScreen(
     initialKeyword: String? = null,
     initialSetSlug: String? = null,
+    onBack: () -> Unit,
     onCardClick: (Card) -> Unit = {},
     viewModel: CardLibraryViewModel = koinViewModel(
         parameters = { org.koin.core.parameter.parametersOf(initialKeyword, initialSetSlug) },
@@ -135,6 +137,7 @@ fun CardLibraryScreen(
     ) {
         Header(
             sort = state.filters.sort,
+            onBack = onBack,
             onSortChange = {
                 focusManager.clearFocus()
                 viewModel.setSort(it.key, it.direction)
@@ -242,17 +245,25 @@ private fun com.lvsmsmch.deckbuilder.domain.entities.CardFilters.activeFilterCou
 @Composable
 private fun Header(
     sort: CardSort,
+    onBack: () -> Unit,
     onSortChange: (CardSort) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        IconButton(onClick = onBack) {
+            Icon(
+                Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = stringResource(R.string.action_back),
+                tint = DeckBuilderColors.OnSurface,
+            )
+        }
         Text(
             text = stringResource(R.string.library_title),
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = DeckBuilderColors.OnSurface,
             modifier = Modifier.weight(1f),
         )
@@ -478,7 +489,7 @@ private fun CardGrid(
 ) {
     LazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(4),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -491,7 +502,7 @@ private fun CardGrid(
             )
         }
         if (state.isLoadingMore || state.hasMore) {
-            item(span = { GridItemSpan(2) }) {
+            item(span = { GridItemSpan(4) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

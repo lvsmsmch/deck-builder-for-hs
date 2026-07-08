@@ -21,14 +21,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -38,7 +36,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -70,7 +67,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -98,9 +94,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
-import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
-import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckCardRow
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckGridCard
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroPortrait
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
@@ -466,7 +461,6 @@ private fun EditingView(
                     gridState = poolGridState,
                     onSetQuery = onSetQuery,
                     onAdd = onAdd,
-                    onRemove = onRemove,
                     onLoadMore = onLoadMore,
                     onOpenFilters = { showFilters = true },
                     onPreviewCard = { previewCard = it },
@@ -850,7 +844,6 @@ private fun PoolPane(
     gridState: LazyGridState,
     onSetQuery: (String) -> Unit,
     onAdd: (Card) -> Unit,
-    onRemove: (Card) -> Unit,
     onLoadMore: () -> Unit,
     onOpenFilters: () -> Unit,
     onPreviewCard: (Card) -> Unit,
@@ -925,12 +918,12 @@ private fun PoolPane(
         ) {
             items(state.pool.cards, key = { it.id }) { card ->
                 val count = state.deck[card.id]?.count ?: 0
+                val maxCopiesReached = count >= maxCopiesFor(card, state.singleton)
                 PoolCard(
                     card = card,
                     count = count,
-                    canAdd = state.cardCount < state.maxDeckSize && count < maxCopiesFor(card, state.singleton),
+                    maxCopiesReached = maxCopiesReached,
                     onAdd = { onAdd(card) },
-                    onRemove = { onRemove(card) },
                     onPreview = { onPreviewCard(card) },
                 )
             }
@@ -959,76 +952,19 @@ private fun PoolPane(
 private fun PoolCard(
     card: Card,
     count: Int,
-    canAdd: Boolean,
+    maxCopiesReached: Boolean,
     onAdd: () -> Unit,
-    onRemove: () -> Unit,
     onPreview: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(14.dp)
-    Box(
-        modifier = if (count > 0) {
-            Modifier
-                .clip(shape)
-                .border(1.dp, DeckBuilderColors.OnSurface, shape)
-        } else {
-            Modifier
-        },
-    ) {
-        CardThumbnail(card = card, onClick = onPreview)
-        if (count > 0) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(5.dp)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xCC000000))
-                    .border(1.dp, Color.White, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "x$count",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 37.dp, end = 5.dp)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.92f))
-                    .clickable(onClick = onRemove),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Remove,
-                    contentDescription = stringResource(R.string.action_remove_card),
-                    tint = Color.Black,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(5.dp)
-                .size(28.dp)
-                .alpha(if (canAdd) 1f else 0.5f)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.92f))
-                .clickable(enabled = canAdd, onClick = onAdd),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = stringResource(R.string.action_add),
-                tint = Color.Black,
-                modifier = Modifier.size(17.dp),
-            )
-        }
-    }
+    DeckGridCard(
+        card = card,
+        count = count,
+        showCount = count > 0,
+        dimmed = maxCopiesReached,
+        addEnabled = !maxCopiesReached,
+        onClick = onPreview,
+        onAdd = onAdd,
+    )
 }
 
 private fun maxCopiesFor(card: Card, singleton: Boolean): Int = when {
@@ -1249,16 +1185,21 @@ private fun DeckPane(
         return
     }
 
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        item {
+        item(span = { GridItemSpan(4) }) {
             DeckStatsPanel(entries = state.deckEntries, modifier = Modifier.padding(bottom = 8.dp))
         }
         items(state.deckEntries, key = { it.card.id }) { entry ->
-            DeckCardRow(
-                entry = entry,
+            DeckGridCard(
+                card = entry.card,
+                count = entry.count,
+                showCount = true,
                 onClick = { onOpenCard(entry.card) },
                 onRemove = { onRemove(entry.card) },
             )

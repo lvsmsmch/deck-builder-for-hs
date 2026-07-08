@@ -100,6 +100,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                 CardLibraryScreen(
                     initialKeyword = args.initialKeyword,
                     initialSetSlug = args.initialSetSlug,
+                    onBack = { navController.navigateUp() },
                     onCardClick = { card -> navController.navigate(CardDetail(idOrSlug = card.id.toString())) },
                 )
             }
