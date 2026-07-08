@@ -56,9 +56,9 @@ fun ManaCurve(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = if (count > 0) "×$count" else "×0",
+                    text = "×$count",
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (count > 0) DeckBuilderColors.OnSurfaceDim else Color.Transparent,
+                    color = DeckBuilderColors.OnSurfaceDim,
                 )
                 Spacer(Modifier.height(3.dp))
                 ManaBar(

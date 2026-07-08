@@ -67,6 +67,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -86,6 +87,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
@@ -426,6 +428,7 @@ private fun EditingView(
 ) {
     var activeTab by rememberSaveable { mutableStateOf(EditingTab.Deck) }
     val poolGridState = rememberLazyGridState()
+    val deckGridState = rememberLazyGridState()
     var showFilters by remember { mutableStateOf(false) }
     var previewCard by remember { mutableStateOf<Card?>(null) }
     var showRenameDialog by remember { mutableStateOf(false) }
@@ -455,23 +458,31 @@ private fun EditingView(
         )
 
         Box(modifier = Modifier.weight(1f)) {
-            when (activeTab) {
-                EditingTab.Pool -> PoolPane(
-                    state = state,
-                    gridState = poolGridState,
-                    onSetQuery = onSetQuery,
-                    onAdd = onAdd,
-                    onLoadMore = onLoadMore,
-                    onOpenFilters = { showFilters = true },
-                    onPreviewCard = { previewCard = it },
-                )
-                EditingTab.Deck -> DeckPane(
-                    state = state,
-                    onRemove = onRemove,
-                    onOpenCard = { previewCard = it },
-                    onOpenPool = { activeTab = EditingTab.Pool },
-                )
-            }
+            PoolPane(
+                state = state,
+                gridState = poolGridState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(if (activeTab == EditingTab.Pool) 1f else 0f)
+                    .zIndex(if (activeTab == EditingTab.Pool) 1f else 0f),
+                onSetQuery = onSetQuery,
+                onAdd = onAdd,
+                onRemove = onRemove,
+                onLoadMore = onLoadMore,
+                onOpenFilters = { showFilters = true },
+                onPreviewCard = { previewCard = it },
+            )
+            DeckPane(
+                state = state,
+                gridState = deckGridState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(if (activeTab == EditingTab.Deck) 1f else 0f)
+                    .zIndex(if (activeTab == EditingTab.Deck) 1f else 0f),
+                onRemove = onRemove,
+                onOpenCard = { previewCard = it },
+                onOpenPool = { activeTab = EditingTab.Pool },
+            )
         }
 
         if (activeTab == EditingTab.Deck) {
@@ -842,8 +853,10 @@ private fun TabButton(
 private fun PoolPane(
     state: BuilderState,
     gridState: LazyGridState,
+    modifier: Modifier = Modifier,
     onSetQuery: (String) -> Unit,
     onAdd: (Card) -> Unit,
+    onRemove: (Card) -> Unit,
     onLoadMore: () -> Unit,
     onOpenFilters: () -> Unit,
     onPreviewCard: (Card) -> Unit,
@@ -875,8 +888,7 @@ private fun PoolPane(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { focusManager.clearFocus() })
             },
@@ -924,6 +936,7 @@ private fun PoolPane(
                     count = count,
                     maxCopiesReached = maxCopiesReached,
                     onAdd = { onAdd(card) },
+                    onRemove = { onRemove(card) },
                     onPreview = { onPreviewCard(card) },
                 )
             }
@@ -954,16 +967,17 @@ private fun PoolCard(
     count: Int,
     maxCopiesReached: Boolean,
     onAdd: () -> Unit,
+    onRemove: () -> Unit,
     onPreview: () -> Unit,
 ) {
     DeckGridCard(
         card = card,
         count = count,
         showCount = count > 0,
-        dimmed = maxCopiesReached,
         addEnabled = !maxCopiesReached,
         onClick = onPreview,
         onAdd = onAdd,
+        onRemove = onRemove.takeIf { count > 0 },
     )
 }
 
@@ -1142,12 +1156,14 @@ private fun poolSortLabel(sort: CardSort): Int =
 @Composable
 private fun DeckPane(
     state: BuilderState,
+    gridState: LazyGridState,
+    modifier: Modifier = Modifier,
     onRemove: (Card) -> Unit,
     onOpenCard: (Card) -> Unit,
     onOpenPool: () -> Unit,
 ) {
     if (state.deck.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = modifier) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(32.dp),
                 verticalArrangement = Arrangement.Center,
@@ -1186,11 +1202,12 @@ private fun DeckPane(
     }
 
     LazyVerticalGrid(
+        state = gridState,
         columns = GridCells.Fixed(4),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
     ) {
         item(span = { GridItemSpan(4) }) {
             DeckStatsPanel(entries = state.deckEntries, modifier = Modifier.padding(bottom = 8.dp))

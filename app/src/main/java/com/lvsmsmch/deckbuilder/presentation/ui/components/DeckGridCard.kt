@@ -1,7 +1,6 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -37,7 +36,6 @@ fun DeckGridCard(
     showCount: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    dimmed: Boolean = false,
     onAdd: (() -> Unit)? = null,
     addEnabled: Boolean = true,
     onRemove: (() -> Unit)? = null,
@@ -48,8 +46,7 @@ fun DeckGridCard(
 
     Box(
         modifier = modifier
-            .aspectRatio(CardAspect)
-            .alpha(if (dimmed) 0.5f else 1f),
+            .aspectRatio(CardAspect),
     ) {
         CardThumbnail(
             card = card,
@@ -63,12 +60,11 @@ fun DeckGridCard(
                     .padding(5.dp)
                     .size(28.dp)
                     .clip(CircleShape)
-                    .background(Color(0xDD111218))
-                    .border(1.dp, Color.White.copy(alpha = 0.9f), CircleShape),
+                    .background(Color(0xDD111218)),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "x$count",
+                    text = "×$count",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White,
                 )
@@ -80,6 +76,7 @@ fun DeckGridCard(
                     .align(Alignment.BottomEnd)
                     .padding(5.dp)
                     .size(28.dp)
+                    .alpha(if (addEnabled) 1f else 0.5f)
                     .clip(CircleShape)
                     .background(controlBackground)
                     .clickable(enabled = addEnabled, onClick = it),
@@ -94,10 +91,11 @@ fun DeckGridCard(
             }
         }
         onRemove?.let {
+            val bottomPadding = if (onAdd != null) 38.dp else 5.dp
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(5.dp)
+                    .padding(end = 5.dp, bottom = bottomPadding)
                     .size(28.dp)
                     .clip(CircleShape)
                     .background(controlBackground)
