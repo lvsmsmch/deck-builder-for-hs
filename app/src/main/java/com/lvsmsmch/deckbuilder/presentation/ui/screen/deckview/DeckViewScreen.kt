@@ -227,28 +227,24 @@ private fun Body(
         modifier = Modifier.fillMaxSize(),
     ) {
         item(span = { GridItemSpan(4) }) {
-            DeckToolbar(
-                deck = deck,
-                savedName = savedName,
-                onRename = onRename,
-                onBack = onBack,
-                menuOpen = menuOpen,
-                onOpenMenu = { menuOpen = true },
-                onDismissMenu = { menuOpen = false },
-                onEditDeck = onEditDeck,
-                onDeleteDeck = { pendingDelete = true },
-                onCopyCode = {
-                    onCopyCode()
-                    menuOpen = false
-                },
-            )
-        }
-
-        item(span = { GridItemSpan(4) }) { DeckWarnings(deck) }
-
-        item(span = { GridItemSpan(4) }) {
-            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                DeckStatsPanel(deck)
+            Column {
+                DeckToolbar(
+                    deck = deck,
+                    savedName = savedName,
+                    onRename = onRename,
+                    onBack = onBack,
+                    menuOpen = menuOpen,
+                    onOpenMenu = { menuOpen = true },
+                    onDismissMenu = { menuOpen = false },
+                    onEditDeck = onEditDeck,
+                    onDeleteDeck = { pendingDelete = true },
+                    onCopyCode = {
+                        onCopyCode()
+                        menuOpen = false
+                    },
+                )
+                DeckWarnings(deck)
+                DeckStatsPanel(deck, modifier = Modifier.padding(bottom = 8.dp))
             }
         }
 
@@ -330,7 +326,7 @@ private fun DeckToolbar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
+            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 0.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack) {

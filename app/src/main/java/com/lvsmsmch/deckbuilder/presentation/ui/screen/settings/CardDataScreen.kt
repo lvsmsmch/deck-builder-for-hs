@@ -70,7 +70,7 @@ fun CardDataScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 4.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                    .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onBack) {
@@ -82,7 +82,7 @@ fun CardDataScreen(
                 }
                 Text(
                     text = stringResource(R.string.more_card_data),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = DeckBuilderColors.OnSurface,
                     modifier = Modifier.weight(1f),
                 )

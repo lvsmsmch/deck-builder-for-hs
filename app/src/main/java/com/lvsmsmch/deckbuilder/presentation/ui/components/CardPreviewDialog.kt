@@ -113,8 +113,8 @@ fun CardPreviewDialog(
         ) {
             Column(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(horizontal = 32.dp)
-                    .widthIn(max = 360.dp)
                     .clickable(
                         interactionSource = contentInteraction,
                         indication = null,
@@ -125,6 +125,7 @@ fun CardPreviewDialog(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .widthIn(max = 360.dp)
                         .aspectRatio(CARD_RENDER_ASPECT)
                         .zIndex(if (renderedScale > 1.01f) 10f else 0f),
                     contentAlignment = Alignment.Center,
@@ -210,10 +211,11 @@ fun CardPreviewDialog(
                         )
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(8.dp))
                 CardPreviewMetadata(
                     card = card,
                     modifier = Modifier
+                        .padding(horizontal = 64.dp)
                         .zIndex(0f)
                         .graphicsLayer { alpha = chromeAlpha },
                 )
@@ -240,7 +242,7 @@ private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
             textAlign = TextAlign.Center,
         )
         card.flavorText?.takeIf { it.isNotBlank() }?.let { flavor ->
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
             Text(
                 text = flavor,
                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
