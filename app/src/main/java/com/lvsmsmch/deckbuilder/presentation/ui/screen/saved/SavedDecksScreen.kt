@@ -140,7 +140,12 @@ fun SavedDecksScreen(
             },
             onPasteCode = {
                 showChooser = false
-                showImportSheet = true
+                val clipboardCode = context.clipboardText().takeIf(::looksLikeDeckCode)
+                if (clipboardCode != null) {
+                    viewModel.import(clipboardCode)
+                } else {
+                    showImportSheet = true
+                }
             },
         )
     }
@@ -164,8 +169,8 @@ fun SavedDecksScreen(
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
             containerColor = DeckBuilderColors.SurfaceContainer,
-            title = { Text(stringResource(R.string.saved_delete_title)) },
-            text = { Text(stringResource(R.string.saved_delete_message, deck.name)) },
+            title = { Text(stringResource(R.string.saved_delete_title), color = DeckBuilderColors.OnSurface) },
+            text = { Text(stringResource(R.string.saved_delete_message, deck.name), color = DeckBuilderColors.OnSurface) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.delete(deck.code)
@@ -326,6 +331,24 @@ private fun copyToClipboard(context: Context, code: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     clipboard.setPrimaryClip(ClipData.newPlainText("Hearthstone deck code", code))
     Toast.makeText(context, context.getString(R.string.deck_view_copied), Toast.LENGTH_SHORT).show()
+}
+
+private fun Context.clipboardText(): String {
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return ""
+    val clip = clipboard.primaryClip ?: return ""
+    if (clip.itemCount == 0) return ""
+    return clip.getItemAt(0).coerceToText(this)?.toString().orEmpty().trim()
+}
+
+private fun looksLikeDeckCode(input: String): Boolean {
+    val codeRegex = Regex("^[A-Za-z0-9+/=]{12,}$")
+    val trimmed = input.trim()
+    if (trimmed.matches(codeRegex)) return true
+    return trimmed
+        .lineSequence()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() && !it.startsWith("#") }
+        .any { it.matches(codeRegex) }
 }
 
 @Composable

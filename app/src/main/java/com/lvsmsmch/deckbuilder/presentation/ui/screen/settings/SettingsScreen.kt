@@ -258,8 +258,8 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showClearImageCacheConfirm = false },
             containerColor = DeckBuilderColors.SurfaceContainer,
-            title = { Text(stringResource(R.string.settings_clear_image_cache_title)) },
-            text = { Text(stringResource(R.string.settings_clear_image_cache_message)) },
+            title = { Text(stringResource(R.string.settings_clear_image_cache_title), color = DeckBuilderColors.OnSurface) },
+            text = { Text(stringResource(R.string.settings_clear_image_cache_message), color = DeckBuilderColors.OnSurface) },
             confirmButton = {
                 TextButton(onClick = {
                     showClearImageCacheConfirm = false
@@ -278,7 +278,7 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showClearImageCacheConfirm = false }) {
-                    Text(stringResource(R.string.action_cancel))
+                    Text(stringResource(R.string.action_cancel), color = DeckBuilderColors.OnSurface)
                 }
             },
         )
@@ -375,7 +375,7 @@ private fun DialogRow(
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
-                color = DeckBuilderColors.OnSurfaceDim,
+                color = DeckBuilderColors.OnSurface,
             )
             Spacer(Modifier.size(6.dp))
         }
@@ -383,7 +383,7 @@ private fun DialogRow(
             Icon(
                 imageVector = trailingIcon,
                 contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDimmer,
+                tint = DeckBuilderColors.OnSurface,
                 modifier = Modifier.size(18.dp),
             )
         }
@@ -419,8 +419,11 @@ private fun ToggleRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedTrackColor = DeckBuilderColors.Primary,
-                checkedThumbColor = DeckBuilderColors.OnPrimary,
+                checkedTrackColor = DeckBuilderColors.OnSurface,
+                checkedThumbColor = DeckBuilderColors.Surface,
+                uncheckedTrackColor = DeckBuilderColors.SurfaceContainerHigh,
+                uncheckedThumbColor = DeckBuilderColors.OnSurface,
+                uncheckedBorderColor = DeckBuilderColors.OnSurface,
             ),
         )
     }
@@ -435,7 +438,7 @@ private fun ThemePickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = DeckBuilderColors.SurfaceContainer,
-        title = { Text(stringResource(R.string.settings_theme_title)) },
+        title = { Text(stringResource(R.string.settings_theme_title), color = DeckBuilderColors.OnSurface) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 ThemeMode.entries.forEach { mode ->
@@ -465,7 +468,7 @@ private fun ThemePickerDialog(
                                 Text(
                                     text = stringResource(R.string.settings_theme_system_subtitle),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = DeckBuilderColors.OnSurfaceDim,
+                                    color = DeckBuilderColors.OnSurface,
                                 )
                             }
                         }
@@ -474,7 +477,7 @@ private fun ThemePickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close), color = DeckBuilderColors.OnSurface) }
         },
     )
 }
@@ -497,7 +500,7 @@ private fun LocalePickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = DeckBuilderColors.SurfaceContainer,
-        title = { Text(stringResource(R.string.settings_card_language)) },
+        title = { Text(stringResource(R.string.settings_card_language), color = DeckBuilderColors.OnSurface) },
         text = {
             LazyColumn(
                 modifier = Modifier
@@ -534,7 +537,7 @@ private fun LocalePickerDialog(
                             Text(
                                 text = code,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = DeckBuilderColors.OnSurfaceDim,
+                                color = DeckBuilderColors.OnSurface,
                             )
                         }
                     }
@@ -542,7 +545,7 @@ private fun LocalePickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close), color = DeckBuilderColors.OnSurface) }
         },
     )
 }

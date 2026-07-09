@@ -163,7 +163,7 @@ fun CardLibraryScreen(
             text = stringResource(R.string.library_found_count, state.totalCount),
             style = MaterialTheme.typography.labelSmall,
             color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 8.dp),
         )
 
         SearchRow(
@@ -490,7 +490,7 @@ private fun CardGrid(
     LazyVerticalGrid(
         state = gridState,
         columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 16.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 18.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize(),

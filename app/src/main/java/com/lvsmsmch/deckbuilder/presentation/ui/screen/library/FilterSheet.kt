@@ -428,6 +428,12 @@ private fun SpellSchoolSection(draft: CardFilters, onChange: (CardFilters) -> Un
 @Composable
 private fun CollectibleSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
     SectionHeader(stringResource(R.string.filters_section_show_noncollectible))
+    Text(
+        text = stringResource(R.string.filters_show_noncollectible_description),
+        style = MaterialTheme.typography.bodySmall,
+        color = DeckBuilderColors.OnSurface,
+        modifier = Modifier.padding(bottom = 8.dp),
+    )
     Row(verticalAlignment = Alignment.CenterVertically) {
         Chip(
             label = stringResource(

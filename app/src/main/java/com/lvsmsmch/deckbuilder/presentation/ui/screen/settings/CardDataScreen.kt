@@ -177,7 +177,7 @@ private fun RefreshCardDataRow(
             Text(
                 text = stringResource(R.string.settings_refresh_card_data_subtitle),
                 style = MaterialTheme.typography.bodySmall,
-                color = DeckBuilderColors.OnSurfaceDim,
+                color = DeckBuilderColors.OnSurface,
             )
         }
         if (isRefreshing) {
@@ -190,7 +190,7 @@ private fun RefreshCardDataRow(
             Icon(
                 imageVector = Icons.Outlined.Refresh,
                 contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDimmer,
+                tint = DeckBuilderColors.OnSurface,
                 modifier = Modifier.size(18.dp),
             )
         }
@@ -214,7 +214,7 @@ private fun InfoRow(title: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            color = DeckBuilderColors.OnSurfaceDim,
+            color = DeckBuilderColors.OnSurface,
         )
     }
 }

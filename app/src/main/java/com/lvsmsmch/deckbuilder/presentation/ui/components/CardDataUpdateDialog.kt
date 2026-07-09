@@ -105,13 +105,13 @@ fun CardDataUpdateDialog(
             AlertDialog(
                 onDismissRequest = {},
                 containerColor = DeckBuilderColors.SurfaceContainer,
-                title = { Text(stringResource(R.string.card_data_dialog_title)) },
+                title = { Text(stringResource(R.string.card_data_dialog_title), color = DeckBuilderColors.OnSurface) },
                 text = {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = stringResource(R.string.library_loading_resolving),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = DeckBuilderColors.OnSurfaceDim,
+                            color = DeckBuilderColors.OnSurface,
                         )
                         Spacer(Modifier.height(14.dp))
                         LinearProgressIndicator(
@@ -128,13 +128,13 @@ fun CardDataUpdateDialog(
             AlertDialog(
                 onDismissRequest = {},
                 containerColor = DeckBuilderColors.SurfaceContainer,
-                title = { Text(stringResource(R.string.card_data_dialog_title)) },
+                title = { Text(stringResource(R.string.card_data_dialog_title), color = DeckBuilderColors.OnSurface) },
                 text = {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = cardDataProgressText(progress),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = DeckBuilderColors.OnSurfaceDim,
+                            color = DeckBuilderColors.OnSurface,
                         )
                         Spacer(Modifier.height(14.dp))
                         LinearProgressIndicator(
@@ -151,27 +151,32 @@ fun CardDataUpdateDialog(
             AlertDialog(
                 onDismissRequest = {},
                 containerColor = DeckBuilderColors.SurfaceContainer,
-                title = { Text(stringResource(R.string.card_data_mobile_title)) },
+                title = { Text(stringResource(R.string.card_data_mobile_title), color = DeckBuilderColors.OnSurface) },
                 text = {
                     Column {
-                        Text(stringResource(R.string.card_data_mobile_message))
+                        Text(stringResource(R.string.card_data_mobile_message), color = DeckBuilderColors.OnSurface)
                         Spacer(Modifier.height(10.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
                                 checked = rememberMobileChoice,
                                 onCheckedChange = { rememberMobileChoice = it },
-                                colors = CheckboxDefaults.colors(checkedColor = DeckBuilderColors.Primary),
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = DeckBuilderColors.OnSurface,
+                                    uncheckedColor = DeckBuilderColors.OnSurface,
+                                    checkmarkColor = DeckBuilderColors.Surface,
+                                ),
                             )
                             Text(
                                 text = stringResource(R.string.card_data_mobile_remember),
                                 style = MaterialTheme.typography.bodyMedium,
+                                color = DeckBuilderColors.OnSurface,
                             )
                         }
                     }
                 },
                 confirmButton = {
                     TextButton(onClick = { runUpdate() }) {
-                        Text(stringResource(R.string.action_continue))
+                        Text(stringResource(R.string.action_continue), color = DeckBuilderColors.OnSurface)
                     }
                 },
                 dismissButton = {
@@ -188,11 +193,11 @@ fun CardDataUpdateDialog(
             AlertDialog(
                 onDismissRequest = {},
                 containerColor = DeckBuilderColors.SurfaceContainer,
-                title = { Text(stringResource(R.string.card_data_no_network_title)) },
-                text = { Text(stringResource(R.string.card_data_no_network_message)) },
+                title = { Text(stringResource(R.string.card_data_no_network_title), color = DeckBuilderColors.OnSurface) },
+                text = { Text(stringResource(R.string.card_data_no_network_message), color = DeckBuilderColors.OnSurface) },
                 confirmButton = {
                     TextButton(onClick = { checkAndStart() }) {
-                        Text(stringResource(R.string.action_retry))
+                        Text(stringResource(R.string.action_retry), color = DeckBuilderColors.OnSurface)
                     }
                 },
                 dismissButton = {
@@ -209,11 +214,11 @@ fun CardDataUpdateDialog(
             AlertDialog(
                 onDismissRequest = {},
                 containerColor = DeckBuilderColors.SurfaceContainer,
-                title = { Text(stringResource(R.string.card_data_error_title)) },
-                text = { Text(stringResource(R.string.card_data_error_message)) },
+                title = { Text(stringResource(R.string.card_data_error_title), color = DeckBuilderColors.OnSurface) },
+                text = { Text(stringResource(R.string.card_data_error_message), color = DeckBuilderColors.OnSurface) },
                 confirmButton = {
                     TextButton(onClick = { checkAndStart() }) {
-                        Text(stringResource(R.string.action_retry))
+                        Text(stringResource(R.string.action_retry), color = DeckBuilderColors.OnSurface)
                     }
                 },
                 dismissButton = {

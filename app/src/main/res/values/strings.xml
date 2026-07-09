@@ -72,6 +72,7 @@
     <string name="filters_section_spell_school">Spell school</string>
     <string name="filters_section_set">Set</string>
     <string name="filters_section_show_noncollectible">Show non-collectible</string>
+    <string name="filters_show_noncollectible_description">Shows cards that are not collectible in normal deck building, such as tokens, generated cards, and internal variants.</string>
     <string name="filters_collectible_only">Collectible only</string>
     <string name="filters_all_cards">All cards</string>
     <string name="filters_pool_all">All cards</string>
@@ -120,6 +121,8 @@
     <!-- Import sheet -->
     <string name="import_title">Import deck</string>
     <string name="import_subtitle">Paste a Hearthstone deck code. Tap Decode to view and save it.</string>
+    <string name="import_clipboard_title">Paste from clipboard</string>
+    <string name="import_clipboard_subtitle">Import a Hearthstone deck from a code in your clipboard. If the clipboard does not contain a valid code, paste it here manually.</string>
     <string name="import_invalid">This deck code looks invalid.</string>
 
     <!-- Deck view -->
@@ -250,7 +253,7 @@
     <string name="settings_refresh_card_data">Refresh card data</string>
     <string name="settings_refresh_card_data_subtitle">Check for the latest cards and rotation data now.</string>
     <string name="settings_card_data_locale">Locale</string>
-    <string name="settings_card_data_cards">Cards</string>
+    <string name="settings_card_data_cards">Items</string>
     <string name="settings_card_data_size">Local data size</string>
     <string name="card_data_dialog_title">Preparing card data</string>
     <string name="card_data_mobile_title">Download over mobile network?</string>

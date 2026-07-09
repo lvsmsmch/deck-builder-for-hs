@@ -23,12 +23,16 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -48,6 +52,13 @@ fun ImportDeckSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var code by remember { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        keyboard?.show()
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -70,14 +81,14 @@ fun ImportDeckSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = stringResource(R.string.import_title),
+                text = stringResource(R.string.import_clipboard_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = DeckBuilderColors.OnSurface,
             )
             Text(
-                text = stringResource(R.string.import_subtitle),
+                text = stringResource(R.string.import_clipboard_subtitle),
                 style = MaterialTheme.typography.bodySmall,
-                color = DeckBuilderColors.OnSurfaceDim,
+                color = DeckBuilderColors.OnSurface,
             )
 
             Box(
@@ -102,7 +113,8 @@ fun ImportDeckSheet(
                     cursorBrush = androidx.compose.ui.graphics.SolidColor(DeckBuilderColors.Primary),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp),
+                        .height(120.dp)
+                        .focusRequester(focusRequester),
                     decorationBox = { inner ->
                         if (code.isEmpty()) {
                             Text(

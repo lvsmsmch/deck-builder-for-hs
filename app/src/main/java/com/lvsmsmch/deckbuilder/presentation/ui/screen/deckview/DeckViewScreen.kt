@@ -287,8 +287,8 @@ private fun Body(
         AlertDialog(
             onDismissRequest = { pendingDelete = false },
             containerColor = DeckBuilderColors.SurfaceContainer,
-            title = { Text(stringResource(R.string.saved_delete_title)) },
-            text = { Text(stringResource(R.string.saved_delete_message, displayName)) },
+            title = { Text(stringResource(R.string.saved_delete_title), color = DeckBuilderColors.OnSurface) },
+            text = { Text(stringResource(R.string.saved_delete_message, displayName), color = DeckBuilderColors.OnSurface) },
             confirmButton = {
                 TextButton(onClick = {
                     pendingDelete = false

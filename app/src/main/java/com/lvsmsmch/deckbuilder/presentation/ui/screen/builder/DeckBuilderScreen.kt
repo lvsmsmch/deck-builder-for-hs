@@ -41,6 +41,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -115,6 +116,9 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+private var rememberExitConfirmForSession = false
+private var rememberIncompleteSaveForSession = false
+
 @Composable
 fun DeckBuilderScreen(
     editCode: String? = null,
@@ -129,10 +133,10 @@ fun DeckBuilderScreen(
     val scope = rememberCoroutineScope()
     var showExitConfirm by remember { mutableStateOf(false) }
     var showIncompleteSaveConfirm by remember { mutableStateOf(false) }
-    var rememberIncompleteSaveChoice by rememberSaveable { mutableStateOf(false) }
-    var skipIncompleteSaveConfirm by rememberSaveable { mutableStateOf(false) }
-    var rememberExitChoice by rememberSaveable { mutableStateOf(false) }
-    var skipExitConfirm by rememberSaveable { mutableStateOf(false) }
+    var rememberIncompleteSaveChoice by rememberSaveable { mutableStateOf(rememberIncompleteSaveForSession) }
+    var skipIncompleteSaveConfirm by rememberSaveable { mutableStateOf(rememberIncompleteSaveForSession) }
+    var rememberExitChoice by rememberSaveable { mutableStateOf(rememberExitConfirmForSession) }
+    var skipExitConfirm by rememberSaveable { mutableStateOf(rememberExitConfirmForSession) }
     val requestExit = {
         if (state.phase == Phase.Editing && !skipExitConfirm) showExitConfirm = true else onExit()
     }
@@ -222,7 +226,7 @@ fun DeckBuilderScreen(
         AlertDialog(
             onDismissRequest = { showExitConfirm = false },
             containerColor = DeckBuilderColors.SurfaceContainer,
-            title = { Text(stringResource(R.string.builder_exit_title)) },
+            title = { Text(stringResource(R.string.builder_exit_title), color = DeckBuilderColors.OnSurface) },
             text = {
                 Column {
                     Text(
@@ -240,6 +244,7 @@ fun DeckBuilderScreen(
                                 append(".")
                             }
                         },
+                        color = DeckBuilderColors.OnSurface,
                     )
                     Spacer(Modifier.height(10.dp))
                     Row(
@@ -249,6 +254,7 @@ fun DeckBuilderScreen(
                                 val next = !rememberExitChoice
                                 rememberExitChoice = next
                                 skipExitConfirm = next
+                                rememberExitConfirmForSession = next
                             }
                             .padding(end = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -258,7 +264,9 @@ fun DeckBuilderScreen(
                             onCheckedChange = {
                                 rememberExitChoice = it
                                 skipExitConfirm = it
+                                rememberExitConfirmForSession = it
                             },
+                            colors = rememberCheckboxColors(),
                         )
                         Text(
                             text = stringResource(R.string.action_remember_choice),
@@ -271,7 +279,10 @@ fun DeckBuilderScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showExitConfirm = false
-                    if (rememberExitChoice) skipExitConfirm = true
+                    if (rememberExitChoice) {
+                        skipExitConfirm = true
+                        rememberExitConfirmForSession = true
+                    }
                     onExit()
                 }) { Text(stringResource(R.string.builder_exit_confirm), color = DeckBuilderColors.Error) }
             },
@@ -287,7 +298,7 @@ fun DeckBuilderScreen(
         AlertDialog(
             onDismissRequest = { showIncompleteSaveConfirm = false },
             containerColor = DeckBuilderColors.SurfaceContainer,
-            title = { Text(stringResource(R.string.builder_incomplete_save_title)) },
+            title = { Text(stringResource(R.string.builder_incomplete_save_title), color = DeckBuilderColors.OnSurface) },
             text = {
                 Column {
                     Text(
@@ -302,6 +313,7 @@ fun DeckBuilderScreen(
                             append(". ")
                             append(stringResource(R.string.builder_incomplete_save_suffix))
                         },
+                        color = DeckBuilderColors.OnSurface,
                     )
                     Spacer(Modifier.height(10.dp))
                     Row(
@@ -311,6 +323,7 @@ fun DeckBuilderScreen(
                                 val next = !rememberIncompleteSaveChoice
                                 rememberIncompleteSaveChoice = next
                                 skipIncompleteSaveConfirm = next
+                                rememberIncompleteSaveForSession = next
                             }
                             .padding(end = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -320,7 +333,9 @@ fun DeckBuilderScreen(
                             onCheckedChange = {
                                 rememberIncompleteSaveChoice = it
                                 skipIncompleteSaveConfirm = it
+                                rememberIncompleteSaveForSession = it
                             },
+                            colors = rememberCheckboxColors(),
                         )
                         Text(
                             text = stringResource(R.string.action_remember_choice),
@@ -333,7 +348,10 @@ fun DeckBuilderScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showIncompleteSaveConfirm = false
-                    if (rememberIncompleteSaveChoice) skipIncompleteSaveConfirm = true
+                    if (rememberIncompleteSaveChoice) {
+                        skipIncompleteSaveConfirm = true
+                        rememberIncompleteSaveForSession = true
+                    }
                     viewModel.save()
                 }) { Text(stringResource(R.string.builder_incomplete_save_confirm), color = DeckBuilderColors.Error) }
             },
@@ -554,6 +572,13 @@ private fun EditingView(
 }
 
 private enum class EditingTab { Pool, Deck }
+
+@Composable
+private fun rememberCheckboxColors() = CheckboxDefaults.colors(
+    checkedColor = DeckBuilderColors.OnSurface,
+    uncheckedColor = DeckBuilderColors.OnSurface,
+    checkmarkColor = DeckBuilderColors.Surface,
+)
 
 @Composable
 private fun Header(
@@ -929,7 +954,7 @@ private fun PoolPane(
         )
 
         Box(modifier = Modifier.fillMaxWidth().height(3.dp)) {
-            if (state.pool.isLoading && state.pool.cards.isNotEmpty()) {
+            if (state.pool.isLoading) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
                     color = DeckBuilderColors.Primary,
@@ -939,8 +964,21 @@ private fun PoolPane(
         }
 
         if (state.pool.isLoading && state.pool.cards.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = DeckBuilderColors.Primary, strokeWidth = 2.dp)
+            return
+        }
+
+        if (state.pool.cards.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.library_empty_with_filters),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = DeckBuilderColors.OnSurfaceDim,
+                )
             }
             return
         }
@@ -948,7 +986,7 @@ private fun PoolPane(
         LazyVerticalGrid(
             state = gridState,
             columns = GridCells.Fixed(4),
-            contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 16.dp),
+            contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxSize(),
@@ -1019,7 +1057,7 @@ private fun PoolSearchRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {

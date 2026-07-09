@@ -71,6 +71,7 @@
     <string name="filters_section_spell_school">Школа заклинаний</string>
     <string name="filters_section_set">Сет</string>
     <string name="filters_section_show_noncollectible">Показывать недоступные</string>
+    <string name="filters_show_noncollectible_description">Показывает карты, которые обычно нельзя положить в колоду: токены, создаваемые карты и внутренние варианты.</string>
     <string name="filters_collectible_only">Только доступные</string>
     <string name="filters_all_cards">Все карты</string>
     <string name="filters_pool_all">Все карты</string>
@@ -120,6 +121,8 @@
     <!-- Import sheet -->
     <string name="import_title">Импорт колоды</string>
     <string name="import_subtitle">Вставь код колоды Hearthstone. Тап «Декодировать», чтобы увидеть и сохранить.</string>
+    <string name="import_clipboard_title">Вставить из буфера</string>
+    <string name="import_clipboard_subtitle">Импортируй колоду Hearthstone по коду из буфера обмена. Если в буфере нет валидного кода, вставь его сюда вручную.</string>
     <string name="import_invalid">Этот код колоды выглядит некорректным.</string>
 
     <!-- Deck view -->
@@ -250,7 +253,7 @@
     <string name="settings_refresh_card_data">Обновить данные карт</string>
     <string name="settings_refresh_card_data_subtitle">Проверить свежие карты и ротацию сейчас.</string>
     <string name="settings_card_data_locale">Локаль</string>
-    <string name="settings_card_data_cards">Карт</string>
+    <string name="settings_card_data_cards">Элементов</string>
     <string name="settings_card_data_size">Размер локальных данных</string>
     <string name="card_data_dialog_title">Подготавливаем данные карт</string>
     <string name="card_data_mobile_title">Скачать через мобильную сеть?</string>
