@@ -25,7 +25,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -347,7 +347,7 @@ private fun DialogRow(
     title: String,
     subtitle: String,
     value: String,
-    trailingIcon: ImageVector? = Icons.Outlined.KeyboardArrowRight,
+    trailingIcon: ImageVector? = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
     onClick: () -> Unit,
 ) {
     Row(
