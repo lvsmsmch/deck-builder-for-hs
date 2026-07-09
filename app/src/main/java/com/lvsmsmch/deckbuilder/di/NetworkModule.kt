@@ -104,12 +104,18 @@ val networkModule = module {
     // Background update plumbing.
     single { UpdateNotifier() }
     single {
+        val appContext = androidContext()
         UpdateRunner(
             prefs = get(),
             hsJson = get(),
             rotation = get(),
             notifier = get(),
             crash = get(),
+            isMeteredNetwork = {
+                val cm = appContext.getSystemService(android.content.Context.CONNECTIVITY_SERVICE)
+                    as? android.net.ConnectivityManager
+                cm?.isActiveNetworkMetered == true
+            },
         )
     }
 }

@@ -45,6 +45,16 @@ class PreferencesRepositoryImpl(
         Log.i(TAG, "setAllowMobileCardDataDownload: $enabled")
     }
 
+    override suspend fun setSkipBuilderExitConfirm(skip: Boolean) {
+        store.edit { it[Keys.skipBuilderExitConfirm] = skip }
+        Log.i(TAG, "setSkipBuilderExitConfirm: $skip")
+    }
+
+    override suspend fun setSkipIncompleteSaveConfirm(skip: Boolean) {
+        store.edit { it[Keys.skipIncompleteSaveConfirm] = skip }
+        Log.i(TAG, "setSkipIncompleteSaveConfirm: $skip")
+    }
+
     override suspend fun setLastSeenSetSlug(slug: String?) {
         store.edit {
             if (slug == null) it.remove(Keys.lastSeenSetSlug)
@@ -63,6 +73,8 @@ class PreferencesRepositoryImpl(
         cardLocale = this[Keys.cardLocale] ?: SupportedCardLocales.defaultForSystem(),
         crashReportingEnabled = this[Keys.crashEnabled] ?: true,
         allowMobileCardDataDownload = this[Keys.allowMobileCardDataDownload] ?: false,
+        skipBuilderExitConfirm = this[Keys.skipBuilderExitConfirm] ?: false,
+        skipIncompleteSaveConfirm = this[Keys.skipIncompleteSaveConfirm] ?: false,
         lastSeenSetSlug = this[Keys.lastSeenSetSlug],
         lastUpdateCheckAtMs = this[Keys.lastUpdateCheckAt],
     )
@@ -72,6 +84,8 @@ class PreferencesRepositoryImpl(
         val cardLocale = stringPreferencesKey("card_locale")
         val crashEnabled = booleanPreferencesKey("crash_enabled")
         val allowMobileCardDataDownload = booleanPreferencesKey("allow_mobile_card_data_download")
+        val skipBuilderExitConfirm = booleanPreferencesKey("skip_builder_exit_confirm")
+        val skipIncompleteSaveConfirm = booleanPreferencesKey("skip_incomplete_save_confirm")
         val lastSeenSetSlug = stringPreferencesKey("last_seen_set_slug")
         val lastUpdateCheckAt = longPreferencesKey("last_update_check_at_ms")
     }

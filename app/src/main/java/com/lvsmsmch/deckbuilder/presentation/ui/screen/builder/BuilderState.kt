@@ -24,6 +24,8 @@ data class BuilderState(
     val saveError: String? = null,
     val toast: String? = null,
     val singleton: Boolean = false,
+    val skipExitConfirm: Boolean = false,
+    val skipIncompleteSaveConfirm: Boolean = false,
 ) {
     val cardCount: Int get() = deck.values.sumOf { it.count }
     val maxDeckSize: Int

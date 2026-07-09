@@ -75,6 +75,17 @@
     <string name="filters_show_noncollectible_description">Shows cards that are not collectible in normal deck building, such as tokens, generated cards, and internal variants.</string>
     <string name="filters_collectible_only">Collectible only</string>
     <string name="filters_all_cards">All cards</string>
+    <string name="filters_show_noncollectible_on">On</string>
+    <string name="card_data_up_to_date">Card data is already up to date</string>
+    <string name="action_info">Info</string>
+    <string name="stats_cards">Cards</string>
+    <string name="stats_avg_mana">Avg. mana cost</string>
+    <string name="stats_minions">Minions</string>
+    <string name="stats_spells">Spells</string>
+    <string name="stats_weapons">Weapons</string>
+    <string name="stats_other">Other</string>
+    <string name="stats_legendary">Legendary</string>
+    <string name="stats_dust">Dust to craft</string>
     <string name="filters_pool_all">All cards</string>
     <string name="filters_pool_class_only">%1$s cards only</string>
     <string name="filters_pool_neutral_only">Neutral cards only</string>

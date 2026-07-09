@@ -18,3 +18,11 @@ class SetCrashReportingEnabledUseCase(private val prefs: PreferencesRepository) 
 class AcknowledgeNewSetUseCase(private val prefs: PreferencesRepository) {
     suspend operator fun invoke(slug: String) = prefs.setLastSeenSetSlug(slug)
 }
+
+class SetSkipBuilderExitConfirmUseCase(private val prefs: PreferencesRepository) {
+    suspend operator fun invoke(skip: Boolean) = prefs.setSkipBuilderExitConfirm(skip)
+}
+
+class SetSkipIncompleteSaveConfirmUseCase(private val prefs: PreferencesRepository) {
+    suspend operator fun invoke(skip: Boolean) = prefs.setSkipIncompleteSaveConfirm(skip)
+}

@@ -75,7 +75,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckGridCard
-import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
@@ -217,61 +217,63 @@ private fun Body(
     var menuOpen by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf(false) }
     var previewCard by remember { mutableStateOf<Card?>(null) }
+    var showStatsDialog by remember { mutableStateOf(false) }
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        item(span = { GridItemSpan(4) }) {
-            Column {
-                DeckToolbar(
-                    deck = deck,
-                    savedName = savedName,
-                    onRename = onRename,
-                    onBack = onBack,
-                    menuOpen = menuOpen,
-                    onOpenMenu = { menuOpen = true },
-                    onDismissMenu = { menuOpen = false },
-                    onEditDeck = onEditDeck,
-                    onDeleteDeck = { pendingDelete = true },
-                    onCopyCode = {
-                        onCopyCode()
-                        menuOpen = false
-                    },
-                )
-                DeckWarnings(deck)
-                DeckStatsPanel(deck, modifier = Modifier.padding(bottom = 8.dp))
-            }
-        }
+    Column(modifier = Modifier.fillMaxSize()) {
+        DeckToolbar(
+            deck = deck,
+            savedName = savedName,
+            onRename = onRename,
+            onBack = onBack,
+            menuOpen = menuOpen,
+            onOpenMenu = { menuOpen = true },
+            onDismissMenu = { menuOpen = false },
+            onEditDeck = onEditDeck,
+            onDeleteDeck = { pendingDelete = true },
+            onCopyCode = {
+                onCopyCode()
+                menuOpen = false
+            },
+            onInfo = { showStatsDialog = true },
+        )
 
-        item(span = { GridItemSpan(4) }) {
-            ActionsRow(
-                onEditDeck = onEditDeck,
-            )
-        }
-
-        items(deck.cards, key = { it.card.id }) { entry ->
-            DeckGridCard(
-                card = entry.card,
-                count = entry.count,
-                showCount = true,
-                onClick = { previewCard = entry.card },
-                onLongClick = { previewCard = entry.card },
-            )
-        }
-
-        if (deck.invalidCardIds.isNotEmpty()) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize(),
+        ) {
             item(span = { GridItemSpan(4) }) {
-                Text(
-                    text = stringResource(R.string.deck_view_invalid_format, deck.invalidCardIds.size),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = DeckBuilderColors.Error,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                DeckWarnings(deck)
+            }
+
+            item(span = { GridItemSpan(4) }) {
+                ActionsRow(
+                    onEditDeck = onEditDeck,
                 )
+            }
+
+            items(deck.cards, key = { it.card.id }) { entry ->
+                DeckGridCard(
+                    card = entry.card,
+                    count = entry.count,
+                    showCount = true,
+                    onClick = { previewCard = entry.card },
+                    onLongClick = { previewCard = entry.card },
+                )
+            }
+
+            if (deck.invalidCardIds.isNotEmpty()) {
+                item(span = { GridItemSpan(4) }) {
+                    Text(
+                        text = stringResource(R.string.deck_view_invalid_format, deck.invalidCardIds.size),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = DeckBuilderColors.Error,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                    )
+                }
             }
         }
     }
@@ -281,6 +283,10 @@ private fun Body(
             card = card,
             onDismiss = { previewCard = null },
         )
+    }
+
+    if (showStatsDialog) {
+        DeckStatsDialog(deck = deck, onDismiss = { showStatsDialog = false })
     }
 
     if (pendingDelete) {
@@ -316,6 +322,7 @@ private fun DeckToolbar(
     onEditDeck: () -> Unit,
     onDeleteDeck: () -> Unit,
     onCopyCode: () -> Unit,
+    onInfo: () -> Unit,
 ) {
     val classSlug = deck.heroClass?.slug
     val heroCardId = DefaultHeroes.cardIdFor(classSlug)
@@ -326,7 +333,7 @@ private fun DeckToolbar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 0.dp),
+            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack) {
@@ -389,6 +396,7 @@ private fun DeckToolbar(
                 expanded = menuOpen,
                 onDismiss = onDismissMenu,
                 onCopy = onCopyCode,
+                onInfo = onInfo,
                 onEdit = onEditDeck,
                 onDelete = onDeleteDeck,
             )
@@ -479,7 +487,7 @@ private fun ActionsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Button(
@@ -511,7 +519,7 @@ private fun DeckWarnings(deck: Deck) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
     ) {
         DeckWarning(
             text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, deck.maxCardCount),

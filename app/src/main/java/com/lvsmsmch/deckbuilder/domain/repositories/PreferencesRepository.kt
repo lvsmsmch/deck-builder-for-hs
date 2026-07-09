@@ -15,6 +15,8 @@ interface PreferencesRepository {
     suspend fun setCardLocale(locale: String)
     suspend fun setCrashReportingEnabled(enabled: Boolean)
     suspend fun setAllowMobileCardDataDownload(enabled: Boolean)
+    suspend fun setSkipBuilderExitConfirm(skip: Boolean)
+    suspend fun setSkipIncompleteSaveConfirm(skip: Boolean)
     suspend fun setLastSeenSetSlug(slug: String?)
     suspend fun setLastUpdateCheckAt(epochMs: Long)
 }

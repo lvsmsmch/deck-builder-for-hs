@@ -29,6 +29,9 @@ val presentationModule = module {
             rotation = get(),
             decks = get(),
             savedDecks = get(),
+            observePrefs = get(),
+            setSkipExitConfirm = get(),
+            setSkipIncompleteSaveConfirm = get(),
             editCode = editCode,
             savedName = savedName,
         )

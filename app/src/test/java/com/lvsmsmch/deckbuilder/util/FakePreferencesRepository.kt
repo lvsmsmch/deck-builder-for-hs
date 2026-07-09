@@ -31,6 +31,12 @@ class FakePreferencesRepository(
     override suspend fun setAllowMobileCardDataDownload(enabled: Boolean) {
         state.update { it.copy(allowMobileCardDataDownload = enabled) }
     }
+    override suspend fun setSkipBuilderExitConfirm(skip: Boolean) {
+        state.update { it.copy(skipBuilderExitConfirm = skip) }
+    }
+    override suspend fun setSkipIncompleteSaveConfirm(skip: Boolean) {
+        state.update { it.copy(skipIncompleteSaveConfirm = skip) }
+    }
     override suspend fun setLastSeenSetSlug(slug: String?) {
         state.update { it.copy(lastSeenSetSlug = slug) }
     }

@@ -49,9 +49,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -100,11 +97,12 @@ import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
+import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckGridCard
+import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroPortrait
-import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsPanel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
@@ -115,9 +113,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-
-private var rememberExitConfirmForSession = false
-private var rememberIncompleteSaveForSession = false
 
 @Composable
 fun DeckBuilderScreen(
@@ -133,15 +128,11 @@ fun DeckBuilderScreen(
     val scope = rememberCoroutineScope()
     var showExitConfirm by remember { mutableStateOf(false) }
     var showIncompleteSaveConfirm by remember { mutableStateOf(false) }
-    var rememberIncompleteSaveChoice by rememberSaveable { mutableStateOf(rememberIncompleteSaveForSession) }
-    var skipIncompleteSaveConfirm by rememberSaveable { mutableStateOf(rememberIncompleteSaveForSession) }
-    var rememberExitChoice by rememberSaveable { mutableStateOf(rememberExitConfirmForSession) }
-    var skipExitConfirm by rememberSaveable { mutableStateOf(rememberExitConfirmForSession) }
     val requestExit = {
-        if (state.phase == Phase.Editing && !skipExitConfirm) showExitConfirm = true else onExit()
+        if (state.phase == Phase.Editing && !state.skipExitConfirm) showExitConfirm = true else onExit()
     }
     val requestSave = {
-        if (state.cardCount < state.maxDeckSize && !skipIncompleteSaveConfirm) {
+        if (state.cardCount < state.maxDeckSize && !state.skipIncompleteSaveConfirm) {
             showIncompleteSaveConfirm = true
         } else {
             viewModel.save()
@@ -157,19 +148,16 @@ fun DeckBuilderScreen(
     }
     LaunchedEffect(state.toast) {
         state.toast?.let {
-            snackbar.currentSnackbarData?.dismiss()
-            snackbar.showSnackbar(it, duration = SnackbarDuration.Short)
+            snackbar.showAppSnackbar(it)
             viewModel.dismissToast()
         }
     }
     fun removeWithUndo(card: Card) {
         viewModel.removeCard(card)
         scope.launch {
-            snackbar.currentSnackbarData?.dismiss()
-            val result = snackbar.showSnackbar(
+            val result = snackbar.showAppSnackbar(
                 message = "${card.name} removed",
                 actionLabel = "UNDO",
-                duration = SnackbarDuration.Short,
             )
             if (result == SnackbarResult.ActionPerformed) {
                 viewModel.addCard(card)
@@ -200,29 +188,16 @@ fun DeckBuilderScreen(
             )
         }
 
-        SnackbarHost(
+        AppSnackbarHost(
             hostState = snackbar,
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) { data ->
-            Snackbar(
-                action = {
-                    data.visuals.actionLabel?.let { label ->
-                        Text(
-                            text = label,
-                            color = DeckBuilderColors.Primary,
-                            modifier = Modifier.clickable { data.performAction() },
-                        )
-                    }
-                },
-                containerColor = DeckBuilderColors.SurfaceContainerHigh,
-                contentColor = DeckBuilderColors.OnSurface,
-            ) { Text(data.visuals.message) }
-        }
+        )
     }
 
     BackHandler { requestExit() }
 
     if (showExitConfirm) {
+        var rememberExitChoice by remember { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = { showExitConfirm = false },
             containerColor = DeckBuilderColors.SurfaceContainer,
@@ -247,42 +222,16 @@ fun DeckBuilderScreen(
                         color = DeckBuilderColors.OnSurface,
                     )
                     Spacer(Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable {
-                                val next = !rememberExitChoice
-                                rememberExitChoice = next
-                                skipExitConfirm = next
-                                rememberExitConfirmForSession = next
-                            }
-                            .padding(end = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Checkbox(
-                            checked = rememberExitChoice,
-                            onCheckedChange = {
-                                rememberExitChoice = it
-                                skipExitConfirm = it
-                                rememberExitConfirmForSession = it
-                            },
-                            colors = rememberCheckboxColors(),
-                        )
-                        Text(
-                            text = stringResource(R.string.action_remember_choice),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = DeckBuilderColors.OnSurface,
-                        )
-                    }
+                    RememberChoiceRow(
+                        checked = rememberExitChoice,
+                        onCheckedChange = { rememberExitChoice = it },
+                    )
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
                     showExitConfirm = false
-                    if (rememberExitChoice) {
-                        skipExitConfirm = true
-                        rememberExitConfirmForSession = true
-                    }
+                    if (rememberExitChoice) viewModel.rememberSkipExitConfirm()
                     onExit()
                 }) { Text(stringResource(R.string.builder_exit_confirm), color = DeckBuilderColors.Error) }
             },
@@ -295,6 +244,7 @@ fun DeckBuilderScreen(
     }
 
     if (showIncompleteSaveConfirm) {
+        var rememberIncompleteSaveChoice by remember { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = { showIncompleteSaveConfirm = false },
             containerColor = DeckBuilderColors.SurfaceContainer,
@@ -316,42 +266,16 @@ fun DeckBuilderScreen(
                         color = DeckBuilderColors.OnSurface,
                     )
                     Spacer(Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable {
-                                val next = !rememberIncompleteSaveChoice
-                                rememberIncompleteSaveChoice = next
-                                skipIncompleteSaveConfirm = next
-                                rememberIncompleteSaveForSession = next
-                            }
-                            .padding(end = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Checkbox(
-                            checked = rememberIncompleteSaveChoice,
-                            onCheckedChange = {
-                                rememberIncompleteSaveChoice = it
-                                skipIncompleteSaveConfirm = it
-                                rememberIncompleteSaveForSession = it
-                            },
-                            colors = rememberCheckboxColors(),
-                        )
-                        Text(
-                            text = stringResource(R.string.action_remember_choice),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = DeckBuilderColors.OnSurface,
-                        )
-                    }
+                    RememberChoiceRow(
+                        checked = rememberIncompleteSaveChoice,
+                        onCheckedChange = { rememberIncompleteSaveChoice = it },
+                    )
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
                     showIncompleteSaveConfirm = false
-                    if (rememberIncompleteSaveChoice) {
-                        skipIncompleteSaveConfirm = true
-                        rememberIncompleteSaveForSession = true
-                    }
+                    if (rememberIncompleteSaveChoice) viewModel.rememberSkipIncompleteSaveConfirm()
                     viewModel.save()
                 }) { Text(stringResource(R.string.builder_incomplete_save_confirm), color = DeckBuilderColors.Error) }
             },
@@ -360,6 +284,31 @@ fun DeckBuilderScreen(
                     Text(stringResource(R.string.action_cancel), color = DeckBuilderColors.OnSurface)
                 }
             },
+        )
+    }
+}
+
+@Composable
+private fun RememberChoiceRow(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onCheckedChange(!checked) }
+            .padding(end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = rememberCheckboxColors(),
+        )
+        Text(
+            text = stringResource(R.string.action_remember_choice),
+            style = MaterialTheme.typography.bodyMedium,
+            color = DeckBuilderColors.OnSurface,
         )
     }
 }
@@ -705,8 +654,9 @@ private fun HeaderIconButton(
         Box(
             modifier = Modifier
                 .size(width = 48.dp, height = 52.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(14.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
@@ -986,7 +936,7 @@ private fun PoolPane(
         LazyVerticalGrid(
             state = gridState,
             columns = GridCells.Fixed(4),
-            contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxSize(),
@@ -1013,7 +963,7 @@ private fun PoolPane(
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(40.dp),
-                            color = Color.White,
+                            color = DeckBuilderColors.Primary,
                             strokeWidth = 3.dp,
                         )
                     }
@@ -1074,7 +1024,7 @@ private fun PoolSearchRow(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            leadingIcon = { Icon(Icons.Outlined.Search, null, tint = DeckBuilderColors.OnSurfaceDim) },
+            leadingIcon = { Icon(Icons.Outlined.Search, null, tint = DeckBuilderColors.OnSurface) },
             trailingIcon = {
                 if (value.isNotEmpty()) {
                     Icon(
@@ -1097,10 +1047,11 @@ private fun PoolSearchRow(
                 unfocusedTextColor = DeckBuilderColors.OnSurface,
                 cursorColor = DeckBuilderColors.Primary,
             ),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(14.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(52.dp),
+                .height(52.dp)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp)),
         )
         HeaderIconButton(
             onClick = onOpenFilters,
@@ -1126,9 +1077,9 @@ private fun SortMenuButton(
         Row(
             modifier = Modifier
                 .height(36.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(14.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
                 .clickable { sortMenuOpen = true }
                 .padding(start = 10.dp, end = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -1264,14 +1215,11 @@ private fun DeckPane(
     LazyVerticalGrid(
         state = gridState,
         columns = GridCells.Fixed(4),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier,
     ) {
-        item(span = { GridItemSpan(4) }) {
-            DeckStatsPanel(entries = state.deckEntries, modifier = Modifier.padding(bottom = 8.dp))
-        }
         items(state.deckEntries, key = { it.card.id }) { entry ->
             DeckGridCard(
                 card = entry.card,

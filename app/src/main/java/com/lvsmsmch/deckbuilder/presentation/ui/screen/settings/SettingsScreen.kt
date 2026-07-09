@@ -33,8 +33,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -63,6 +61,8 @@ import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
+import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
+import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.compose.koinInject
@@ -84,7 +84,12 @@ fun SettingsScreen(
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var imageCacheBytes by remember { mutableLongStateOf(context.imageCacheSize()) }
+    // Disk cache size is file-system IO — never compute it during composition
+    // on the main thread.
+    var imageCacheBytes by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(Unit) {
+        imageCacheBytes = withContext(Dispatchers.IO) { context.imageCacheSize() }
+    }
     val sessionLog: SessionLog = koinInject()
     var showThemePicker by remember { mutableStateOf(false) }
     var showLocalePicker by remember { mutableStateOf(false) }
@@ -92,7 +97,7 @@ fun SettingsScreen(
 
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbar.showSnackbar(it)
+            snackbar.showAppSnackbar(it)
             viewModel.dismissMessage()
         }
     }
@@ -221,15 +226,10 @@ fun SettingsScreen(
             }
         }
 
-        SnackbarHost(
+        AppSnackbarHost(
             hostState = snackbar,
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) { data ->
-            Snackbar(
-                containerColor = DeckBuilderColors.SurfaceContainerHigh,
-                contentColor = DeckBuilderColors.OnSurface,
-            ) { Text(data.visuals.message) }
-        }
+        )
     }
 
     if (showThemePicker) {
@@ -265,7 +265,7 @@ fun SettingsScreen(
                     showClearImageCacheConfirm = false
                     scope.launch {
                         withContext(Dispatchers.IO) { context.clearImageCache() }
-                        imageCacheBytes = context.imageCacheSize()
+                        imageCacheBytes = withContext(Dispatchers.IO) { context.imageCacheSize() }
                         Toast.makeText(
                             context,
                             R.string.settings_image_cache_cleared,
@@ -302,7 +302,7 @@ private fun TopBar(onBack: () -> Unit) {
         }
         Text(
             text = stringResource(R.string.settings_title),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = DeckBuilderColors.OnSurface,
             modifier = Modifier.weight(1f),
         )
@@ -400,6 +400,7 @@ private fun ToggleRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

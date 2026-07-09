@@ -64,10 +64,13 @@ fun FilterSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    // Sheet sits on Surface so the SurfaceContainer chips read as raised
+    // (lighter) in BOTH themes; with a SurfaceContainer sheet the light theme
+    // inverted (white sheet, darker chips).
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = DeckBuilderColors.SurfaceContainer,
+        containerColor = DeckBuilderColors.Surface,
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -89,10 +92,10 @@ fun FilterSheet(
                     .heightIn(max = 560.dp)
                     .padding(horizontal = 20.dp),
             ) {
+                item { ManaSection(current, onChange) }
                 classScopeLabel?.let { label ->
                     item { ClassScopeSection(label, current, onChange) }
                 }
-                item { ManaSection(current, onChange) }
                 if (showClassSection) {
                     item { ClassSection(current, onChange) }
                 }
@@ -226,7 +229,7 @@ private fun Chip(
         modifier = Modifier
             .clip(RoundedCornerShape(99.dp))
             .background(
-                if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainerHigh,
+                if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer,
             )
             .border(
                 width = 1.dp,
@@ -269,7 +272,7 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
                     .weight(1f)
                     .height(46.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainerHigh)
+                    .background(if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer)
                     .border(
                         1.dp,
                         if (active) DeckBuilderColors.Primary else DeckBuilderColors.OutlineSoft,
@@ -283,7 +286,7 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             ) {
                 Text(
                     text = if (cost == 7) "7+" else cost.toString(),
-                    color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
+                    color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurface,
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
@@ -436,9 +439,7 @@ private fun CollectibleSection(draft: CardFilters, onChange: (CardFilters) -> Un
     )
     Row(verticalAlignment = Alignment.CenterVertically) {
         Chip(
-            label = stringResource(
-                if (draft.collectibleOnly) R.string.filters_collectible_only else R.string.filters_all_cards,
-            ),
+            label = stringResource(R.string.filters_show_noncollectible_on),
             active = !draft.collectibleOnly,
             onClick = { onChange(draft.copy(collectibleOnly = !draft.collectibleOnly)) },
         )

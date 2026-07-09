@@ -22,8 +22,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +39,9 @@ import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
+import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardDataUpdateDialog
+import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -57,7 +57,7 @@ fun CardDataScreen(
     var showRefreshDialog by remember { mutableStateOf(false) }
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbar.showSnackbar(it)
+            snackbar.showAppSnackbar(it)
             viewModel.dismissMessage()
         }
     }
@@ -82,7 +82,7 @@ fun CardDataScreen(
                 }
                 Text(
                     text = stringResource(R.string.more_card_data),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     color = DeckBuilderColors.OnSurface,
                     modifier = Modifier.weight(1f),
                 )
@@ -126,17 +126,13 @@ fun CardDataScreen(
             )
         }
 
-        SnackbarHost(
+        AppSnackbarHost(
             hostState = snackbar,
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) { data ->
-            Snackbar(
-                containerColor = DeckBuilderColors.SurfaceContainerHigh,
-                contentColor = DeckBuilderColors.OnSurface,
-            ) { Text(data.visuals.message) }
-        }
+        )
     }
 
+    val upToDateMessage = stringResource(R.string.card_data_up_to_date)
     if (showRefreshDialog) {
         CardDataUpdateDialog(
             required = false,
@@ -146,6 +142,9 @@ fun CardDataScreen(
                 viewModel.refreshCardDataMetadata()
             },
             onExitApp = onBack,
+            onResult = { updated ->
+                if (!updated) viewModel.showMessage(upToDateMessage)
+            },
         )
     }
 }

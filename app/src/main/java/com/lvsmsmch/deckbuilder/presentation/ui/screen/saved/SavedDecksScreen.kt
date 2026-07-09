@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialogForCode
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
@@ -78,6 +80,7 @@ fun SavedDecksScreen(
     var showChooser by remember { mutableStateOf(false) }
     var showImportSheet by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<DeckPreview?>(null) }
+    var statsCode by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.navEffects.collect { effect ->
@@ -122,6 +125,7 @@ fun SavedDecksScreen(
                             deck = deck,
                             onClick = { onOpenDeck(deck.code, deck.name) },
                             onCopy = { copyToClipboard(context, deck.code) },
+                            onInfo = { statsCode = deck.code },
                             onEdit = { onEditDeck(deck.code, deck.name) },
                             onDelete = { pendingDelete = deck },
                         )
@@ -163,6 +167,10 @@ fun SavedDecksScreen(
             onErrorDismiss = viewModel::clearImportError,
             onSubmit = viewModel::import,
         )
+    }
+
+    statsCode?.let { code ->
+        DeckStatsDialogForCode(code = code, onDismiss = { statsCode = null })
     }
 
     pendingDelete?.let { deck ->
@@ -207,6 +215,7 @@ private fun SavedDeckRow(
     deck: DeckPreview,
     onClick: () -> Unit,
     onCopy: () -> Unit,
+    onInfo: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -236,7 +245,7 @@ private fun SavedDeckRow(
                     .clip(RoundedCornerShape(8.dp)),
             ) {
                 HeroTile(
-                    cardId = deck.heroSlug ?: DefaultHeroes.cardIdFor(deck.classSlug),
+                    cardId = DefaultHeroes.cardIdFor(deck.classSlug) ?: deck.heroSlug,
                     contentDescription = deck.className,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -279,6 +288,7 @@ private fun SavedDeckRow(
                     expanded = menuOpen,
                     onDismiss = { menuOpen = false },
                     onCopy = onCopy,
+                    onInfo = onInfo,
                     onEdit = onEdit,
                     onDelete = onDelete,
                 )
@@ -288,7 +298,7 @@ private fun SavedDeckRow(
             Spacer(Modifier.height(6.dp))
             DeckWarning(
                 text = stringResource(R.string.deck_warning_incomplete, deck.cardCount, deck.maxCardCount),
-                modifier = Modifier.padding(start = 39.dp),
+                modifier = Modifier.padding(start = 4.dp),
             )
         }
     }
@@ -299,6 +309,7 @@ fun DeckActionsMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
     onCopy: (() -> Unit)? = null,
+    onInfo: (() -> Unit)? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -308,6 +319,13 @@ fun DeckActionsMenu(
                 leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
                 text = { Text(stringResource(R.string.action_copy_code)) },
                 onClick = { onDismiss(); copy() },
+            )
+        }
+        onInfo?.let { info ->
+            DropdownMenuItem(
+                leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = null) },
+                text = { Text(stringResource(R.string.action_info)) },
+                onClick = { onDismiss(); info() },
             )
         }
         DropdownMenuItem(

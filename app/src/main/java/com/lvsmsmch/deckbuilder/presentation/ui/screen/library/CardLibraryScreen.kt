@@ -53,7 +53,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -163,7 +162,7 @@ fun CardLibraryScreen(
             text = stringResource(R.string.library_found_count, state.totalCount),
             style = MaterialTheme.typography.labelSmall,
             color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 8.dp),
         )
 
         SearchRow(
@@ -251,7 +250,7 @@ private fun Header(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
+            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack) {
@@ -263,7 +262,7 @@ private fun Header(
         }
         Text(
             text = stringResource(R.string.library_title),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = DeckBuilderColors.OnSurface,
             modifier = Modifier.weight(1f),
         )
@@ -283,6 +282,7 @@ private fun HeaderIconButton(
                 .size(width = 48.dp, height = 52.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
@@ -332,7 +332,7 @@ private fun SearchRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -353,7 +353,7 @@ private fun SearchRow(
                 Icon(
                     Icons.Outlined.Search,
                     contentDescription = null,
-                    tint = DeckBuilderColors.OnSurfaceDim,
+                    tint = DeckBuilderColors.OnSurface,
                 )
             },
             trailingIcon = {
@@ -381,7 +381,8 @@ private fun SearchRow(
             shape = RoundedCornerShape(14.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(52.dp),
+                .height(52.dp)
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp)),
         )
         HeaderIconButton(
             onClick = onOpenFilters,
@@ -407,9 +408,9 @@ private fun SortMenuButton(
         Row(
             modifier = Modifier
                 .height(36.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(14.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(8.dp))
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
                 .clickable { sortMenuOpen = true }
                 .padding(start = 10.dp, end = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -490,7 +491,7 @@ private fun CardGrid(
     LazyVerticalGrid(
         state = gridState,
         columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 18.dp, bottom = 16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize(),
@@ -511,7 +512,7 @@ private fun CardGrid(
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(40.dp),
-                        color = Color.White,
+                        color = DeckBuilderColors.Primary,
                         strokeWidth = 3.dp,
                     )
                 }

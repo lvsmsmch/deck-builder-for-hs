@@ -25,7 +25,7 @@ class UpdateWorker(
 
     override suspend fun doWork(): Result {
         return try {
-            runner.runOnce(reason = "WorkManager periodic")
+            runner.runOnce(reason = "WorkManager periodic", allowMetered = false)
             Result.success()
         } catch (t: Throwable) {
             Log.w(TAG, "doWork failed: ${t.message}", t)

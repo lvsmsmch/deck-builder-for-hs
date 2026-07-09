@@ -74,6 +74,17 @@
     <string name="filters_show_noncollectible_description">Показывает карты, которые обычно нельзя положить в колоду: токены, создаваемые карты и внутренние варианты.</string>
     <string name="filters_collectible_only">Только доступные</string>
     <string name="filters_all_cards">Все карты</string>
+    <string name="filters_show_noncollectible_on">Вкл</string>
+    <string name="card_data_up_to_date">Данные карт уже актуальны</string>
+    <string name="action_info">Инфо</string>
+    <string name="stats_cards">Карты</string>
+    <string name="stats_avg_mana">Средняя стоимость</string>
+    <string name="stats_minions">Существа</string>
+    <string name="stats_spells">Заклинания</string>
+    <string name="stats_weapons">Оружие</string>
+    <string name="stats_other">Прочее</string>
+    <string name="stats_legendary">Легендарные</string>
+    <string name="stats_dust">Пыль на крафт</string>
     <string name="filters_pool_all">Все карты</string>
     <string name="filters_pool_class_only">Только карты %1$s</string>
     <string name="filters_pool_neutral_only">Только нейтральные</string>

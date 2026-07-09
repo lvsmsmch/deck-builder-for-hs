@@ -153,6 +153,12 @@ fun CardPreviewDialog(
                                         if (pressedCount >= 2) {
                                             targetOffset += event.calculatePan()
                                         }
+                                        // While pinching, swallow the events so the
+                                        // dismiss-on-tap clickable underneath never
+                                        // sees the gesture as a click.
+                                        if (pressedCount >= 2 || targetScale > 1.01f) {
+                                            event.changes.forEach { it.consume() }
+                                        }
                                     } while (event.changes.any { it.pressed })
                                     gestureActive = false
                                     zoomChromeHidden = false

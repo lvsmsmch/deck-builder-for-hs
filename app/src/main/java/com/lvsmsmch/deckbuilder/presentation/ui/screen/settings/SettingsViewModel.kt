@@ -79,19 +79,22 @@ class SettingsViewModel(
         _state.update { it.copy(message = null) }
     }
 
+    fun showMessage(text: String) {
+        _state.update { it.copy(message = text) }
+    }
+
     fun refreshCardDataMetadata() {
         viewModelScope.launch { refreshCardDataMetadata(_state.value.prefs.cardLocale) }
     }
 
     private suspend fun refreshCardDataMetadata(locale: String) {
         val build = runCatching { hsJson.currentBuild(locale) }.getOrNull()
-        val snapshot = runCatching { hsJson.cached(locale) }.getOrNull()
-        val bytes = snapshot?.cards.orEmpty().sumOf { it.payloadJson.toByteArray().size.toLong() }
+        val stats = runCatching { hsJson.cachedStats(locale) }.getOrNull()
         _state.update {
             it.copy(
                 cardsBuild = build,
-                cardCount = snapshot?.cards?.size ?: 0,
-                cardDataBytes = bytes,
+                cardCount = stats?.count ?: 0,
+                cardDataBytes = stats?.bytes ?: 0L,
             )
         }
     }

@@ -96,10 +96,7 @@ class DeckRepositoryImpl(
             payload.cards.forEach { add(it.dbfId) }
             payload.sideboards.forEach { add(it.dbfId); add(it.ownerDbfId) }
         }
-        val rowsByDbf = hsJson.ensureLoaded(locale).cards
-            .asSequence()
-            .filter { it.dbfId in allDbfIds }
-            .associateBy { it.dbfId }
+        val rowsByDbf = hsJson.cardsByDbfIds(locale, allDbfIds).associateBy { it.dbfId }
         for (dbf in allDbfIds) {
             val row = rowsByDbf[dbf]
             if (row != null) resolved[dbf] = row.toDomain() else invalid += dbf

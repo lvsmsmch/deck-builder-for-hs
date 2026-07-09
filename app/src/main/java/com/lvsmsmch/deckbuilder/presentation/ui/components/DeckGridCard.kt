@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -54,8 +55,9 @@ fun DeckGridCard(
                     .align(Alignment.TopEnd)
                     .padding(5.dp)
                     .size(28.dp)
+                    .alpha(if (dimImage) 0.5f else 1f)
                     .clip(CircleShape)
-                    .background(Color(0xDD111218)),
+                    .background(Color(0xFF111218)),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

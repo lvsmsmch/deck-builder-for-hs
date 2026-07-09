@@ -47,6 +47,9 @@ fun CardDataUpdateDialog(
     onDismiss: () -> Unit,
     onExitApp: () -> Unit,
     forceRefresh: Boolean = true,
+    // Called after a successful run with whether new card data was applied,
+    // so callers can tell "updated" apart from "already up to date".
+    onResult: ((updated: Boolean) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -68,9 +71,12 @@ fun CardDataUpdateDialog(
             if (rememberMobileChoice) {
                 prefs.setAllowMobileCardDataDownload(true)
             }
-            runCatching { updateRunner.runOnce(reason = if (required) "startup gate" else "manual refresh") }
+            val updated = runCatching {
+                updateRunner.runOnce(reason = if (required) "startup gate" else "manual refresh")
+            }.getOrDefault(false)
             val hasCards = runCatching { hsJson.cached(preferences.cardLocale) != null }.getOrDefault(false)
             mode = if (hasCards) {
+                onResult?.invoke(updated)
                 onDismiss()
                 CardDataDialogMode.Done
             } else {

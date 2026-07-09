@@ -33,6 +33,22 @@ class CardRepositoryImpl(
     private val memoryCache = ConcurrentHashMap<String, Card>()
     private val searchCache = ConcurrentHashMap<String, List<HsJsonCardEntity>>()
 
+    /**
+     * Locale+build the search cache was built against. When card data updates
+     * (new build) or the user switches locale, cached result lists point at the
+     * previous dataset — drop them instead of serving stale cards until restart.
+     */
+    @Volatile
+    private var searchCacheStamp: String? = null
+
+    private fun invalidateSearchCacheIfStale(locale: String, build: String?) {
+        val stamp = "$locale|$build"
+        if (stamp != searchCacheStamp) {
+            searchCache.clear()
+            searchCacheStamp = stamp
+        }
+    }
+
     override fun cachedCard(idOrSlug: String): Card? = memoryCache[idOrSlug.lowercase()]
 
     override suspend fun getCard(idOrSlug: String, locale: String?): Result<Card> =
@@ -73,6 +89,7 @@ class CardRepositoryImpl(
         runCatchingResult {
             val resolved = locales.resolve(locale)
             val snap = hsJson.ensureLoaded(resolved)
+            invalidateSearchCacheIfStale(snap.locale, snap.build)
             val standardSets = if (filters.format != CardFormatFilter.ALL) {
                 rotation.ensureLoaded().standardSets
             } else {

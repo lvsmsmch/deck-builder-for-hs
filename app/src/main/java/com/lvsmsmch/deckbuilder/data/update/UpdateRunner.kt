@@ -20,33 +20,49 @@ class UpdateRunner(
     private val notifier: UpdateNotifier,
     private val crash: CrashReporter,
     private val now: () -> Long = System::currentTimeMillis,
+    private val isMeteredNetwork: () -> Boolean = { false },
 ) {
 
-    /** Returns true if anything (cards or rotation) was actually applied. */
-    suspend fun runOnce(reason: String): Boolean {
+    /**
+     * Returns true if anything (cards or rotation) was actually applied.
+     *
+     * [allowMetered] is false only for unattended runs (the daily worker): the
+     * cards JSON is ~25 MB, so on a metered network the download must respect
+     * the user's "allow on mobile data" preference. User-initiated refreshes
+     * pass true — the user is already looking at a confirmation UI.
+     */
+    suspend fun runOnce(reason: String, allowMetered: Boolean = true): Boolean {
         Log.i(TAG, "runOnce: $reason")
         var applied = false
 
-        val locale = runCatching { prefs.current().cardLocale }.getOrDefault("en_US")
+        val currentPrefs = runCatching { prefs.current() }.getOrNull()
+        val locale = currentPrefs?.cardLocale ?: "en_US"
+        val cardsDownloadAllowed = allowMetered ||
+            currentPrefs?.allowMobileCardDataDownload == true ||
+            !isMeteredNetwork()
 
-        runCatching { hsJson.ensureLoaded(locale) }
-            .onFailure {
-                Log.w(TAG, "ensureLoaded failed: ${it.message}", it)
-                crash.log("HsJson ensureLoaded failed: ${it.message}")
-            }
-
-        runCatching { hsJson.checkForUpdate(locale) }
-            .onSuccess { newBuild ->
-                if (newBuild != null) {
-                    applied = true
-                    Log.i(TAG, "cards updated to build=$newBuild")
-                    notifier.emit(UpdateEvent.CardsUpdated(newBuild))
+        if (cardsDownloadAllowed) {
+            runCatching { hsJson.ensureLoaded(locale) }
+                .onFailure {
+                    Log.w(TAG, "ensureLoaded failed: ${it.message}", it)
+                    crash.log("HsJson ensureLoaded failed: ${it.message}")
                 }
-            }
-            .onFailure {
-                Log.w(TAG, "checkForUpdate failed: ${it.message}", it)
-                crash.log("HsJson checkForUpdate failed: ${it.message}")
-            }
+
+            runCatching { hsJson.checkForUpdate(locale) }
+                .onSuccess { newBuild ->
+                    if (newBuild != null) {
+                        applied = true
+                        Log.i(TAG, "cards updated to build=$newBuild")
+                        notifier.emit(UpdateEvent.CardsUpdated(newBuild))
+                    }
+                }
+                .onFailure {
+                    Log.w(TAG, "checkForUpdate failed: ${it.message}", it)
+                    crash.log("HsJson checkForUpdate failed: ${it.message}")
+                }
+        } else {
+            Log.i(TAG, "skipping cards check: metered network and mobile download not allowed")
+        }
 
         runCatching {
             val cached = rotation.cached()

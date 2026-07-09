@@ -6,15 +6,13 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,8 +34,10 @@ import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.data.update.UpdateEvent
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
+import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
 import com.lvsmsmch.deckbuilder.presentation.ui.components.BottomBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardDataUpdateDialog
+import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.builder.DeckBuilderScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.deckview.DeckViewScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.detail.CardDetailScreen
@@ -70,7 +70,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
         notifier.events.collect { event ->
             when (event) {
                 is UpdateEvent.CardsUpdated ->
-                    snackbarHostState.showSnackbar(cardsUpdatedTemplate.format(event.build))
+                    snackbarHostState.showAppSnackbar(cardsUpdatedTemplate.format(event.build))
                 is UpdateEvent.RotationUpdated -> Unit
             }
         }
@@ -164,15 +164,10 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
             }
         }
 
-        SnackbarHost(
+        AppSnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) { data ->
-            Snackbar(
-                containerColor = DeckBuilderColors.SurfaceContainerHigh,
-                contentColor = DeckBuilderColors.OnSurface,
-            ) { Text(data.visuals.message) }
-        }
+        )
 
         if (showStartupCardDataDialog) {
             CardDataUpdateDialog(
@@ -210,7 +205,12 @@ private fun HomeScreen(
     }
 
     Scaffold(
-        modifier = Modifier.statusBarsPadding(),
+        // Background must come BEFORE statusBarsPadding, otherwise the strip
+        // behind the status bar shows the window background (black in light theme).
+        modifier = Modifier
+            .background(DeckBuilderColors.Surface)
+            .statusBarsPadding(),
+        containerColor = DeckBuilderColors.Surface,
         bottomBar = {
             BottomBar(navController = navController, destination = backStackEntry?.destination)
         },

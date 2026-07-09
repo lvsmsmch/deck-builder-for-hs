@@ -7,6 +7,8 @@ data class AppPreferences(
     val cardLocale: String = SupportedCardLocales.defaultForSystem(),
     val crashReportingEnabled: Boolean = true,
     val allowMobileCardDataDownload: Boolean = false,
+    val skipBuilderExitConfirm: Boolean = false,
+    val skipIncompleteSaveConfirm: Boolean = false,
     val lastSeenSetSlug: String? = null,
     val lastUpdateCheckAtMs: Long? = null,
 )

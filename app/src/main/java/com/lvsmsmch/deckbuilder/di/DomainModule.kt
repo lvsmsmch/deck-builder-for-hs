@@ -14,6 +14,8 @@ import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCardLocaleUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCrashReportingEnabledUseCase
+import com.lvsmsmch.deckbuilder.domain.usecases.SetSkipBuilderExitConfirmUseCase
+import com.lvsmsmch.deckbuilder.domain.usecases.SetSkipIncompleteSaveConfirmUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetThemeUseCase
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
@@ -35,4 +37,6 @@ val domainModule = module {
     factoryOf(::SetCardLocaleUseCase)
     factoryOf(::SetCrashReportingEnabledUseCase)
     factoryOf(::AcknowledgeNewSetUseCase)
+    factoryOf(::SetSkipBuilderExitConfirmUseCase)
+    factoryOf(::SetSkipIncompleteSaveConfirmUseCase)
 }

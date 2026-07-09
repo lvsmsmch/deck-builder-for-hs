@@ -19,8 +19,11 @@ import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.SavedDeckRepository
 import com.lvsmsmch.deckbuilder.domain.usecases.AssembleDeckUseCase
+import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
+import com.lvsmsmch.deckbuilder.domain.usecases.SetSkipBuilderExitConfirmUseCase
+import com.lvsmsmch.deckbuilder.domain.usecases.SetSkipIncompleteSaveConfirmUseCase
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -46,6 +49,9 @@ class DeckBuilderViewModel(
     private val rotation: RotationRepository,
     private val decks: DeckRepository,
     private val savedDecks: SavedDeckRepository,
+    observePrefs: ObservePreferencesUseCase,
+    private val setSkipExitConfirm: SetSkipBuilderExitConfirmUseCase,
+    private val setSkipIncompleteSaveConfirm: SetSkipIncompleteSaveConfirmUseCase,
     private val editCode: String? = null,
     private val savedName: String? = null,
 ) : ViewModel() {
@@ -69,6 +75,17 @@ class DeckBuilderViewModel(
     private var editingOriginalCode: String? = editCode
 
     init {
+        observePrefs()
+            .onEach { prefs ->
+                _state.update {
+                    it.copy(
+                        skipExitConfirm = prefs.skipBuilderExitConfirm,
+                        skipIncompleteSaveConfirm = prefs.skipIncompleteSaveConfirm,
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+
         _state
             .map { it.pool.filters.textQuery }
             .distinctUntilChanged()
@@ -264,6 +281,17 @@ class DeckBuilderViewModel(
 
     fun dismissToast() {
         _state.update { it.copy(toast = null) }
+    }
+
+    fun rememberSkipExitConfirm() {
+        // Optimistic update so the current screen stops confirming immediately.
+        _state.update { it.copy(skipExitConfirm = true) }
+        viewModelScope.launch { setSkipExitConfirm(true) }
+    }
+
+    fun rememberSkipIncompleteSaveConfirm() {
+        _state.update { it.copy(skipIncompleteSaveConfirm = true) }
+        viewModelScope.launch { setSkipIncompleteSaveConfirm(true) }
     }
 
     fun save() {
