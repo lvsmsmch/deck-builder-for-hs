@@ -159,6 +159,13 @@ fun CardLibraryScreen(
             )
         }
 
+        Text(
+            text = stringResource(R.string.library_found_count, state.totalCount),
+            style = MaterialTheme.typography.labelSmall,
+            color = DeckBuilderColors.OnSurfaceDim,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 8.dp),
+        )
+
         SearchRow(
             query = state.filters.textQuery,
             onQueryChange = viewModel::setTextQuery,
@@ -167,13 +174,6 @@ fun CardLibraryScreen(
                 focusManager.clearFocus()
                 showFilterSheet = true
             },
-        )
-
-        Text(
-            text = stringResource(R.string.library_found_count, state.totalCount),
-            style = MaterialTheme.typography.labelSmall,
-            color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 8.dp),
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -489,7 +489,7 @@ private fun CardGrid(
 ) {
     LazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -502,7 +502,7 @@ private fun CardGrid(
             )
         }
         if (state.isLoadingMore || state.hasMore) {
-            item(span = { GridItemSpan(4) }) {
+            item(span = { GridItemSpan(2) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -118,7 +118,7 @@ fun CardPreviewDialog(
                     .clickable(
                         interactionSource = contentInteraction,
                         indication = null,
-                        onClick = {},
+                        onClick = onDismiss,
                     ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -176,11 +176,19 @@ fun CardPreviewDialog(
                         }
                     }
                     if (highState !is AsyncImagePainter.State.Success) {
-                        Text(
-                            text = stringResource(R.string.card_image_loading),
-                            color = DeckBuilderColors.OnSurfaceDim,
-                            style = MaterialTheme.typography.labelLarge,
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(99.dp))
+                                .background(DeckBuilderColors.Surface.copy(alpha = 0.72f))
+                                .padding(horizontal = 10.dp, vertical = 5.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = stringResource(R.string.card_image_loading),
+                                color = DeckBuilderColors.OnSurface,
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp),
+                            )
+                        }
                     }
                     Box(
                         modifier = Modifier

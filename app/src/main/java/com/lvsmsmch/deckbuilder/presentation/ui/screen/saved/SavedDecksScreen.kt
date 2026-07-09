@@ -1,5 +1,9 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.saved
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
@@ -43,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -68,6 +74,7 @@ fun SavedDecksScreen(
     viewModel: SavedDecksViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
     var showChooser by remember { mutableStateOf(false) }
     var showImportSheet by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<DeckPreview?>(null) }
@@ -114,6 +121,7 @@ fun SavedDecksScreen(
                         SavedDeckRow(
                             deck = deck,
                             onClick = { onOpenDeck(deck.code, deck.name) },
+                            onCopy = { copyToClipboard(context, deck.code) },
                             onEdit = { onEditDeck(deck.code, deck.name) },
                             onDelete = { pendingDelete = deck },
                         )
@@ -193,6 +201,7 @@ private fun Header() {
 private fun SavedDeckRow(
     deck: DeckPreview,
     onClick: () -> Unit,
+    onCopy: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -264,6 +273,7 @@ private fun SavedDeckRow(
                 DeckActionsMenu(
                     expanded = menuOpen,
                     onDismiss = { menuOpen = false },
+                    onCopy = onCopy,
                     onEdit = onEdit,
                     onDelete = onDelete,
                 )
@@ -283,10 +293,18 @@ private fun SavedDeckRow(
 fun DeckActionsMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
+    onCopy: (() -> Unit)? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+        onCopy?.let { copy ->
+            DropdownMenuItem(
+                leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
+                text = { Text(stringResource(R.string.action_copy_code)) },
+                onClick = { onDismiss(); copy() },
+            )
+        }
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
             text = { Text(stringResource(R.string.action_edit)) },
@@ -302,6 +320,12 @@ fun DeckActionsMenu(
             onClick = { onDismiss(); onDelete() },
         )
     }
+}
+
+private fun copyToClipboard(context: Context, code: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText("Hearthstone deck code", code))
+    Toast.makeText(context, context.getString(R.string.deck_view_copied), Toast.LENGTH_SHORT).show()
 }
 
 @Composable

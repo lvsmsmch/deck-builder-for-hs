@@ -1,31 +1,22 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Remove
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Card
-import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 private const val CardAspect = 2f / 3f
 
@@ -35,15 +26,10 @@ fun DeckGridCard(
     count: Int,
     showCount: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAdd: (() -> Unit)? = null,
-    addEnabled: Boolean = true,
-    onRemove: (() -> Unit)? = null,
+    dimImage: Boolean = false,
 ) {
-    val isLight = DeckBuilderColors.Surface.luminance() > 0.5f
-    val controlBackground = if (isLight) Color(0xDD111218) else Color.White.copy(alpha = 0.92f)
-    val controlForeground = if (isLight) Color.White else Color.Black
-
     Box(
         modifier = modifier
             .aspectRatio(CardAspect),
@@ -51,8 +37,17 @@ fun DeckGridCard(
         CardThumbnail(
             card = card,
             onClick = onClick,
+            onLongClick = onLongClick,
             modifier = Modifier.fillMaxSize(),
         )
+        if (dimImage) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(14.dp))
+                    .background(Color.Black.copy(alpha = 0.5f)),
+            )
+        }
         if (showCount && count > 0) {
             Box(
                 modifier = Modifier
@@ -66,47 +61,8 @@ fun DeckGridCard(
                 Text(
                     text = "×$count",
                     style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White,
-                )
-            }
-        }
-        onAdd?.let {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(5.dp)
-                    .size(28.dp)
-                    .alpha(if (addEnabled) 1f else 0.5f)
-                    .clip(CircleShape)
-                    .background(controlBackground)
-                    .clickable(enabled = addEnabled, onClick = it),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.action_add),
-                    tint = controlForeground,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
-        }
-        onRemove?.let {
-            val bottomPadding = if (onAdd != null) 38.dp else 5.dp
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 5.dp, bottom = bottomPadding)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(controlBackground)
-                    .clickable(onClick = it),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Remove,
-                    contentDescription = stringResource(R.string.action_remove_card),
-                    tint = controlForeground,
-                    modifier = Modifier.size(17.dp),
                 )
             }
         }

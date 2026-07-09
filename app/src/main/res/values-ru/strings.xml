@@ -11,6 +11,7 @@
     <!-- Library -->
     <string name="library_title">Карты</string>
     <string name="library_search_hint">Поиск по имени или тексту…</string>
+    <string name="library_found_count">Найдено карт: %1$d</string>
     <string name="library_count_format">карт: %1$d</string>
     <string name="library_empty_no_filters">Карты ещё не загружены.</string>
     <string name="library_empty_with_filters">Под эти фильтры ничего не найдено.</string>
@@ -28,6 +29,7 @@
     <string name="action_apply">Применить</string>
     <string name="action_close">Закрыть</string>
     <string name="action_save">Сохранить</string>
+    <string name="action_add">Добавить</string>
     <string name="action_save_deck">Сохранить</string>
     <string name="action_continue">Продолжить</string>
     <string name="action_exit">Выйти</string>
@@ -59,6 +61,7 @@
 
     <!-- Filter sheet -->
     <string name="filters_title">Фильтры</string>
+    <string name="filters_section_class">Класс</string>
     <string name="filters_section_format">Формат</string>
     <string name="filters_section_card_pool">Пул карт</string>
     <string name="filters_section_mana">Стоимость</string>
@@ -66,7 +69,7 @@
     <string name="filters_section_type">Тип</string>
     <string name="filters_section_minion_type">Тип существа</string>
     <string name="filters_section_spell_school">Школа заклинаний</string>
-    <string name="filters_section_set">Сет (последние)</string>
+    <string name="filters_section_set">Сет</string>
     <string name="filters_section_show_noncollectible">Показывать недоступные</string>
     <string name="filters_collectible_only">Только доступные</string>
     <string name="filters_all_cards">Все карты</string>
@@ -91,6 +94,7 @@
     <string name="builder_exit_title">Выйти из создания колоды?</string>
     <string name="builder_exit_message">Текущий черновик колоды будет сброшен.</string>
     <string name="builder_current_count_prefix">Сейчас в колоде:</string>
+    <string name="cards_label_lowercase">карт</string>
     <string name="builder_exit_confirm">Выйти</string>
     <string name="builder_incomplete_save_title">Сохранить неполную колоду?</string>
     <string name="builder_incomplete_save_message">В колоде только %1$d/%2$d карт. Всё равно сохранить?</string>

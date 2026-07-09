@@ -49,8 +49,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -62,6 +64,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -108,6 +111,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.FilterSheet
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -122,6 +126,7 @@ fun DeckBuilderScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var showExitConfirm by remember { mutableStateOf(false) }
     var showIncompleteSaveConfirm by remember { mutableStateOf(false) }
     var rememberIncompleteSaveChoice by rememberSaveable { mutableStateOf(false) }
@@ -148,8 +153,23 @@ fun DeckBuilderScreen(
     }
     LaunchedEffect(state.toast) {
         state.toast?.let {
-            snackbar.showSnackbar(it)
+            snackbar.currentSnackbarData?.dismiss()
+            snackbar.showSnackbar(it, duration = SnackbarDuration.Short)
             viewModel.dismissToast()
+        }
+    }
+    fun removeWithUndo(card: Card) {
+        viewModel.removeCard(card)
+        scope.launch {
+            snackbar.currentSnackbarData?.dismiss()
+            val result = snackbar.showSnackbar(
+                message = "${card.name} removed",
+                actionLabel = "UNDO",
+                duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.addCard(card)
+            }
         }
     }
 
@@ -165,7 +185,7 @@ fun DeckBuilderScreen(
                 onBack = requestExit,
                 onSetQuery = viewModel::setPoolQuery,
                 onAdd = { viewModel.addCard(it) },
-                onRemove = viewModel::removeCard,
+                onRemove = ::removeWithUndo,
                 onLoadMore = viewModel::loadNextPoolPage,
                 onSave = requestSave,
                 onSelectFormat = viewModel::setFormat,
@@ -181,6 +201,15 @@ fun DeckBuilderScreen(
             modifier = Modifier.align(Alignment.BottomCenter),
         ) { data ->
             Snackbar(
+                action = {
+                    data.visuals.actionLabel?.let { label ->
+                        Text(
+                            text = label,
+                            color = DeckBuilderColors.Primary,
+                            modifier = Modifier.clickable { data.performAction() },
+                        )
+                    }
+                },
                 containerColor = DeckBuilderColors.SurfaceContainerHigh,
                 contentColor = DeckBuilderColors.OnSurface,
             ) { Text(data.visuals.message) }
@@ -467,7 +496,6 @@ private fun EditingView(
                     .zIndex(if (activeTab == EditingTab.Pool) 1f else 0f),
                 onSetQuery = onSetQuery,
                 onAdd = onAdd,
-                onRemove = onRemove,
                 onLoadMore = onLoadMore,
                 onOpenFilters = { showFilters = true },
                 onPreviewCard = { previewCard = it },
@@ -485,16 +513,14 @@ private fun EditingView(
             )
         }
 
-        if (activeTab == EditingTab.Deck) {
-            BottomActions(
-                canSave = state.canSave,
-                isSaving = state.isSaving,
-                error = state.saveError,
-                cardCount = state.cardCount,
-                maxDeckSize = state.maxDeckSize,
-                onSave = onSave,
-            )
-        }
+        BottomActions(
+            canSave = state.canSave,
+            isSaving = state.isSaving,
+            error = state.saveError,
+            cardCount = state.cardCount,
+            maxDeckSize = state.maxDeckSize,
+            onSave = onSave,
+        )
     }
 
     if (showRenameDialog) {
@@ -856,7 +882,6 @@ private fun PoolPane(
     modifier: Modifier = Modifier,
     onSetQuery: (String) -> Unit,
     onAdd: (Card) -> Unit,
-    onRemove: (Card) -> Unit,
     onLoadMore: () -> Unit,
     onOpenFilters: () -> Unit,
     onPreviewCard: (Card) -> Unit,
@@ -936,7 +961,6 @@ private fun PoolPane(
                     count = count,
                     maxCopiesReached = maxCopiesReached,
                     onAdd = { onAdd(card) },
-                    onRemove = { onRemove(card) },
                     onPreview = { onPreviewCard(card) },
                 )
             }
@@ -967,17 +991,15 @@ private fun PoolCard(
     count: Int,
     maxCopiesReached: Boolean,
     onAdd: () -> Unit,
-    onRemove: () -> Unit,
     onPreview: () -> Unit,
 ) {
     DeckGridCard(
         card = card,
         count = count,
         showCount = count > 0,
-        addEnabled = !maxCopiesReached,
-        onClick = onPreview,
-        onAdd = onAdd,
-        onRemove = onRemove.takeIf { count > 0 },
+        dimImage = maxCopiesReached,
+        onClick = onAdd,
+        onLongClick = onPreview,
     )
 }
 
@@ -1217,8 +1239,8 @@ private fun DeckPane(
                 card = entry.card,
                 count = entry.count,
                 showCount = true,
-                onClick = { onOpenCard(entry.card) },
-                onRemove = { onRemove(entry.card) },
+                onClick = { onRemove(entry.card) },
+                onLongClick = { onOpenCard(entry.card) },
             )
         }
     }

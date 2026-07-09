@@ -1,8 +1,10 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import android.os.SystemClock
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,10 +36,12 @@ private const val CARD_ASPECT = 2f / 3f
  * gradient frame, no border. While the image is loading we show a flat
  * surface placeholder so the grid keeps its shape without flashing borders.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CardThumbnail(
     card: Card,
     onClick: () -> Unit = {},
+    onLongClick: () -> Unit = onClick,
     modifier: Modifier = Modifier,
 ) {
     val art = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
@@ -68,8 +72,12 @@ fun CardThumbnail(
         modifier = modifier
             .aspectRatio(CARD_ASPECT)
             .clip(RoundedCornerShape(14.dp))
-            .background(DeckBuilderColors.SurfaceContainer)
-            .clickable(onClick = onClick),
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
     ) {
         if (art != null && state is AsyncImagePainter.State.Success) {
             Image(

@@ -70,7 +70,7 @@
     <string name="filters_section_type">Type</string>
     <string name="filters_section_minion_type">Minion type</string>
     <string name="filters_section_spell_school">Spell school</string>
-    <string name="filters_section_set">Set (recent)</string>
+    <string name="filters_section_set">Set</string>
     <string name="filters_section_show_noncollectible">Show non-collectible</string>
     <string name="filters_collectible_only">Collectible only</string>
     <string name="filters_all_cards">All cards</string>

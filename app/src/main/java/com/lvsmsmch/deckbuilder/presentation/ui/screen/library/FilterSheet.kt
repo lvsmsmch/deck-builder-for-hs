@@ -34,6 +34,7 @@ import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.CardClassScope
 import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
+import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForRaritySlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classShortLabel
@@ -91,19 +92,19 @@ fun FilterSheet(
                 classScopeLabel?.let { label ->
                     item { ClassScopeSection(label, current, onChange) }
                 }
+                item { ManaSection(current, onChange) }
                 if (showClassSection) {
                     item { ClassSection(current, onChange) }
                 }
                 if (showFormatSection) {
                     item { FormatSection(current, onChange) }
                 }
-                item { ManaSection(current, onChange) }
                 item { RaritySection(current, onChange) }
                 item { TypeSection(current, onChange) }
                 item { MinionTypeSection(current, onChange) }
                 item { SpellSchoolSection(current, onChange) }
-                item { CollectibleSection(current, onChange) }
                 item { SetSection(current, onChange) }
+                item { CollectibleSection(current, onChange) }
                 item { Spacer(Modifier.height(20.dp)) }
             }
         }
@@ -118,6 +119,7 @@ private fun ClassSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             Chip(
                 label = classShortLabel(slug),
                 active = slug in draft.classes,
+                leading = colorForClassSlug(slug),
                 onClick = {
                     val next = if (slug in draft.classes) draft.classes - slug else draft.classes + slug
                     onChange(draft.copy(classes = next))
@@ -157,12 +159,12 @@ private fun ClassScopeSection(
 private fun FormatSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
     SectionHeader(stringResource(R.string.filters_section_format))
     ChipFlow {
-        CardFormatFilter.entries.forEach { format ->
+        listOf(CardFormatFilter.STANDARD, CardFormatFilter.WILD).forEach { format ->
             Chip(
                 label = formatFilterLabel(format),
                 active = draft.format == format,
                 onClick = {
-                    val next = if (draft.format == format && format != CardFormatFilter.ALL) {
+                    val next = if (draft.format == format) {
                         CardFormatFilter.ALL
                     } else {
                         format
@@ -185,6 +187,7 @@ private fun Header(hasFilters: Boolean, onReset: () -> Unit) {
         Text(
             text = stringResource(R.string.filters_title),
             style = MaterialTheme.typography.titleMedium,
+            color = DeckBuilderColors.OnSurface,
             modifier = Modifier.weight(1f),
         )
         Box(
@@ -207,7 +210,7 @@ private fun SectionHeader(title: String) {
     Text(
         text = title.uppercase(),
         style = MaterialTheme.typography.labelSmall,
-        color = DeckBuilderColors.OnSurfaceDim,
+        color = DeckBuilderColors.OnSurface,
         modifier = Modifier.padding(top = 14.dp, bottom = 8.dp),
     )
 }
@@ -247,7 +250,7 @@ private fun Chip(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
+            color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurface,
         )
     }
 }

@@ -138,7 +138,7 @@ class CardRepositoryImpl(
                     set.toDomainSlug() in normalizedStandardSets
                 when (filters.format) {
                     CardFormatFilter.STANDARD -> if (!isStandard) return@predicate false
-                    CardFormatFilter.WILD -> if (isStandard) return@predicate false
+                    CardFormatFilter.WILD -> Unit
                     CardFormatFilter.ALL -> Unit
                 }
             }

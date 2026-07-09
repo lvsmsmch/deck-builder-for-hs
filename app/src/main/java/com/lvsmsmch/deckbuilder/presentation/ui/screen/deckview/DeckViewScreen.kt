@@ -32,7 +32,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
@@ -215,12 +214,10 @@ private fun Body(
     onCardClick: (Card) -> Unit,
     onCopyCode: () -> Unit,
 ) {
-    var copied by remember(deck.code) { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf(false) }
     var previewCard by remember { mutableStateOf<Card?>(null) }
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
-    LaunchedEffect(deck.code) { copied = false }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
@@ -240,6 +237,10 @@ private fun Body(
                 onDismissMenu = { menuOpen = false },
                 onEditDeck = onEditDeck,
                 onDeleteDeck = { pendingDelete = true },
+                onCopyCode = {
+                    onCopyCode()
+                    menuOpen = false
+                },
             )
         }
 
@@ -253,20 +254,7 @@ private fun Body(
 
         item(span = { GridItemSpan(4) }) {
             ActionsRow(
-                copied = copied,
-                onCopyCode = {
-                    onCopyCode()
-                    copied = true
-                },
-            )
-        }
-
-        item(span = { GridItemSpan(4) }) {
-            Text(
-                text = stringResource(R.string.deck_view_cards_count, deck.cardCount),
-                style = MaterialTheme.typography.labelSmall,
-                color = DeckBuilderColors.OnSurfaceDim,
-                modifier = Modifier.padding(start = 24.dp, top = 14.dp, bottom = 6.dp),
+                onEditDeck = onEditDeck,
             )
         }
 
@@ -276,6 +264,7 @@ private fun Body(
                 count = entry.count,
                 showCount = true,
                 onClick = { previewCard = entry.card },
+                onLongClick = { previewCard = entry.card },
             )
         }
 
@@ -330,10 +319,10 @@ private fun DeckToolbar(
     onDismissMenu: () -> Unit,
     onEditDeck: () -> Unit,
     onDeleteDeck: () -> Unit,
+    onCopyCode: () -> Unit,
 ) {
     val classSlug = deck.heroClass?.slug
-    val heroCardId = deck.hero?.slug?.takeIf { it.startsWith("HERO_") }
-        ?: DefaultHeroes.cardIdFor(classSlug)
+    val heroCardId = DefaultHeroes.cardIdFor(classSlug)
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
     val heroClassLabel = classLabel(deck.heroClass?.slug)
     val formatColor = formatColor(deck.format)
@@ -403,6 +392,7 @@ private fun DeckToolbar(
             DeckActionsMenu(
                 expanded = menuOpen,
                 onDismiss = onDismissMenu,
+                onCopy = onCopyCode,
                 onEdit = onEditDeck,
                 onDelete = onDeleteDeck,
             )
@@ -488,8 +478,7 @@ private fun EditableTitle(
 
 @Composable
 private fun ActionsRow(
-    copied: Boolean,
-    onCopyCode: () -> Unit,
+    onEditDeck: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -498,7 +487,7 @@ private fun ActionsRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Button(
-            onClick = onCopyCode,
+            onClick = onEditDeck,
             colors = ButtonDefaults.buttonColors(
                 containerColor = DeckBuilderColors.OnSurface,
                 contentColor = DeckBuilderColors.Surface,
@@ -509,12 +498,12 @@ private fun ActionsRow(
                 .height(46.dp),
         ) {
             Icon(
-                if (copied) Icons.Outlined.Check else Icons.Outlined.ContentCopy,
+                Icons.Outlined.Edit,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
             )
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_copy_code))
+            Text(stringResource(R.string.action_edit))
         }
     }
 }

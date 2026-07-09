@@ -208,6 +208,7 @@ class DeckBuilderViewModel(
         }
         val target = (existingCount + count).coerceAtMost(cap)
         if (target == existingCount) {
+            flashToast("Maximum copies already added")
             return
         }
         val resultingMaxSize = when {

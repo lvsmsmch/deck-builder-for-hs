@@ -118,7 +118,7 @@ object DeckBuilderColors {
         val Mage = Color(0xFF3F6CB5)
         val Paladin = Color(0xFFC9A24C)
         val Priest = Color(0xFFD6D6D6)
-        val Rogue = Color(0xFF7A7A7A)
+        val Rogue = Color(0xFF9B9FA7)
         val Shaman = Color(0xFF4A6C9D)
         val Warlock = Color(0xFF7E5BA8)
         val Warrior = Color(0xFFA05A45)
