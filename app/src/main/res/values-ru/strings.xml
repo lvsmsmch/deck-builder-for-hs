@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Deck Builder</string>
-
     <!-- Bottom nav -->
     <string name="nav_library">Карты</string>
     <string name="nav_saved">Колоды</string>
-    <string name="nav_decks">Decks</string>
+    <string name="nav_decks">Колоды</string>
     <string name="nav_more">Ещё</string>
 
     <!-- Library -->
@@ -144,7 +142,7 @@
     <!-- Card detail -->
     <string name="card_detail_related">СВЯЗАННЫЕ КАРТЫ</string>
     <string name="card_detail_by_artist">художник: %1$s</string>
-    <string name="card_image_loading">Loading...</string>
+    <string name="card_image_loading">Загрузка...</string>
     <string name="card_image_error">Изображение не загрузилось</string>
     <string name="card_stat_mana">Мана</string>
     <string name="card_stat_attack">Атака</string>
@@ -211,7 +209,7 @@
     <string name="more_settings_subtitle">Тема, язык, приватность</string>
     <string name="more_card_data">Данные карт</string>
     <string name="more_card_data_subtitle">Билд, последняя проверка</string>
-    <string name="more_card_library">Card Library</string>
+    <string name="more_card_library">Библиотека карт</string>
     <string name="more_card_library_subtitle">Все карты и фильтры</string>
 
     <!-- Privacy -->
@@ -275,7 +273,7 @@
     <string name="card_data_error_title">Не удалось скачать данные карт</string>
     <string name="card_data_error_message">Приложение не смогло скачать и сохранить данные карт. Попробуйте ещё раз.</string>
     <string name="snackbar_cards_updated">Карты обновлены до билда %1$s</string>
-    <string name="library_rotation_lag_title">Standard-ротация может быть устаревшей</string>
+    <string name="library_rotation_lag_title">Ротация Стандарта может быть устаревшей</string>
     <string name="library_rotation_lag_body">%1$d сет(ов) c карт ещё не известны python-hearthstone.</string>
     <string name="library_rotation_lag_action">Проверить ещё раз</string>
 

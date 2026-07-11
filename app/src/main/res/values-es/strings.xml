@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bottom nav -->
+    <string name="nav_library">Biblioteca</string>
+    <string name="nav_saved">Mazos</string>
+    <string name="nav_decks">Mazos</string>
+    <string name="nav_more">Más</string>
+
+    <!-- Library -->
+    <string name="library_title">Biblioteca</string>
+    <string name="library_found_count">%1$d cartas encontradas</string>
+    <string name="library_search_hint">Buscar cartas por nombre o texto…</string>
+    <string name="library_count_format">%1$d cartas</string>
+    <string name="library_empty_no_filters">Todavía no se cargaron cartas.</string>
+    <string name="library_empty_with_filters">Ninguna carta coincide con estos filtros.</string>
+    <string name="library_new_set_title">Cartas nuevas en %1$s</string>
+    <string name="library_new_set_subtitle">Toca para filtrar la biblioteca por este set.</string>
+    <string name="library_loading_cards">Cargando cartas...</string>
+    <string name="library_loading_resolving">Comprobando datos de cartas...</string>
+    <string name="library_loading_downloading">Descargando datos de cartas: %1$s descargados</string>
+    <string name="library_loading_downloading_known">Descargando datos de cartas: %1$s / %2$s (faltan %3$s)</string>
+    <string name="library_loading_parsing">Preparando las cartas descargadas...</string>
+    <string name="library_loading_saving">Guardando datos de cartas...</string>
+
+    <!-- Common -->
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_apply">Aplicar</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_save_deck">Guardar</string>
+    <string name="action_continue">Continuar</string>
+    <string name="action_exit">Salir</string>
+    <string name="action_decode">Decodificar</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_clear">Borrar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_back">Atrás</string>
+    <string name="action_share">Compartir</string>
+    <string name="action_copy_code">Copiar código</string>
+    <string name="action_paste">Pegar</string>
+    <string name="action_reset_all">Restablecer todo</string>
+    <string name="action_dismiss">Descartar</string>
+    <string name="action_add">Agregar</string>
+    <string name="action_rename">Cambiar nombre</string>
+    <string name="action_more">Más</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_remove_card">Quitar una copia</string>
+    <string name="action_view_card">Ver carta</string>
+    <string name="action_remember_choice">Recordar elección</string>
+    <string name="cards_label_lowercase">cartas</string>
+    <string name="action_press_back_again_exit">Presiona Atrás otra vez para salir</string>
+
+    <!-- Sort options -->
+    <string name="sort_mana_asc">Maná asc.</string>
+    <string name="sort_mana_desc">Maná desc.</string>
+    <string name="sort_name">Nombre</string>
+    <string name="sort_newest">Más nuevas</string>
+    <string name="sort_oldest">Más antiguas</string>
+    <string name="sort_group_by_class">Por clase</string>
+
+    <!-- Filter sheet -->
+    <string name="filters_title">Filtros</string>
+    <string name="filters_section_class">Clase</string>
+    <string name="filters_section_format">Formato</string>
+    <string name="filters_section_card_pool">Conjunto de cartas</string>
+    <string name="filters_section_mana">Costo de maná</string>
+    <string name="filters_section_rarity">Rareza</string>
+    <string name="filters_section_type">Tipo</string>
+    <string name="filters_section_minion_type">Tipo de esbirro</string>
+    <string name="filters_section_spell_school">Escuela de hechizo</string>
+    <string name="filters_section_set">Set</string>
+    <string name="filters_section_show_noncollectible">Mostrar no coleccionables</string>
+    <string name="filters_show_noncollectible_description">Muestra cartas que normalmente no se pueden usar al crear mazos, como fichas, cartas generadas y variantes internas.</string>
+    <string name="filters_collectible_only">Solo coleccionables</string>
+    <string name="filters_all_cards">Todas las cartas</string>
+    <string name="filters_show_noncollectible_on">Activado</string>
+    <string name="card_data_up_to_date">Los datos de cartas ya están actualizados</string>
+    <string name="action_info">Info</string>
+    <string name="stats_cards">Cartas</string>
+    <string name="stats_avg_mana">Costo promedio de maná</string>
+    <string name="stats_minions">Esbirros</string>
+    <string name="stats_spells">Hechizos</string>
+    <string name="stats_weapons">Armas</string>
+    <string name="stats_other">Otros</string>
+    <string name="stats_legendary">Legendarias</string>
+    <string name="stats_dust">Polvo para crear</string>
+    <string name="filters_pool_all">Todas las cartas</string>
+    <string name="filters_pool_class_only">Solo cartas de %1$s</string>
+    <string name="filters_pool_neutral_only">Solo neutrales</string>
+
+    <!-- Builder -->
+    <string name="builder_new_deck">Mazo nuevo</string>
+    <string name="builder_pick_class">Elige una clase para empezar.</string>
+    <string name="builder_search_pool">Buscar en el conjunto</string>
+    <string name="builder_pool_tab">Conjunto</string>
+    <string name="builder_deck_tab">Mazo</string>
+    <string name="builder_deck_count">%1$d / %2$d</string>
+    <string name="builder_format_standard">Sin título · Estándar</string>
+    <string name="builder_empty_deck_title">Mazo vacío.</string>
+    <string name="builder_empty_deck_body">Ve a la pestaña Conjunto y toca cartas para agregarlas.</string>
+    <string name="builder_toast_wrong_class">No es una carta de %1$s ni neutral</string>
+    <string name="builder_toast_legendary_limit">Límite de legendarias (×1)</string>
+    <string name="builder_toast_card_limit">Límite de copias (×2)</string>
+    <string name="builder_toast_deck_full">El mazo está completo (%1$d/%1$d)</string>
+    <string name="builder_exit_title">¿Salir del creador de mazos?</string>
+    <string name="builder_exit_message">Se descartará el borrador actual del mazo.</string>
+    <string name="builder_current_count_prefix">Tamaño actual:</string>
+    <string name="builder_exit_confirm">Salir</string>
+    <string name="builder_incomplete_save_title">¿Guardar mazo incompleto?</string>
+    <string name="builder_incomplete_save_message">Este mazo solo tiene %1$d/%2$d cartas. ¿Guardarlo de todos modos?</string>
+    <string name="builder_incomplete_save_prefix">Este mazo solo tiene</string>
+    <string name="builder_incomplete_save_suffix">¿Guardarlo de todos modos?</string>
+    <string name="builder_incomplete_save_confirm">Guardar de todos modos</string>
+
+    <!-- Saved Decks -->
+    <string name="saved_title">Mazos guardados</string>
+    <string name="saved_search_hint">Buscar mazos guardados</string>
+    <string name="saved_empty_title">Aún no hay mazos guardados.</string>
+    <string name="saved_empty_body">Toca el botón + para crear un mazo nuevo o pegar un código de mazo.</string>
+
+    <!-- New deck chooser -->
+    <string name="new_deck_title">Mazo nuevo</string>
+    <string name="new_deck_from_scratch">Crear desde cero</string>
+    <string name="new_deck_from_scratch_subtitle">Elige una clase y arma el mazo carta por carta.</string>
+    <string name="new_deck_paste_code">Pegar código de mazo</string>
+    <string name="new_deck_paste_code_subtitle">Importa un mazo de Hearthstone existente con su código para compartir.</string>
+    <string name="saved_delete_title">¿Eliminar mazo?</string>
+    <string name="saved_delete_message">"%1$s" se eliminará de tus mazos guardados. El código sigue siendo válido: puedes volver a importarlo cuando quieras.</string>
+
+    <!-- Import sheet -->
+    <string name="import_title">Importar mazo</string>
+    <string name="import_subtitle">Pega un código de mazo de Hearthstone. Toca Decodificar para verlo y guardarlo.</string>
+    <string name="import_clipboard_title">Pegar desde el portapapeles</string>
+    <string name="import_clipboard_subtitle">Importa un mazo de Hearthstone desde un código en tu portapapeles. Si el portapapeles no contiene un código válido, pégalo aquí manualmente.</string>
+    <string name="import_invalid">Este código de mazo no parece válido.</string>
+
+    <!-- Deck view -->
+    <string name="deck_view_cards_count">CARTAS · %1$d</string>
+    <string name="deck_view_invalid_format">La API informó %1$d id(s) de carta no válidos</string>
+    <string name="deck_view_copied">Código de mazo copiado</string>
+
+    <!-- Card detail -->
+    <string name="card_detail_related">CARTAS RELACIONADAS</string>
+    <string name="card_detail_by_artist">por %1$s</string>
+    <string name="card_image_loading">Cargando...</string>
+    <string name="card_image_error">No se pudo cargar la imagen</string>
+    <string name="card_stat_mana">Maná</string>
+    <string name="card_stat_attack">Ataque</string>
+    <string name="card_stat_health">Salud</string>
+    <string name="card_stat_durability">Durabilidad</string>
+    <string name="card_stat_armor">Armadura</string>
+
+    <!-- Card metadata -->
+    <string name="set_stormwind">Ventormenta</string>
+    <string name="set_core">Principal</string>
+    <string name="set_the_lost_city">La Ciudad Perdida</string>
+    <string name="set_space">La Gran Oscuridad del Más Allá</string>
+    <string name="set_island_vacation">Peligros en el Paraíso</string>
+    <string name="set_whizbangs_workshop">Taller de Whizbang</string>
+    <string name="set_wild_west">Duelo en las Tierras Inhóspitas</string>
+    <string name="set_titans">TITANES</string>
+    <string name="set_festival_of_legends">Festival de Leyendas</string>
+    <string name="set_return_of_the_lich_king">Marcha del Rey Exánime</string>
+    <string name="set_revendreth">Asesinato en el Castillo Nathria</string>
+    <string name="set_voyage_to_the_sunken_city">Viaje a la Ciudad Sumergida</string>
+    <string name="set_alterac_valley">Fracturados en el Valle de Alterac</string>
+    <string name="set_barrens">Forjados en Los Baldíos</string>
+    <string name="set_darkmoon_faire">Locura en la Feria de la Luna Negra</string>
+    <string name="set_outlands">Cenizas de Terrallende</string>
+    <string name="keyword_battlecry">Grito de batalla</string>
+    <string name="keyword_deathrattle">Estertor</string>
+    <string name="keyword_taunt">Provocar</string>
+    <string name="keyword_divine_shield">Escudo divino</string>
+    <string name="keyword_charge">Carga</string>
+    <string name="keyword_rush">Embestir</string>
+    <string name="keyword_lifesteal">Robavida</string>
+    <string name="keyword_poisonous">Veneno</string>
+    <string name="keyword_tradeable">Intercambiable</string>
+    <string name="keyword_discover">Descubrir</string>
+    <string name="keyword_secret">Secreto</string>
+    <string name="keyword_combo">Combo</string>
+    <string name="keyword_overload">Sobrecarga</string>
+    <string name="keyword_windfury">Viento furioso</string>
+    <string name="keyword_stealth">Sigilo</string>
+    <string name="keyword_reborn">Renacer</string>
+    <string name="keyword_outcast">Marginal</string>
+    <string name="keyword_finale">Final</string>
+    <string name="keyword_immune">Inmune</string>
+    <string name="keyword_spell_damage">Daño con hechizos</string>
+    <string name="set_kara">Una noche en Karazhan</string>
+    <string name="set_gangs">Mafias de Gadgetzan</string>
+    <string name="set_og">Susurros de los Dioses Antiguos</string>
+    <string name="set_scholomance">Academia Scholomance</string>
+    <string name="set_lootapalooza">Kóbolds &amp; Catacumbas</string>
+    <string name="format_standard">Estándar</string>
+    <string name="format_wild">Salvaje</string>
+    <string name="format_all">Todos</string>
+    <string name="format_classic">Clásico</string>
+    <string name="format_twist">Giro</string>
+    <string name="format_unknown">—</string>
+    <string name="deck_stats_title">ESTADÍSTICAS</string>
+    <string name="deck_stats_dust">Polvo</string>
+    <string name="deck_stats_mana_curve">CURVA DE MANÁ</string>
+    <string name="deck_stats_rarity">RAREZA</string>
+
+    <!-- More -->
+    <string name="more_title">Más</string>
+    <string name="more_settings">Ajustes</string>
+    <string name="more_settings_subtitle">Tema, idioma, privacidad</string>
+    <string name="more_card_data">Datos de cartas</string>
+    <string name="more_card_data_subtitle">Versión, última comprobación</string>
+    <string name="more_card_library">Biblioteca de cartas</string>
+    <string name="more_card_library_subtitle">Explora todas las cartas y filtros</string>
+
+    <!-- Privacy -->
+    <string name="settings_privacy_policy">Política de privacidad</string>
+    <string name="settings_privacy_policy_subtitle">Se abre en el navegador</string>
+
+    <!-- Deck warnings -->
+    <string name="deck_warning_incomplete">El mazo solo tiene %1$d/%2$d cartas.</string>
+    <string name="deck_warning_rotated">%1$d carta(s) no son legales en Estándar.</string>
+
+    <!-- Rename dialog -->
+    <string name="rename_deck_title">Cambiar nombre del mazo</string>
+    <string name="rename_deck_hint">Nombre del mazo</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_section_appearance">Apariencia</string>
+    <string name="settings_section_language">Idioma</string>
+    <string name="settings_section_privacy">Privacidad</string>
+    <string name="settings_section_about">Acerca de</string>
+    <string name="settings_section_storage">Almacenamiento</string>
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_subtitle">Sistema, oscuro o claro</string>
+    <string name="settings_theme_system">Predeterminado del sistema</string>
+    <string name="settings_theme_dark">Siempre oscuro</string>
+    <string name="settings_theme_light">Siempre claro</string>
+    <string name="settings_theme_system_subtitle">Sigue el tema del dispositivo</string>
+    <string name="settings_card_language">Idioma de cartas</string>
+    <string name="settings_card_language_subtitle">Se usa en cada solicitud de cartas y mazos</string>
+    <string name="settings_crash_reports">Enviar informes de error</string>
+    <string name="settings_crash_reports_subtitle">Anónimos, mediante Firebase Crashlytics</string>
+    <string name="settings_contact_developer">Contactar al desarrollador</string>
+    <string name="settings_contact_developer_subtitle">Envía un correo con comentarios o un reporte de error</string>
+    <string name="settings_version">Versión</string>
+    <string name="settings_debug_copy_logs">[DEBUG] Copiar registros</string>
+    <string name="settings_debug_copy_logs_subtitle">Copia los registros de la sesión actual de la app</string>
+    <string name="settings_debug_logs_copied">Registros de depuración copiados</string>
+    <string name="settings_image_cache">Caché de imágenes</string>
+    <string name="settings_image_cache_subtitle">Toca para borrar imágenes descargadas</string>
+    <string name="settings_image_cache_cleared">Caché de imágenes borrada</string>
+    <string name="settings_clear_image_cache_title">¿Borrar caché de imágenes?</string>
+    <string name="settings_clear_image_cache_message">Las imágenes de cartas descargadas se eliminarán de la caché local. Se volverán a cargar cuando hagan falta.</string>
+
+    <!-- Updates -->
+    <string name="settings_section_updates">Datos de cartas</string>
+    <string name="settings_cards_build">Versión de cartas</string>
+    <string name="settings_cards_build_unknown">aún no se cargó</string>
+    <string name="settings_last_check">Última comprobación</string>
+    <string name="settings_last_check_never">nunca</string>
+    <string name="settings_refresh_card_data">Actualizar datos de cartas</string>
+    <string name="settings_refresh_card_data_subtitle">Busca las cartas y datos de rotación más recientes ahora.</string>
+    <string name="settings_card_data_locale">Configuración regional</string>
+    <string name="settings_card_data_cards">Elementos</string>
+    <string name="settings_card_data_size">Tamaño de datos locales</string>
+    <string name="card_data_dialog_title">Preparando datos de cartas</string>
+    <string name="card_data_mobile_title">¿Descargar con red móvil?</string>
+    <string name="card_data_mobile_message">Los datos de cartas pesan unos 25 MB antes de guardarse localmente. ¿Continuar usando datos móviles?</string>
+    <string name="card_data_mobile_remember">No volver a preguntar por datos móviles</string>
+    <string name="card_data_no_network_title">Sin conexión de red</string>
+    <string name="card_data_no_network_message">Conéctate a internet para descargar los datos de cartas.</string>
+    <string name="card_data_error_title">Falló la descarga de datos de cartas</string>
+    <string name="card_data_error_message">La app no pudo descargar y guardar los datos de cartas. Inténtalo de nuevo.</string>
+    <string name="snackbar_cards_updated">Cartas actualizadas a la versión %1$s</string>
+    <string name="library_rotation_lag_title">La rotación de Estándar puede estar desactualizada</string>
+    <string name="library_rotation_lag_body">%1$d set(s) en cartas aún no son reconocidos por python-hearthstone.</string>
+    <string name="library_rotation_lag_action">Comprobar otra vez</string>
+
+    <!-- Class names -->
+    <string name="class_druid">Druida</string>
+    <string name="class_hunter">Cazador</string>
+    <string name="class_mage">Mago</string>
+    <string name="class_paladin">Paladín</string>
+    <string name="class_priest">Sacerdote</string>
+    <string name="class_rogue">Pícaro</string>
+    <string name="class_shaman">Chamán</string>
+    <string name="class_warlock">Brujo</string>
+    <string name="class_warrior">Guerrero</string>
+    <string name="class_demonhunter">Cazador de demonios</string>
+    <string name="class_demonhunter_short">Caz. demon.</string>
+    <string name="class_deathknight">Caballero de la muerte</string>
+    <string name="class_deathknight_short">Cab. muerte</string>
+    <string name="class_neutral">Neutral</string>
+
+    <!-- Rarity names -->
+    <string name="rarity_free">Gratis</string>
+    <string name="rarity_common">Común</string>
+    <string name="rarity_rare">Rara</string>
+    <string name="rarity_epic">Épica</string>
+    <string name="rarity_legendary">Legendaria</string>
+
+    <!-- Card type names -->
+    <string name="type_minion">Esbirro</string>
+    <string name="type_spell">Hechizo</string>
+    <string name="type_weapon">Arma</string>
+    <string name="type_hero">Héroe</string>
+    <string name="type_location">Ubicación</string>
+
+    <!-- Minion races -->
+    <string name="race_beast">Bestia</string>
+    <string name="race_demon">Demonio</string>
+    <string name="race_dragon">Dragón</string>
+    <string name="race_elemental">Elemental</string>
+    <string name="race_mech">Meca</string>
+    <string name="race_murloc">Múrloc</string>
+    <string name="race_naga">Naga</string>
+    <string name="race_pirate">Pirata</string>
+    <string name="race_quilboar">Jabaespín</string>
+    <string name="race_totem">Tótem</string>
+    <string name="race_undead">No-muerto</string>
+
+    <!-- Spell schools -->
+    <string name="school_arcane">Arcano</string>
+    <string name="school_fire">Fuego</string>
+    <string name="school_frost">Escarcha</string>
+    <string name="school_holy">Sagrado</string>
+    <string name="school_nature">Naturaleza</string>
+    <string name="school_shadow">Sombras</string>
+    <string name="school_fel">Vil</string>
+</resources>
