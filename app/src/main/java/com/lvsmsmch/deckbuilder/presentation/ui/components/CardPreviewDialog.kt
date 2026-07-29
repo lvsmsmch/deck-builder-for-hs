@@ -28,10 +28,12 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -86,6 +88,13 @@ fun CardPreviewDialog(
     var targetOffset by remember(card.id) { mutableStateOf(Offset.Zero) }
     var gestureActive by remember(card.id) { mutableStateOf(false) }
     var zoomChromeHidden by remember(card.id) { mutableStateOf(false) }
+    // A pinch finger can land outside the image (on the dismiss-on-tap
+    // scrim), where consuming inside the image gesture handler can't help.
+    // So after any pinch we briefly ignore dismiss taps altogether.
+    var suppressDismissUntil by remember(card.id) { mutableLongStateOf(0L) }
+    val dismissUnlessZooming = {
+        if (SystemClock.uptimeMillis() >= suppressDismissUntil) onDismiss()
+    }
     val scale by animateFloatAsState(targetScale, tween(180), label = "preview-card-scale")
     val offset by animateOffsetAsState(targetOffset, tween(180), label = "preview-card-offset")
     val chromeAlpha by animateFloatAsState(
@@ -107,7 +116,7 @@ fun CardPreviewDialog(
                 .clickable(
                     interactionSource = backgroundInteraction,
                     indication = null,
-                    onClick = onDismiss,
+                    onClick = dismissUnlessZooming,
                 ),
             contentAlignment = Alignment.Center,
         ) {
@@ -118,7 +127,7 @@ fun CardPreviewDialog(
                     .clickable(
                         interactionSource = contentInteraction,
                         indication = null,
-                        onClick = onDismiss,
+                        onClick = dismissUnlessZooming,
                     ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -144,6 +153,7 @@ fun CardPreviewDialog(
                                 awaitEachGesture {
                                     awaitFirstDown()
                                     gestureActive = true
+                                    var sawPinch = false
                                     do {
                                         val event = awaitPointerEvent()
                                         val pressedCount = event.changes.count { it.pressed }
@@ -157,6 +167,7 @@ fun CardPreviewDialog(
                                         // dismiss-on-tap clickable underneath never
                                         // sees the gesture as a click.
                                         if (pressedCount >= 2 || targetScale > 1.01f) {
+                                            sawPinch = true
                                             event.changes.forEach { it.consume() }
                                         }
                                     } while (event.changes.any { it.pressed })
@@ -164,6 +175,9 @@ fun CardPreviewDialog(
                                     zoomChromeHidden = false
                                     targetScale = 1f
                                     targetOffset = Offset.Zero
+                                    if (sawPinch) {
+                                        suppressDismissUntil = SystemClock.uptimeMillis() + 400L
+                                    }
                                 }
                             },
                     ) {

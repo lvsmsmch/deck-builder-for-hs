@@ -78,6 +78,8 @@
     <string name="filters_show_noncollectible_on">On</string>
     <string name="card_data_up_to_date">Card data is already up to date</string>
     <string name="action_info">Info</string>
+    <string name="builder_hint_deck">Tap a card to remove it from the deck</string>
+    <string name="builder_hint_pool">Tap a card to add it to the deck</string>
     <string name="stats_cards">Cards</string>
     <string name="stats_avg_mana">Avg. mana cost</string>
     <string name="stats_minions">Minions</string>

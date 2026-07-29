@@ -35,6 +35,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
@@ -373,7 +374,7 @@ private fun ClassTile(slug: String, onClick: () -> Unit) {
     val color = colorForClassSlug(slug)
     Box(
         modifier = Modifier
-            .aspectRatio(1f)
+            .aspectRatio(1.15f)
             .clip(RoundedCornerShape(14.dp))
             .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
             .clickable(onClick = onClick),
@@ -453,6 +454,12 @@ private fun EditingView(
             onSelect = { activeTab = it },
         )
 
+        BuilderHint(
+            text = stringResource(
+                if (activeTab == EditingTab.Deck) R.string.builder_hint_deck else R.string.builder_hint_pool,
+            ),
+        )
+
         Box(modifier = Modifier.weight(1f)) {
             PoolPane(
                 state = state,
@@ -521,6 +528,32 @@ private fun EditingView(
 }
 
 private enum class EditingTab { Pool, Deck }
+
+@Composable
+private fun BuilderHint(text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(DeckBuilderColors.PrimarySoft)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            Icons.Outlined.Info,
+            contentDescription = null,
+            tint = DeckBuilderColors.Primary,
+            modifier = Modifier.size(16.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = DeckBuilderColors.Primary,
+        )
+    }
+}
 
 @Composable
 private fun rememberCheckboxColors() = CheckboxDefaults.colors(
@@ -1077,9 +1110,9 @@ private fun SortMenuButton(
         Row(
             modifier = Modifier
                 .height(36.dp)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
                 .clickable { sortMenuOpen = true }
                 .padding(start = 10.dp, end = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -1197,7 +1230,7 @@ private fun DeckPane(
                     .align(Alignment.BottomEnd)
                     .padding(20.dp)
                     .size(56.dp)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(DeckBuilderColors.OnSurface)
                     .clickable(onClick = onOpenPool),
                 contentAlignment = Alignment.Center,
@@ -1266,7 +1299,7 @@ private fun BottomActions(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .height(56.dp),
+                    .height(52.dp),
             ) {
                 if (isSaving) {
                     CircularProgressIndicator(

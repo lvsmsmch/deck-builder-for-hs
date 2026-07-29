@@ -499,7 +499,7 @@ private fun ActionsRow(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(46.dp),
+                .height(52.dp),
         ) {
             Icon(
                 Icons.Outlined.Edit,

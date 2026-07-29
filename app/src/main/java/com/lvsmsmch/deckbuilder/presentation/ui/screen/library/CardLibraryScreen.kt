@@ -408,9 +408,9 @@ private fun SortMenuButton(
         Row(
             modifier = Modifier
                 .height(36.dp)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
                 .clickable { sortMenuOpen = true }
                 .padding(start = 10.dp, end = 5.dp),
             verticalAlignment = Alignment.CenterVertically,

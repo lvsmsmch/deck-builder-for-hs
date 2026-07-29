@@ -75,6 +75,8 @@
     <string name="filters_show_noncollectible_on">Вкл</string>
     <string name="card_data_up_to_date">Данные карт уже актуальны</string>
     <string name="action_info">Инфо</string>
+    <string name="builder_hint_deck">Нажмите на карту, чтобы убрать её из колоды</string>
+    <string name="builder_hint_pool">Нажмите на карту, чтобы добавить её в колоду</string>
     <string name="stats_cards">Карты</string>
     <string name="stats_avg_mana">Средняя стоимость</string>
     <string name="stats_minions">Существа</string>
