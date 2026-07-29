@@ -106,8 +106,22 @@ class DeckRepositoryImpl(
         }
 
         val hero = payload.heroes.firstOrNull()?.let { resolved[it] }
-        val heroClass = hero?.classes?.firstOrNull { !it.slug.equals("neutral", true) }
-            ?: deriveClassFromCards(payload.cards, resolved)
+        val heroDerivedClass = hero?.classes?.firstOrNull { !it.slug.equals("neutral", true) }
+        // Self-heal decks whose hero contradicts every card in the list (e.g.
+        // codes produced while the shaman/hunter hero ids were swapped): when
+        // the cards unanimously belong to a single other class, trust the cards.
+        val cardClassSlugs = payload.cards
+            .mapNotNull { resolved[it.dbfId] }
+            .flatMap { it.classes }
+            .map { it.slug.lowercase() }
+            .filterNot { it == "neutral" }
+            .toSet()
+        val heroClass = when {
+            heroDerivedClass == null -> deriveClassFromCards(payload.cards, resolved)
+            cardClassSlugs.size == 1 && !cardClassSlugs.contains(heroDerivedClass.slug.lowercase()) ->
+                deriveClassFromCards(payload.cards, resolved) ?: heroDerivedClass
+            else -> heroDerivedClass
+        }
 
         val entries = payload.cards
             .mapNotNull { dc -> resolved[dc.dbfId]?.let { DeckCardEntry(it, dc.count) } }

@@ -38,13 +38,18 @@ object DefaultHeroes {
     fun cardIdFor(classSlug: String?): String? =
         classSlug?.lowercase()?.let(byClassSlug::get)
 
-    /** dbfId for the canonical default hero of [classSlug], used as deck `hero`. */
+    /**
+     * dbfId for the canonical default hero of [classSlug], used as deck `hero`.
+     * Verified against HearthstoneJSON: HERO_01..HERO_11 dbfIds. (Shaman/hunter
+     * were once swapped here — Thrall is 1066, Rexxar is 31 — which silently
+     * turned saved shaman decks into hunter decks.)
+     */
     private val dbfIdByClassSlug = mapOf(
         "warrior" to 7,
-        "shaman" to 31,
+        "shaman" to 1066,
         "rogue" to 930,
         "paladin" to 671,
-        "hunter" to 31127,
+        "hunter" to 31,
         "druid" to 274,
         "warlock" to 893,
         "mage" to 637,
