@@ -23,4 +23,5 @@
     <string name="type_minion">ミニオン</string><string name="type_spell">呪文</string><string name="type_weapon">武器</string><string name="type_hero">ヒーロー</string><string name="type_location">場所</string>
     <string name="race_beast">獣</string><string name="race_demon">悪魔</string><string name="race_dragon">ドラゴン</string><string name="race_elemental">エレメンタル</string><string name="race_mech">メカ</string><string name="race_murloc">マーロック</string><string name="race_naga">ナーガ</string><string name="race_pirate">海賊</string><string name="race_quilboar">キルボア</string><string name="race_totem">トーテム</string><string name="race_undead">アンデッド</string>
     <string name="school_arcane">魔力</string><string name="school_fire">火炎</string><string name="school_frost">凍気</string><string name="school_holy">神聖</string><string name="school_nature">自然</string><string name="school_shadow">影</string><string name="school_fel">邪悪</string>
+    <string name="deck_saved_toast">デッキを保存しました</string>
 </resources>

@@ -330,4 +330,5 @@
     <string name="school_nature">Природа</string>
     <string name="school_shadow">Тьма</string>
     <string name="school_fel">Скверна</string>
+    <string name="deck_saved_toast">Колода сохранена</string>
 </resources>

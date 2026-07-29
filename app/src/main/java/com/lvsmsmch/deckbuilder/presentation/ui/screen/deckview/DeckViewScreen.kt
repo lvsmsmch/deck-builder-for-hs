@@ -36,8 +36,7 @@ import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -238,42 +237,53 @@ private fun Body(
             onInfo = { showStatsDialog = true },
         )
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            item(span = { GridItemSpan(4) }) {
-                DeckWarnings(deck)
-            }
-
-            item(span = { GridItemSpan(4) }) {
-                ActionsRow(
-                    onEditDeck = onEditDeck,
-                )
-            }
-
-            items(deck.cards, key = { it.card.id }) { entry ->
-                DeckGridCard(
-                    card = entry.card,
-                    count = entry.count,
-                    showCount = true,
-                    onClick = { previewCard = entry.card },
-                    onLongClick = { previewCard = entry.card },
-                )
-            }
-
-            if (deck.invalidCardIds.isNotEmpty()) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize(),
+            ) {
                 item(span = { GridItemSpan(4) }) {
-                    Text(
-                        text = stringResource(R.string.deck_view_invalid_format, deck.invalidCardIds.size),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = DeckBuilderColors.Error,
-                        modifier = Modifier.padding(vertical = 8.dp),
+                    DeckWarnings(deck)
+                }
+
+                items(deck.cards, key = { it.card.id }) { entry ->
+                    DeckGridCard(
+                        card = entry.card,
+                        count = entry.count,
+                        showCount = true,
+                        onClick = { previewCard = entry.card },
+                        onLongClick = { previewCard = entry.card },
                     )
                 }
+
+                if (deck.invalidCardIds.isNotEmpty()) {
+                    item(span = { GridItemSpan(4) }) {
+                        Text(
+                            text = stringResource(R.string.deck_view_invalid_format, deck.invalidCardIds.size),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = DeckBuilderColors.Error,
+                            modifier = Modifier.padding(vertical = 8.dp),
+                        )
+                    }
+                }
+            }
+
+            FloatingActionButton(
+                onClick = onEditDeck,
+                containerColor = DeckBuilderColors.OnSurface,
+                contentColor = DeckBuilderColors.Surface,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(20.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.Edit,
+                    contentDescription = stringResource(R.string.action_edit),
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
     }
@@ -476,38 +486,6 @@ private fun EditableTitle(
                         .clickable { editing = true },
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun ActionsRow(
-    onEditDeck: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Button(
-            onClick = onEditDeck,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = DeckBuilderColors.OnSurface,
-                contentColor = DeckBuilderColors.Surface,
-            ),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-        ) {
-            Icon(
-                Icons.Outlined.Edit,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_edit))
         }
     }
 }

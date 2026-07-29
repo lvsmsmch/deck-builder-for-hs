@@ -305,4 +305,5 @@
     <string name="school_nature">Nature</string>
     <string name="school_shadow">Shadow</string>
     <string name="school_fel">Fel</string>
+    <string name="deck_saved_toast">Đã lưu bộ bài</string>
 </resources>

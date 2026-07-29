@@ -328,4 +328,5 @@
     <string name="school_nature">Naturaleza</string>
     <string name="school_shadow">Sombras</string>
     <string name="school_fel">Vil</string>
+    <string name="deck_saved_toast">Mazo guardado</string>
 </resources>

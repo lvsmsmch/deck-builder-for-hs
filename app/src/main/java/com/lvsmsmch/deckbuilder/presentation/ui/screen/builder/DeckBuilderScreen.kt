@@ -358,9 +358,9 @@ private fun ClassPickerView(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 26.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             items(slugs, key = { it }) { slug ->
                 ClassTile(slug = slug, onClick = { onPick(slug) })
@@ -374,7 +374,7 @@ private fun ClassTile(slug: String, onClick: () -> Unit) {
     val color = colorForClassSlug(slug)
     Box(
         modifier = Modifier
-            .aspectRatio(1.15f)
+            .aspectRatio(1f)
             .clip(RoundedCornerShape(14.dp))
             .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
             .clickable(onClick = onClick),
@@ -1239,6 +1239,7 @@ private fun DeckPane(
                     Icons.Filled.Add,
                     contentDescription = stringResource(R.string.builder_pool_tab),
                     tint = DeckBuilderColors.Surface,
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }

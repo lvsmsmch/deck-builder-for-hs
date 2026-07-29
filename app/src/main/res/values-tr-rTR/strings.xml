@@ -23,4 +23,5 @@
     <string name="type_minion">Minyon</string><string name="type_spell">Büyü</string><string name="type_weapon">Silah</string><string name="type_hero">Kahraman</string><string name="type_location">Konum</string>
     <string name="race_beast">Canavar</string><string name="race_demon">İblis</string><string name="race_dragon">Ejderha</string><string name="race_elemental">Elemental</string><string name="race_mech">Mekanik</string><string name="race_murloc">Murloc</string><string name="race_naga">Naga</string><string name="race_pirate">Korsan</string><string name="race_quilboar">Quilboar</string><string name="race_totem">Totem</string><string name="race_undead">Ölümsüz</string>
     <string name="school_arcane">Arcane</string><string name="school_fire">Ateş</string><string name="school_frost">Buz</string><string name="school_holy">Kutsal</string><string name="school_nature">Doğa</string><string name="school_shadow">Gölge</string><string name="school_fel">Fel</string>
+    <string name="deck_saved_toast">Deste kaydedildi</string>
 </resources>

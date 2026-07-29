@@ -305,4 +305,5 @@
     <string name="school_nature">טבע</string>
     <string name="school_shadow">צללים</string>
     <string name="school_fel">פל</string>
+    <string name="deck_saved_toast">החפיסה נשמרה</string>
 </resources>

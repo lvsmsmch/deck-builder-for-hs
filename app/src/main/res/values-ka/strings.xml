@@ -23,4 +23,5 @@
     <string name="type_minion">მინიონი</string><string name="type_spell">შელოცვა</string><string name="type_weapon">იარაღი</string><string name="type_hero">გმირი</string><string name="type_location">ლოკაცია</string>
     <string name="race_beast">მხეცი</string><string name="race_demon">დემონი</string><string name="race_dragon">დრაკონი</string><string name="race_elemental">ელემენტალი</string><string name="race_mech">მექა</string><string name="race_murloc">მურლოკი</string><string name="race_naga">ნაგა</string><string name="race_pirate">მეკობრე</string><string name="race_quilboar">ქუილბორი</string><string name="race_totem">ტოტემი</string><string name="race_undead">უკვდავი</string>
     <string name="school_arcane">არკანი</string><string name="school_fire">ცეცხლი</string><string name="school_frost">ყინვა</string><string name="school_holy">წმინდა</string><string name="school_nature">ბუნება</string><string name="school_shadow">ჩრდილი</string><string name="school_fel">ფელი</string>
+    <string name="deck_saved_toast">დეკი შენახულია</string>
 </resources>

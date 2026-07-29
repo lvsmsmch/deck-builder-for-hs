@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +48,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.SavedDecksScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.CardDataScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.SettingsScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 private const val SCREEN_FADE_IN_MS = 260
@@ -58,7 +60,9 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
     val notifier: UpdateNotifier = koinInject()
     val hsJson: HsJsonRepository = koinInject()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val cardsUpdatedTemplate = stringResource(R.string.snackbar_cards_updated)
+    val deckSavedMessage = stringResource(R.string.deck_saved_toast)
     val context = LocalContext.current
     var showStartupCardDataDialog by remember { mutableStateOf(false) }
 
@@ -110,6 +114,7 @@ fun AppNavGraph(currentPreferences: AppPreferences) {
                     editCode = args.editCode,
                     savedName = args.savedName,
                     onDeckSaved = { code ->
+                        scope.launch { snackbarHostState.showAppSnackbar(deckSavedMessage) }
                         navController.navigate(DeckView(code = code, savedName = args.savedName)) {
                             if (args.editCode != null) {
                                 popUpTo(DeckView(code = args.editCode, savedName = args.savedName)) {

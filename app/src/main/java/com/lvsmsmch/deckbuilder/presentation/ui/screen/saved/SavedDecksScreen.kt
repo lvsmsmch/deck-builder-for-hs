@@ -102,7 +102,11 @@ fun SavedDecksScreen(
                 containerColor = DeckBuilderColors.OnSurface,
                 contentColor = DeckBuilderColors.Surface,
             ) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.new_deck_title))
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.new_deck_title),
+                    modifier = Modifier.size(20.dp),
+                )
             }
         },
     ) { padding ->

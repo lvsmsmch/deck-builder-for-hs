@@ -23,4 +23,5 @@
     <string name="type_minion">มินเนี่ยน</string><string name="type_spell">เวทมนตร์</string><string name="type_weapon">อาวุธ</string><string name="type_hero">ฮีโร่</string><string name="type_location">สถานที่</string>
     <string name="race_beast">สัตว์ร้าย</string><string name="race_demon">ปีศาจ</string><string name="race_dragon">มังกร</string><string name="race_elemental">ธาตุ</string><string name="race_mech">จักรกล</string><string name="race_murloc">เมอร์ล็อค</string><string name="race_naga">นากา</string><string name="race_pirate">โจรสลัด</string><string name="race_quilboar">ควิลบอร์</string><string name="race_totem">โทเท็ม</string><string name="race_undead">อันเดด</string>
     <string name="school_arcane">อาคม</string><string name="school_fire">ไฟ</string><string name="school_frost">น้ำแข็ง</string><string name="school_holy">ศักดิ์สิทธิ์</string><string name="school_nature">ธรรมชาติ</string><string name="school_shadow">เงา</string><string name="school_fel">เฟล</string>
+    <string name="deck_saved_toast">บันทึกเด็คแล้ว</string>
 </resources>

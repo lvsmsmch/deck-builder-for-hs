@@ -305,4 +305,5 @@
     <string name="school_nature">自然</string>
     <string name="school_shadow">暗影</string>
     <string name="school_fel">魔化</string>
+    <string name="deck_saved_toast">牌組已儲存</string>
 </resources>

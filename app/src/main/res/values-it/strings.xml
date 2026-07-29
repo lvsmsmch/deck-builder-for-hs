@@ -23,4 +23,5 @@
     <string name="type_minion">Servitore</string><string name="type_spell">Magia</string><string name="type_weapon">Arma</string><string name="type_hero">Eroe</string><string name="type_location">Luogo</string>
     <string name="race_beast">Bestia</string><string name="race_demon">Demone</string><string name="race_dragon">Drago</string><string name="race_elemental">Elementale</string><string name="race_mech">Robot</string><string name="race_murloc">Murloc</string><string name="race_naga">Naga</string><string name="race_pirate">Pirata</string><string name="race_quilboar">Verrospino</string><string name="race_totem">Totem</string><string name="race_undead">Non Morto</string>
     <string name="school_arcane">Arcano</string><string name="school_fire">Fuoco</string><string name="school_frost">Gelo</string><string name="school_holy">Sacro</string><string name="school_nature">Natura</string><string name="school_shadow">Ombra</string><string name="school_fel">Vil</string>
+    <string name="deck_saved_toast">Mazzo salvato</string>
 </resources>
