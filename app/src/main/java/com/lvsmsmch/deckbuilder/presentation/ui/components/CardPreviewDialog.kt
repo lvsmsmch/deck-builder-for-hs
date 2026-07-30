@@ -57,6 +57,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.lvsmsmch.deckbuilder.R
 import com.lvsmsmch.deckbuilder.domain.entities.Card
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.SetReleaseDates
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 private const val CARD_RENDER_ASPECT = 0.72f
@@ -250,6 +251,7 @@ private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
         card.classes.joinToString("/") { it.name }.takeIf { it.isNotBlank() },
         card.cardType.name.takeIf { it.isNotBlank() },
         card.cardSet?.name?.takeIf { it.isNotBlank() },
+        SetReleaseDates.label(card.cardSet?.slug),
     )
     Column(
         modifier = modifier.fillMaxWidth(),
