@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
  * variants required no changes outside this file + Theme.kt.
  */
 data class AppTokens(
+    val isDark: Boolean,
     val surface: Color,
     val surfaceContainer: Color,
     val surfaceContainerHigh: Color,
@@ -30,6 +31,7 @@ data class AppTokens(
 )
 
 internal val DarkAppTokens = AppTokens(
+    isDark = true,
     surface = Color(0xFF0B0B0E),
     surfaceContainer = Color(0xFF15161B),
     surfaceContainerHigh = Color(0xFF1E1F26),
@@ -48,6 +50,7 @@ internal val DarkAppTokens = AppTokens(
 )
 
 internal val LightAppTokens = AppTokens(
+    isDark = false,
     surface = Color(0xFFF7F7FA),
     surfaceContainer = Color(0xFFFFFFFF),
     surfaceContainerHigh = Color(0xFFF1F2F5),
@@ -75,6 +78,8 @@ val LocalAppTokens = staticCompositionLocalOf { DarkAppTokens }
  * compile and now switch automatically with the active theme.
  */
 object DeckBuilderColors {
+    val IsDark: Boolean
+        @Composable @ReadOnlyComposable get() = LocalAppTokens.current.isDark
     val Surface: Color
         @Composable @ReadOnlyComposable get() = LocalAppTokens.current.surface
     val SurfaceContainer: Color

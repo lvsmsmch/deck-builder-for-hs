@@ -284,7 +284,7 @@ private fun Body(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .navigationBarsPadding()
-                    .padding(20.dp),
+                    .padding(end = 20.dp, bottom = 28.dp),
             ) {
                 Icon(
                     Icons.Outlined.Edit,

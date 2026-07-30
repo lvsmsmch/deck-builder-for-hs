@@ -5,8 +5,9 @@ import com.lvsmsmch.deckbuilder.data.crash.CrashLogger
 import com.lvsmsmch.deckbuilder.data.crash.NoopCrashLogger
 import com.lvsmsmch.deckbuilder.data.db.createAppDatabase
 import com.lvsmsmch.deckbuilder.presentation.platform.AppInfo
+import com.lvsmsmch.deckbuilder.presentation.platform.IosNetworkMonitor
+import com.lvsmsmch.deckbuilder.presentation.platform.IosToaster
 import com.lvsmsmch.deckbuilder.presentation.platform.NetworkMonitor
-import com.lvsmsmch.deckbuilder.presentation.platform.NetworkType
 import com.lvsmsmch.deckbuilder.presentation.platform.Toaster
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path.Companion.toPath
@@ -40,20 +41,9 @@ val iosPlatformModule = module {
 
     single<CrashLogger> { NoopCrashLogger }
 
-    single<Toaster> {
-        object : Toaster {
-            override fun show(message: String) {
-                println("Toast: $message")
-            }
-        }
-    }
+    single<Toaster> { IosToaster() }
 
-    // TODO: wire NWPathMonitor for real reachability; Wifi keeps downloads allowed.
-    single<NetworkMonitor> {
-        object : NetworkMonitor {
-            override fun currentNetworkType(): NetworkType = NetworkType.Wifi
-        }
-    }
+    single<NetworkMonitor> { IosNetworkMonitor() }
 
     single {
         AppInfo(

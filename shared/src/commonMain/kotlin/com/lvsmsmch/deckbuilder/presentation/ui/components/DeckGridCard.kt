@@ -31,6 +31,9 @@ fun DeckGridCard(
     modifier: Modifier = Modifier,
     dimImage: Boolean = false,
 ) {
+    // Max-copies dimming: dark theme keeps the black scrim; on the light theme
+    // a translucent black square looks dirty, so fade the card itself instead.
+    val isDark = com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors.IsDark
     Box(
         modifier = modifier
             .aspectRatio(CardAspect),
@@ -39,9 +42,11 @@ fun DeckGridCard(
             card = card,
             onClick = onClick,
             onLongClick = onLongClick,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(if (dimImage && !isDark) 0.45f else 1f),
         )
-        if (dimImage) {
+        if (dimImage && isDark) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
