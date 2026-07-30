@@ -4,9 +4,9 @@ import android.app.Application
 import android.util.Log
 import com.lvsmsmch.deckbuilder.data.crash.CrashReporter
 import com.lvsmsmch.deckbuilder.data.update.UpdateScheduler
-import com.lvsmsmch.deckbuilder.di.dataModule
+import com.lvsmsmch.deckbuilder.di.commonDataModule
 import com.lvsmsmch.deckbuilder.di.domainModule
-import com.lvsmsmch.deckbuilder.di.networkModule
+import com.lvsmsmch.deckbuilder.di.platformModule
 import com.lvsmsmch.deckbuilder.di.presentationModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -25,8 +25,8 @@ class DeckBuilderApp : Application() {
             androidLogger(if (BuildConfig.DEBUG) Level.INFO else Level.ERROR)
             androidContext(this@DeckBuilderApp)
             modules(
-                networkModule,
-                dataModule,
+                platformModule,
+                commonDataModule,
                 domainModule,
                 presentationModule,
             )

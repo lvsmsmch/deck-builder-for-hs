@@ -1,8 +1,12 @@
+import org.jetbrains.compose.ExperimentalComposeLibrary
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.jetbrains.compose)
+    alias(libs.plugins.kotlin.compose)
 }
 
 kotlin {
@@ -16,8 +20,15 @@ kotlin {
         }
     }
 
-    iosArm64()
-    iosSimulatorArm64()
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { target ->
+        target.binaries.framework {
+            baseName = "Shared"
+            isStatic = true
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -33,12 +44,27 @@ kotlin {
             implementation(libs.sqlite.bundled)
             api(libs.datastore.preferences.core)
             implementation(libs.atomicfu)
+
+            // Compose Multiplatform UI
+            api(compose.runtime)
+            api(compose.foundation)
+            api(compose.material3)
+            api(compose.materialIconsExtended)
+            api(compose.ui)
+            api(compose.components.resources)
+            api(libs.cmp.navigation.compose)
+            api(libs.koin.compose)
+            api(libs.koin.compose.viewmodel)
+            api(libs.coil.compose)
+            api(libs.coil.network.ktor3)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.ktx)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -47,6 +73,11 @@ kotlin {
             implementation(libs.junit)
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.lvsmsmch.deckbuilder.resources"
+    publicResClass = true
 }
 
 android {
