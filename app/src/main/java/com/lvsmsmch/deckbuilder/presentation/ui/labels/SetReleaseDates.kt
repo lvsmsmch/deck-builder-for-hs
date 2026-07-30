@@ -1,8 +1,6 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.labels
 
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import com.lvsmsmch.deckbuilder.util.formatMonthYear
 
 /**
  * Release month per expansion. HearthstoneJSON's cards.json carries only the
@@ -17,56 +15,55 @@ import java.util.Locale
  */
 object SetReleaseDates {
 
-    private val bySlug: Map<String, YearMonth> = mapOf(
-        "naxx" to YearMonth.of(2014, 7),
-        "gvg" to YearMonth.of(2014, 12),
-        "brm" to YearMonth.of(2015, 4),
-        "tgt" to YearMonth.of(2015, 8),
-        "loe" to YearMonth.of(2015, 11),
-        "og" to YearMonth.of(2016, 4),
-        "kara" to YearMonth.of(2016, 8),
-        "gangs" to YearMonth.of(2016, 12),
-        "ungoro" to YearMonth.of(2017, 4),
-        "icecrown" to YearMonth.of(2017, 8),
-        "lootapalooza" to YearMonth.of(2017, 12),
-        "gilneas" to YearMonth.of(2018, 4),
-        "boomsday" to YearMonth.of(2018, 8),
-        "troll" to YearMonth.of(2018, 12),
-        "dalaran" to YearMonth.of(2019, 4),
-        "uldum" to YearMonth.of(2019, 8),
-        "dragons" to YearMonth.of(2019, 12),
-        "year-of-the-dragon" to YearMonth.of(2020, 1),
-        "demon-hunter-initiate" to YearMonth.of(2020, 4),
-        "black-temple" to YearMonth.of(2020, 4),
-        "scholomance" to YearMonth.of(2020, 8),
-        "darkmoon-faire" to YearMonth.of(2020, 11),
-        "the-barrens" to YearMonth.of(2021, 3),
-        "stormwind" to YearMonth.of(2021, 8),
-        "alterac-valley" to YearMonth.of(2021, 12),
-        "the-sunken-city" to YearMonth.of(2022, 4),
-        "revendreth" to YearMonth.of(2022, 8),
-        "path-of-arthas" to YearMonth.of(2022, 12),
-        "return-of-the-lich-king" to YearMonth.of(2022, 12),
-        "battle-of-the-bands" to YearMonth.of(2023, 4),
-        "titans" to YearMonth.of(2023, 8),
-        "wonders" to YearMonth.of(2023, 8),
-        "wild-west" to YearMonth.of(2023, 11),
-        "whizbangs-workshop" to YearMonth.of(2024, 3),
-        "island-vacation" to YearMonth.of(2024, 7),
-        "space" to YearMonth.of(2024, 11),
-        "emerald-dream" to YearMonth.of(2025, 3),
-        "the-lost-city" to YearMonth.of(2025, 7),
-        "cataclysm" to YearMonth.of(2025, 11),
-        "escapefrom-violet-hold" to YearMonth.of(2026, 3),
-        "time-travel" to YearMonth.of(2026, 7),
+    private val bySlug: Map<String, Pair<Int, Int>> = mapOf(
+        "naxx" to (2014 to 7),
+        "gvg" to (2014 to 12),
+        "brm" to (2015 to 4),
+        "tgt" to (2015 to 8),
+        "loe" to (2015 to 11),
+        "og" to (2016 to 4),
+        "kara" to (2016 to 8),
+        "gangs" to (2016 to 12),
+        "ungoro" to (2017 to 4),
+        "icecrown" to (2017 to 8),
+        "lootapalooza" to (2017 to 12),
+        "gilneas" to (2018 to 4),
+        "boomsday" to (2018 to 8),
+        "troll" to (2018 to 12),
+        "dalaran" to (2019 to 4),
+        "uldum" to (2019 to 8),
+        "dragons" to (2019 to 12),
+        "year-of-the-dragon" to (2020 to 1),
+        "demon-hunter-initiate" to (2020 to 4),
+        "black-temple" to (2020 to 4),
+        "scholomance" to (2020 to 8),
+        "darkmoon-faire" to (2020 to 11),
+        "the-barrens" to (2021 to 3),
+        "stormwind" to (2021 to 8),
+        "alterac-valley" to (2021 to 12),
+        "the-sunken-city" to (2022 to 4),
+        "revendreth" to (2022 to 8),
+        "path-of-arthas" to (2022 to 12),
+        "return-of-the-lich-king" to (2022 to 12),
+        "battle-of-the-bands" to (2023 to 4),
+        "titans" to (2023 to 8),
+        "wonders" to (2023 to 8),
+        "wild-west" to (2023 to 11),
+        "whizbangs-workshop" to (2024 to 3),
+        "island-vacation" to (2024 to 7),
+        "space" to (2024 to 11),
+        "emerald-dream" to (2025 to 3),
+        "the-lost-city" to (2025 to 7),
+        "cataclysm" to (2025 to 11),
+        "escapefrom-violet-hold" to (2026 to 3),
+        "time-travel" to (2026 to 7),
     )
 
-    fun releaseMonthFor(setSlug: String?): YearMonth? = setSlug?.let(bySlug::get)
+    fun releaseMonthFor(setSlug: String?): Pair<Int, Int>? = setSlug?.let(bySlug::get)
 
     /** Localized "March 2021"-style label, or null when the set is unknown. */
-    fun label(setSlug: String?, locale: Locale = Locale.getDefault()): String? {
-        val month = releaseMonthFor(setSlug) ?: return null
-        val text = month.format(DateTimeFormatter.ofPattern("LLLL yyyy", locale))
-        return text.replaceFirstChar { if (it.isLowerCase()) it.titlecase(locale) else it.toString() }
+    fun label(setSlug: String?): String? {
+        val (year, month) = releaseMonthFor(setSlug) ?: return null
+        return formatMonthYear(year, month)
     }
 }

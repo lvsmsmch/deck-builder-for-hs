@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.util.formatFixed
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
@@ -48,7 +49,7 @@ fun DeckStatsDialog(deck: Deck, onDismiss: () -> Unit) {
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 StatRow(stringResource(R.string.stats_cards), "${deck.cardCount}/${deck.maxCardCount}")
-                StatRow(stringResource(R.string.stats_avg_mana), "%.1f".format(stats.avgManaCost))
+                StatRow(stringResource(R.string.stats_avg_mana), formatFixed(stats.avgManaCost, 1))
                 StatRow(stringResource(R.string.stats_minions), stats.minionCount.toString())
                 StatRow(stringResource(R.string.stats_spells), stats.spellCount.toString())
                 StatRow(stringResource(R.string.stats_weapons), stats.weaponCount.toString())

@@ -28,7 +28,6 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -53,6 +52,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImagePainter
+import kotlinx.datetime.Clock
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.lvsmsmch.deckbuilder.R
@@ -94,7 +94,7 @@ fun CardPreviewDialog(
     // So after any pinch we briefly ignore dismiss taps altogether.
     var suppressDismissUntil by remember(card.id) { mutableLongStateOf(0L) }
     val dismissUnlessZooming = {
-        if (SystemClock.uptimeMillis() >= suppressDismissUntil) onDismiss()
+        if (Clock.System.now().toEpochMilliseconds() >= suppressDismissUntil) onDismiss()
     }
     val scale by animateFloatAsState(targetScale, tween(180), label = "preview-card-scale")
     val offset by animateOffsetAsState(targetOffset, tween(180), label = "preview-card-offset")
@@ -177,7 +177,7 @@ fun CardPreviewDialog(
                                     targetScale = 1f
                                     targetOffset = Offset.Zero
                                     if (sawPinch) {
-                                        suppressDismissUntil = SystemClock.uptimeMillis() + 400L
+                                        suppressDismissUntil = Clock.System.now().toEpochMilliseconds() + 400L
                                     }
                                 }
                             },

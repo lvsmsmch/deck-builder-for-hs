@@ -1,21 +1,20 @@
 package com.lvsmsmch.deckbuilder.data.debug
 
-import android.os.SystemClock
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import kotlinx.datetime.Clock
+import kotlin.time.TimeSource
 
 class SessionLog {
     private val lock = Any()
     private val lines = ArrayDeque<String>()
-    private val startedAt = System.currentTimeMillis()
+    private val startedAt = Clock.System.now()
+    private val timer = TimeSource.Monotonic.markNow()
 
     init {
-        add("Session", "started ${formatDate(startedAt)}")
+        add("Session", "started $startedAt")
     }
 
     fun add(tag: String, message: String) {
-        val elapsed = SystemClock.elapsedRealtime()
+        val elapsed = timer.elapsedNow().inWholeMilliseconds
         synchronized(lock) {
             lines.addLast("$elapsed [$tag] $message")
             while (lines.size > MAX_LINES) lines.removeFirst()
@@ -25,13 +24,10 @@ class SessionLog {
     fun dump(): String = synchronized(lock) {
         buildString {
             appendLine("Deck Builder debug log")
-            appendLine("session=${formatDate(startedAt)}")
+            appendLine("session=$startedAt")
             lines.forEach(::appendLine)
         }
     }
-
-    private fun formatDate(epochMs: Long): String =
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(Date(epochMs))
 
     private companion object {
         const val MAX_LINES = 2_000

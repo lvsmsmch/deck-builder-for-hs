@@ -49,6 +49,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.CardDataScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.settings.SettingsScreen
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.koin.compose.koinInject
 
 private const val SCREEN_FADE_IN_MS = 260
@@ -200,7 +201,7 @@ private fun HomeScreen(
     var lastBackAt by remember { mutableLongStateOf(0L) }
 
     BackHandler {
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         if (now - lastBackAt <= 2_000L) {
             (context as? Activity)?.finish()
         } else {

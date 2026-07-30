@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import coil3.imageLoader
 import com.lvsmsmch.deckbuilder.BuildConfig
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.util.formatBytes
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
@@ -583,8 +584,4 @@ private fun Context.clearImageCache() {
     loader.diskCache?.clear()
 }
 
-private fun formatBytes(bytes: Long): String = when {
-    bytes >= 1024L * 1024L -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
-    bytes >= 1024L -> "%.1f KB".format(bytes / 1024.0)
-    else -> "$bytes B"
-}
+

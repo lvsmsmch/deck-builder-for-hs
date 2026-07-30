@@ -19,7 +19,7 @@ class UpdateRunner(
     private val rotation: RotationRepository,
     private val notifier: UpdateNotifier,
     private val crash: CrashReporter,
-    private val now: () -> Long = System::currentTimeMillis,
+    private val now: () -> Long = { kotlinx.datetime.Clock.System.now().toEpochMilliseconds() },
     private val isMeteredNetwork: () -> Boolean = { false },
 ) {
 

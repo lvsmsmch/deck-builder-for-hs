@@ -1,8 +1,7 @@
 package com.lvsmsmch.deckbuilder.data.deckstring
 
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.util.Base64
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
  * Hearthstone deckstring codec.
@@ -20,7 +19,11 @@ import java.util.Base64
  *     if 1: three groups, each suffixed per-card with owner dbfId varint
  *   ]
  * The whole byte stream is base64-encoded.
+ *
+ * Pure common Kotlin (stdlib Base64 + index cursor instead of java.io) so the
+ * codec can live in a multiplatform source set.
  */
+@OptIn(ExperimentalEncodingApi::class)
 object Deckstring {
 
     private const val RESERVED_BYTE = 0
@@ -30,62 +33,61 @@ object Deckstring {
         val cleaned = code.trim()
         require(cleaned.isNotEmpty()) { "Deckstring is empty" }
         val raw = try {
-            Base64.getDecoder().decode(cleaned)
+            Base64.decode(cleaned)
         } catch (e: IllegalArgumentException) {
             throw IllegalArgumentException("Deckstring is not valid base64", e)
         }
-        ByteArrayInputStream(raw).use { stream ->
-            val reserved = stream.readByteOrThrow()
-            require(reserved == RESERVED_BYTE) { "Bad reserved byte: $reserved" }
-            val version = stream.readVarInt()
-            require(version == VERSION) { "Unsupported deckstring version: $version" }
+        val stream = ByteCursor(raw)
+        val reserved = stream.readByteOrThrow()
+        require(reserved == RESERVED_BYTE) { "Bad reserved byte: $reserved" }
+        val version = stream.readVarInt()
+        require(version == VERSION) { "Unsupported deckstring version: $version" }
 
-            val format = DeckstringFormat.fromCode(stream.readVarInt())
+        val format = DeckstringFormat.fromCode(stream.readVarInt())
 
-            val heroCount = stream.readVarInt()
-            val heroes = ArrayList<Int>(heroCount).apply {
-                repeat(heroCount) { add(stream.readVarInt()) }
-            }
+        val heroCount = stream.readVarInt()
+        val heroes = ArrayList<Int>(heroCount).apply {
+            repeat(heroCount) { add(stream.readVarInt()) }
+        }
 
-            val cards = ArrayList<DeckstringCard>()
-            repeat(stream.readVarInt()) { cards += DeckstringCard(stream.readVarInt(), 1) }
-            repeat(stream.readVarInt()) { cards += DeckstringCard(stream.readVarInt(), 2) }
-            repeat(stream.readVarInt()) {
-                val dbfId = stream.readVarInt()
-                val count = stream.readVarInt()
-                cards += DeckstringCard(dbfId, count)
-            }
+        val cards = ArrayList<DeckstringCard>()
+        repeat(stream.readVarInt()) { cards += DeckstringCard(stream.readVarInt(), 1) }
+        repeat(stream.readVarInt()) { cards += DeckstringCard(stream.readVarInt(), 2) }
+        repeat(stream.readVarInt()) {
+            val dbfId = stream.readVarInt()
+            val count = stream.readVarInt()
+            cards += DeckstringCard(dbfId, count)
+        }
 
-            val sideboards = if (stream.available() == 0) {
+        val sideboards = if (stream.available() == 0) {
+            emptyList()
+        } else {
+            val flag = stream.readVarInt()
+            if (flag != 1) {
                 emptyList()
             } else {
-                val flag = stream.readVarInt()
-                if (flag != 1) {
-                    emptyList()
-                } else {
-                    buildList {
-                        repeat(stream.readVarInt()) {
-                            val dbfId = stream.readVarInt()
-                            val owner = stream.readVarInt()
-                            add(DeckstringSideboardCard(dbfId, 1, owner))
-                        }
-                        repeat(stream.readVarInt()) {
-                            val dbfId = stream.readVarInt()
-                            val owner = stream.readVarInt()
-                            add(DeckstringSideboardCard(dbfId, 2, owner))
-                        }
-                        repeat(stream.readVarInt()) {
-                            val dbfId = stream.readVarInt()
-                            val count = stream.readVarInt()
-                            val owner = stream.readVarInt()
-                            add(DeckstringSideboardCard(dbfId, count, owner))
-                        }
+                buildList {
+                    repeat(stream.readVarInt()) {
+                        val dbfId = stream.readVarInt()
+                        val owner = stream.readVarInt()
+                        add(DeckstringSideboardCard(dbfId, 1, owner))
+                    }
+                    repeat(stream.readVarInt()) {
+                        val dbfId = stream.readVarInt()
+                        val owner = stream.readVarInt()
+                        add(DeckstringSideboardCard(dbfId, 2, owner))
+                    }
+                    repeat(stream.readVarInt()) {
+                        val dbfId = stream.readVarInt()
+                        val count = stream.readVarInt()
+                        val owner = stream.readVarInt()
+                        add(DeckstringSideboardCard(dbfId, count, owner))
                     }
                 }
             }
-
-            return DeckstringPayload(format, heroes, cards, sideboards)
         }
+
+        return DeckstringPayload(format, heroes, cards, sideboards)
     }
 
     fun encode(payload: DeckstringPayload): String {
@@ -94,7 +96,7 @@ object Deckstring {
             "All card entries must have positive dbfId and count"
         }
 
-        val out = ByteArrayOutputStream()
+        val out = ByteWriter()
         out.write(RESERVED_BYTE)
         out.writeVarInt(VERSION)
         out.writeVarInt(payload.format.code)
@@ -115,7 +117,7 @@ object Deckstring {
             writeSbGroupN(out, sxn)
         }
 
-        return Base64.getEncoder().encodeToString(out.toByteArray())
+        return Base64.encode(out.toByteArray())
     }
 
     private fun partitionByCount(
@@ -136,12 +138,12 @@ object Deckstring {
         return Triple(x1, x2, xn)
     }
 
-    private fun writeGroup1(out: ByteArrayOutputStream, group: List<DeckstringCard>) {
+    private fun writeGroup1(out: ByteWriter, group: List<DeckstringCard>) {
         out.writeVarInt(group.size)
         group.forEach { out.writeVarInt(it.dbfId) }
     }
 
-    private fun writeGroupN(out: ByteArrayOutputStream, group: List<DeckstringCard>) {
+    private fun writeGroupN(out: ByteWriter, group: List<DeckstringCard>) {
         out.writeVarInt(group.size)
         group.forEach {
             out.writeVarInt(it.dbfId)
@@ -149,7 +151,7 @@ object Deckstring {
         }
     }
 
-    private fun writeSbGroup1(out: ByteArrayOutputStream, group: List<DeckstringSideboardCard>) {
+    private fun writeSbGroup1(out: ByteWriter, group: List<DeckstringSideboardCard>) {
         out.writeVarInt(group.size)
         group.forEach {
             out.writeVarInt(it.dbfId)
@@ -157,7 +159,7 @@ object Deckstring {
         }
     }
 
-    private fun writeSbGroupN(out: ByteArrayOutputStream, group: List<DeckstringSideboardCard>) {
+    private fun writeSbGroupN(out: ByteWriter, group: List<DeckstringSideboardCard>) {
         out.writeVarInt(group.size)
         group.forEach {
             out.writeVarInt(it.dbfId)
@@ -192,35 +194,55 @@ enum class DeckstringFormat(val code: Int) {
     }
 }
 
-private fun ByteArrayInputStream.readByteOrThrow(): Int {
-    val b = read()
-    if (b < 0) throw IllegalArgumentException("Unexpected end of deckstring stream")
-    return b
-}
+/** Minimal read cursor over a byte array (common replacement for ByteArrayInputStream). */
+private class ByteCursor(private val bytes: ByteArray) {
+    private var pos = 0
 
-private fun ByteArrayInputStream.readVarInt(): Int {
-    var result = 0
-    var shift = 0
-    while (true) {
+    fun available(): Int = bytes.size - pos
+
+    private fun read(): Int = if (pos < bytes.size) bytes[pos++].toInt() and 0xFF else -1
+
+    fun readByteOrThrow(): Int {
         val b = read()
-        if (b < 0) throw IllegalArgumentException("Truncated varint in deckstring stream")
-        result = result or ((b and 0x7F) shl shift)
-        if ((b and 0x80) == 0) return result
-        shift += 7
-        if (shift > 35) throw IllegalArgumentException("Varint too long in deckstring stream")
+        if (b < 0) throw IllegalArgumentException("Unexpected end of deckstring stream")
+        return b
+    }
+
+    fun readVarInt(): Int {
+        var result = 0
+        var shift = 0
+        while (true) {
+            val b = read()
+            if (b < 0) throw IllegalArgumentException("Truncated varint in deckstring stream")
+            result = result or ((b and 0x7F) shl shift)
+            if ((b and 0x80) == 0) return result
+            shift += 7
+            if (shift > 35) throw IllegalArgumentException("Varint too long in deckstring stream")
+        }
     }
 }
 
-private fun ByteArrayOutputStream.writeVarInt(value: Int) {
-    require(value >= 0) { "Varint must be non-negative, got $value" }
-    var v = value
-    while (true) {
-        val low7 = v and 0x7F
-        v = v ushr 7
-        if (v == 0) {
-            write(low7)
-            return
-        }
-        write(low7 or 0x80)
+/** Minimal growable byte sink (common replacement for ByteArrayOutputStream). */
+private class ByteWriter {
+    private val bytes = ArrayList<Byte>(64)
+
+    fun write(value: Int) {
+        bytes.add((value and 0xFF).toByte())
     }
+
+    fun writeVarInt(value: Int) {
+        require(value >= 0) { "Varint must be non-negative, got $value" }
+        var v = value
+        while (true) {
+            val low7 = v and 0x7F
+            v = v ushr 7
+            if (v == 0) {
+                write(low7)
+                return
+            }
+            write(low7 or 0x80)
+        }
+    }
+
+    fun toByteArray(): ByteArray = bytes.toByteArray()
 }

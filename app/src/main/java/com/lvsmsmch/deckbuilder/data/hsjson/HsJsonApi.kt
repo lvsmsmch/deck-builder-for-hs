@@ -7,6 +7,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.request.get
+import kotlinx.datetime.Clock
 
 /**
  * HearthstoneJSON CDN. Base URL: https://api.hearthstonejson.com/v1/
@@ -29,7 +30,7 @@ class HsJsonApi(
         var lastEmitAt = 0L
         return client.get("$baseUrl$build/$locale/cards.json") {
             onDownload { downloaded, total ->
-                val now = System.currentTimeMillis()
+                val now = Clock.System.now().toEpochMilliseconds()
                 if (now - lastEmitAt >= 120L || (total != null && downloaded == total)) {
                     lastEmitAt = now
                     notifier.setCardDataProgress(

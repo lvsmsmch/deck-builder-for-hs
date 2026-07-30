@@ -37,6 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.util.formatBytes
+import com.lvsmsmch.deckbuilder.util.formatDateTime
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
@@ -221,15 +223,7 @@ private fun InfoRow(title: String, value: String) {
 @Composable
 private fun formatLastCheck(epochMs: Long?): String {
     if (epochMs == null) return stringResource(R.string.settings_last_check_never)
-    val fmt = java.text.DateFormat.getDateTimeInstance(
-        java.text.DateFormat.MEDIUM,
-        java.text.DateFormat.SHORT,
-    )
-    return fmt.format(java.util.Date(epochMs))
+    return formatDateTime(epochMs)
 }
 
-private fun formatBytes(bytes: Long): String = when {
-    bytes >= 1024L * 1024L -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
-    bytes >= 1024L -> "%.1f KB".format(bytes / 1024.0)
-    else -> "$bytes B"
-}
+

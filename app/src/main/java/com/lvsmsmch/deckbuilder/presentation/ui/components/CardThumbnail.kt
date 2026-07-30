@@ -1,6 +1,6 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
-import android.os.SystemClock
+import kotlinx.datetime.Clock
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,7 +47,7 @@ fun CardThumbnail(
     val art = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
     val context = LocalContext.current
     val sessionLog: SessionLog = koinInject()
-    val started = remember(art) { SystemClock.elapsedRealtime() }
+    val started = remember(art) { Clock.System.now().toEpochMilliseconds() }
     val painter = rememberAsyncImagePainter(
         ImageRequest.Builder(context)
             .data(art)
@@ -61,9 +61,9 @@ fun CardThumbnail(
     LaunchedEffect(state) {
         when (state) {
             is AsyncImagePainter.State.Success ->
-                sessionLog.add("Image.Card", "loaded id=${card.id} ms=${SystemClock.elapsedRealtime() - started}")
+                sessionLog.add("Image.Card", "loaded id=${card.id} ms=${Clock.System.now().toEpochMilliseconds() - started}")
             is AsyncImagePainter.State.Error ->
-                sessionLog.add("Image.Card", "FAILED id=${card.id} url=$art ms=${SystemClock.elapsedRealtime() - started}")
+                sessionLog.add("Image.Card", "FAILED id=${card.id} url=$art ms=${Clock.System.now().toEpochMilliseconds() - started}")
             else -> Unit
         }
     }

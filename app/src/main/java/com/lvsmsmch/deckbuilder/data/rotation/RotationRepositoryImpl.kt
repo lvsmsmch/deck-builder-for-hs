@@ -12,7 +12,7 @@ private const val TAG = "DB.Rotation.Repo"
 class RotationRepositoryImpl(
     private val api: RotationApi,
     private val store: RotationStore,
-    private val now: () -> Long = System::currentTimeMillis,
+    private val now: () -> Long = { kotlinx.datetime.Clock.System.now().toEpochMilliseconds() },
 ) : RotationRepository {
 
     private val mutex = Mutex()

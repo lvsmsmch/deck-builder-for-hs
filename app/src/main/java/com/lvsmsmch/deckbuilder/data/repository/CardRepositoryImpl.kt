@@ -1,7 +1,7 @@
 package com.lvsmsmch.deckbuilder.data.repository
 
+import kotlinx.datetime.Clock
 import android.util.Log
-import android.os.SystemClock
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
@@ -53,7 +53,7 @@ class CardRepositoryImpl(
 
     override suspend fun getCard(idOrSlug: String, locale: String?): Result<Card> =
         withContext(Dispatchers.IO) {
-            val started = SystemClock.elapsedRealtime()
+            val started = Clock.System.now().toEpochMilliseconds()
             runCatchingResult {
                 val resolved = locales.resolve(locale)
                 val snap = hsJson.ensureLoaded(resolved)
@@ -69,7 +69,7 @@ class CardRepositoryImpl(
                 when (r) {
                     is Result.Success -> {
                         Log.i(TAG, "getCard: OK idOrSlug=$idOrSlug name='${r.data.name}'")
-                        sessionLog.add(TAG, "getCard id=$idOrSlug name='${r.data.name}' ms=${SystemClock.elapsedRealtime() - started}")
+                        sessionLog.add(TAG, "getCard id=$idOrSlug name='${r.data.name}' ms=${Clock.System.now().toEpochMilliseconds() - started}")
                     }
                     is Result.Error -> {
                         Log.w(TAG, "getCard: FAILED idOrSlug=$idOrSlug: ${r.throwable.message}", r.throwable)
@@ -85,7 +85,7 @@ class CardRepositoryImpl(
         pageSize: Int,
         locale: String?,
     ): Result<Page<Card>> = withContext(Dispatchers.IO) {
-        val started = SystemClock.elapsedRealtime()
+        val started = Clock.System.now().toEpochMilliseconds()
         runCatchingResult {
             val resolved = locales.resolve(locale)
             val snap = hsJson.ensureLoaded(resolved)
@@ -119,7 +119,7 @@ class CardRepositoryImpl(
                 )
                 is Result.Error -> Log.w(TAG, "searchCards: FAILED $summary: ${r.throwable.message}", r.throwable)
             }
-            sessionLog.add(TAG, "search $summary result=${(r as? Result.Success)?.data?.items?.size ?: "FAILED"} ms=${SystemClock.elapsedRealtime() - started}")
+            sessionLog.add(TAG, "search $summary result=${(r as? Result.Success)?.data?.items?.size ?: "FAILED"} ms=${Clock.System.now().toEpochMilliseconds() - started}")
         }
     }
 

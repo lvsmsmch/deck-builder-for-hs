@@ -61,6 +61,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.R
+import com.lvsmsmch.deckbuilder.util.formatReadableMb
 import com.lvsmsmch.deckbuilder.data.update.CardDataProgress
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
@@ -544,12 +545,12 @@ private fun CenteredSpinner(progress: CardDataProgress?) {
 private fun cardProgressText(progress: CardDataProgress?): String = when (progress?.stage) {
     CardDataProgress.Stage.RESOLVING_BUILD -> stringResource(R.string.library_loading_resolving)
     CardDataProgress.Stage.DOWNLOADING -> {
-        val downloaded = progress.downloadedBytes.toReadableMb()
-        val total = progress.totalBytes?.toReadableMb()
+        val downloaded = progress.downloadedBytes.let(::formatReadableMb)
+        val total = progress.totalBytes?.let(::formatReadableMb)
         if (total != null) {
             val remaining = ((progress.totalBytes ?: 0L) - progress.downloadedBytes)
                 .coerceAtLeast(0L)
-                .toReadableMb()
+                .let(::formatReadableMb)
             stringResource(R.string.library_loading_downloading_known, downloaded, total, remaining)
         } else {
             stringResource(R.string.library_loading_downloading, downloaded)
@@ -560,14 +561,7 @@ private fun cardProgressText(progress: CardDataProgress?): String = when (progre
     null -> stringResource(R.string.library_loading_cards)
 }
 
-private fun Long.toReadableMb(): String {
-    val mb = this.toDouble() / (1024.0 * 1024.0)
-    return if (mb >= 10.0) {
-        "%.0f MB".format(mb)
-    } else {
-        "%.1f MB".format(mb)
-    }
-}
+
 
 @Composable
 private fun RotationLagBanner(

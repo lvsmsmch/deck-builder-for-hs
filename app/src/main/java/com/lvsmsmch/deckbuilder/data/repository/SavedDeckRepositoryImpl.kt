@@ -21,7 +21,7 @@ private const val TAG = "DB.SavedDeckRepo"
 
 class SavedDeckRepositoryImpl(
     private val dao: SavedDeckDao,
-    private val nowMs: () -> Long = System::currentTimeMillis,
+    private val nowMs: () -> Long = { kotlinx.datetime.Clock.System.now().toEpochMilliseconds() },
 ) : SavedDeckRepository {
 
     override fun observeAll(): Flow<List<DeckPreview>> =

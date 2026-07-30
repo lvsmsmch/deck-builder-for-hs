@@ -1,7 +1,7 @@
 package com.lvsmsmch.deckbuilder.data.repository
 
+import kotlinx.datetime.Clock
 import android.util.Log
-import android.os.SystemClock
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.deckstring.Deckstring
 import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringCard
@@ -36,7 +36,7 @@ class DeckRepositoryImpl(
 
     override suspend fun decodeByCode(code: String, locale: String?): Result<Deck> =
         withContext(Dispatchers.IO) {
-            val started = SystemClock.elapsedRealtime()
+            val started = Clock.System.now().toEpochMilliseconds()
             runCatchingResult {
                 val resolved = locales.resolve(locale)
                 val payload = Deckstring.decode(code)
@@ -52,7 +52,7 @@ class DeckRepositoryImpl(
                         TAG, "decodeByCode: FAILED code=$codePreview: ${r.throwable.message}", r.throwable,
                     )
                 }
-                sessionLog.add(TAG, "decode code=$codePreview result=${if (r is Result.Success) "OK" else "FAILED"} ms=${SystemClock.elapsedRealtime() - started}")
+                sessionLog.add(TAG, "decode code=$codePreview result=${if (r is Result.Success) "OK" else "FAILED"} ms=${Clock.System.now().toEpochMilliseconds() - started}")
             }
         }
 
