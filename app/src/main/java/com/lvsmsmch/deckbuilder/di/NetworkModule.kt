@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.di
 
 import com.lvsmsmch.deckbuilder.BuildConfig
 import com.lvsmsmch.deckbuilder.data.db.AppDatabase
+import com.lvsmsmch.deckbuilder.data.db.createAppDatabase
 import com.lvsmsmch.deckbuilder.data.hsjson.BuildChecker
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonApi
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonBuildStore
@@ -96,7 +97,7 @@ val networkModule = module {
     }
 
     // Persistence
-    single { AppDatabase.build(androidContext()) }
+    single { createAppDatabase(androidContext()) }
     single { get<AppDatabase>().savedDeckDao() }
     single { get<AppDatabase>().hsJsonCardDao() }
 

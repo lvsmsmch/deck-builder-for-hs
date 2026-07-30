@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.onEach
 class CrashReporter(
     private val prefs: PreferencesRepository,
     private val scope: CoroutineScope,
-) {
+) : CrashLogger {
     private val crashlytics: FirebaseCrashlytics? =
         runCatching { FirebaseCrashlytics.getInstance() }
             .onFailure { Log.i(TAG, "Crashlytics unavailable (${it.message}); reporter is a no-op") }
@@ -35,11 +35,11 @@ class CrashReporter(
             .launchIn(scope)
     }
 
-    fun recordException(t: Throwable) {
+    override fun recordException(t: Throwable) {
         crashlytics?.recordException(t)
     }
 
-    fun log(message: String) {
+    override fun log(message: String) {
         crashlytics?.log(message)
     }
 

@@ -207,7 +207,8 @@ private fun Body(
                     color = DeckBuilderColors.OnSurface,
                     modifier = Modifier.weight(1f),
                 )
-                if (card.rarity != null) {
+                val rarity = card.rarity
+                if (rarity != null) {
                     Box(
                         modifier = Modifier
                             .size(10.dp)
@@ -216,7 +217,7 @@ private fun Body(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = rarityLabel(card.rarity.slug),
+                        text = rarityLabel(rarity.slug),
                         style = MaterialTheme.typography.labelMedium,
                         color = rarityColor,
                     )

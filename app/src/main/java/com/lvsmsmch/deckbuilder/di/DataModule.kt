@@ -1,5 +1,6 @@
 package com.lvsmsmch.deckbuilder.di
 
+import com.lvsmsmch.deckbuilder.data.crash.CrashLogger
 import com.lvsmsmch.deckbuilder.data.crash.CrashReporter
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.prefs.CurrentLocaleProvider
@@ -34,4 +35,5 @@ val dataModule = module {
     // Crash reporting — safe no-op when google-services.json is missing.
     single { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     single { CrashReporter(prefs = get(), scope = get()) }
+    single<CrashLogger> { get<CrashReporter>() }
 }
