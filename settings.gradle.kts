@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "deck-builder-for-hs"
 include(":app")
+include(":shared")
