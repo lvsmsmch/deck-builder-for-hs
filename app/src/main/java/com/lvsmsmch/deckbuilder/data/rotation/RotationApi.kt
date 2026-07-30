@@ -1,26 +1,27 @@
 package com.lvsmsmch.deckbuilder.data.rotation
 
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.OkHttpClient
-import okhttp3.Request
 
 private const val TAG = "DB.Rotation.Api"
 
 /**
- * Thin OkHttp wrapper. Two endpoints:
+ * Thin Ktor wrapper. Endpoints:
  *
  * - raw enums.py source from `raw.githubusercontent.com`
  * - raw utils/__init__.py source from `raw.githubusercontent.com`
  * - latest commit metadata for that file from the GitHub commits API
  */
 class RotationApi(
-    private val client: OkHttpClient,
+    private val client: HttpClient,
     private val json: Json,
     private val rawUrl: String = DEFAULT_RAW_URL,
     private val utilsUrl: String = DEFAULT_UTILS_URL,
@@ -29,50 +30,31 @@ class RotationApi(
 
     data class CommitInfo(val sha: String, val committedAtIso: String?)
 
-    // All three use OkHttp's blocking execute(); callers run on the Main
-    // dispatcher (UI-triggered rechecks), so hop to IO or the call throws
-    // NetworkOnMainThreadException and gets swallowed by runCatching.
-    suspend fun fetchEnumsSource(): String? = withContext(Dispatchers.IO) {
-        runCatching {
-            val req = Request.Builder().url(rawUrl).get().build()
-            client.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) error("HTTP ${resp.code}")
-                resp.body?.string() ?: error("empty body")
-            }
-        }.onFailure { Log.w(TAG, "fetchEnumsSource failed: ${it.message}") }
-            .getOrNull()
-    }
+    suspend fun fetchEnumsSource(): String? = fetchText(rawUrl, "fetchEnumsSource")
 
-    suspend fun fetchUtilsSource(): String? = withContext(Dispatchers.IO) {
-        runCatching {
-            val req = Request.Builder().url(utilsUrl).get().build()
-            client.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) error("HTTP ${resp.code}")
-                resp.body?.string() ?: error("empty body")
-            }
-        }.onFailure { Log.w(TAG, "fetchUtilsSource failed: ${it.message}") }
-            .getOrNull()
-    }
+    suspend fun fetchUtilsSource(): String? = fetchText(utilsUrl, "fetchUtilsSource")
 
-    suspend fun fetchLatestCommit(): CommitInfo? = withContext(Dispatchers.IO) {
-        runCatching {
-            val req = Request.Builder().url(commitsUrl).get()
-                .header("Accept", "application/vnd.github+json")
-                .build()
-            client.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) error("HTTP ${resp.code}")
-                val body = resp.body?.string() ?: error("empty body")
-                val arr = json.parseToJsonElement(body).jsonArray
-                val first = arr.firstOrNull()?.jsonObject ?: return@use null
-                val sha = first["sha"]?.jsonPrimitive?.content ?: return@use null
-                val date = first["commit"]?.jsonObject
-                    ?.get("committer")?.jsonObject
-                    ?.get("date")?.jsonPrimitive?.content
-                CommitInfo(sha = sha, committedAtIso = date)
-            }
-        }.onFailure { Log.w(TAG, "fetchLatestCommit failed: ${it.message}") }
-            .getOrNull()
-    }
+    suspend fun fetchLatestCommit(): CommitInfo? = runCatching {
+        val resp = client.get(commitsUrl) {
+            header("Accept", "application/vnd.github+json")
+        }
+        if (!resp.status.isSuccess()) error("HTTP ${resp.status.value}")
+        val arr = json.parseToJsonElement(resp.bodyAsText()).jsonArray
+        val first = arr.firstOrNull()?.jsonObject ?: return@runCatching null
+        val sha = first["sha"]?.jsonPrimitive?.content ?: return@runCatching null
+        val date = first["commit"]?.jsonObject
+            ?.get("committer")?.jsonObject
+            ?.get("date")?.jsonPrimitive?.content
+        CommitInfo(sha = sha, committedAtIso = date)
+    }.onFailure { Log.w(TAG, "fetchLatestCommit failed: ${it.message}") }
+        .getOrNull()
+
+    private suspend fun fetchText(url: String, what: String): String? = runCatching {
+        val resp = client.get(url)
+        if (!resp.status.isSuccess()) error("HTTP ${resp.status.value}")
+        resp.bodyAsText()
+    }.onFailure { Log.w(TAG, "$what failed: ${it.message}") }
+        .getOrNull()
 
     companion object {
         const val DEFAULT_RAW_URL =

@@ -3,7 +3,6 @@ package com.lvsmsmch.deckbuilder.di
 import com.lvsmsmch.deckbuilder.BuildConfig
 import com.lvsmsmch.deckbuilder.data.db.AppDatabase
 import com.lvsmsmch.deckbuilder.data.hsjson.BuildChecker
-import com.lvsmsmch.deckbuilder.data.hsjson.CardDataProgressInterceptor
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonApi
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonBuildStore
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
@@ -13,26 +12,21 @@ import com.lvsmsmch.deckbuilder.data.rotation.RotationRepositoryImpl
 import com.lvsmsmch.deckbuilder.data.rotation.RotationStore
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.data.update.UpdateRunner
-import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import java.util.concurrent.TimeUnit
-
-private const val HSJSON_BASE_URL = "https://api.hearthstonejson.com/"
 
 private val HSJSON = named("hsjson")
 private val HSJSON_BUILD = named("hsjson_build")
-
-private fun loggingInterceptor() = HttpLoggingInterceptor().apply {
-    level = HttpLoggingInterceptor.Level.BASIC
-}
 
 val networkModule = module {
 
@@ -44,36 +38,42 @@ val networkModule = module {
         }
     }
 
-    // HearthstoneJSON CDN client — no auth, follows redirects normally.
-    single<OkHttpClient>(HSJSON) {
-        OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(90, TimeUnit.SECONDS)
-            .addNetworkInterceptor(CardDataProgressInterceptor(get()))
-            .apply { if (BuildConfig.DEBUG) addInterceptor(loggingInterceptor()) }
-            .build()
+    // HearthstoneJSON CDN client — no auth, follows redirects normally. The
+    // long request timeout covers the ~25 MB cards.json download.
+    single<HttpClient>(HSJSON) {
+        HttpClient(OkHttp) {
+            install(ContentNegotiation) { json(get<Json>()) }
+            install(HttpTimeout) {
+                connectTimeoutMillis = 15_000
+                requestTimeoutMillis = 180_000
+                socketTimeoutMillis = 90_000
+            }
+            if (BuildConfig.DEBUG) {
+                install(Logging) {
+                    logger = object : Logger {
+                        override fun log(message: String) {
+                            android.util.Log.d("DB.Http", message)
+                        }
+                    }
+                    level = LogLevel.INFO
+                }
+            }
+        }
     }
 
-    // HEAD-only client for resolving build numbers from the `latest` redirect.
-    single<OkHttpClient>(HSJSON_BUILD) {
-        OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .followRedirects(false)
-            .followSslRedirects(false)
-            .build()
+    // Client for resolving build numbers from the `latest` index — short
+    // timeouts, no redirect following.
+    single<HttpClient>(HSJSON_BUILD) {
+        HttpClient(OkHttp) {
+            followRedirects = false
+            install(HttpTimeout) {
+                connectTimeoutMillis = 10_000
+                requestTimeoutMillis = 15_000
+            }
+        }
     }
 
-    single<Retrofit>(HSJSON) {
-        val converter = get<Json>().asConverterFactory("application/json".toMediaType())
-        Retrofit.Builder()
-            .baseUrl(HSJSON_BASE_URL)
-            .client(get(HSJSON))
-            .addConverterFactory(converter)
-            .build()
-    }
-
-    single<HsJsonApi> { get<Retrofit>(HSJSON).create(HsJsonApi::class.java) }
+    single { HsJsonApi(client = get(HSJSON), notifier = get()) }
     single { BuildChecker(client = get(HSJSON_BUILD)) }
     single { HsJsonBuildStore(store = get()) }
     single {
@@ -91,7 +91,9 @@ val networkModule = module {
     // Rotation pipeline (raw GitHub) — re-uses the HsJson client, no auth needed.
     single { RotationApi(client = get(HSJSON), json = get()) }
     single { RotationStore(store = get()) }
-    single<RotationRepository> { RotationRepositoryImpl(api = get(), store = get()) }
+    single<com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository> {
+        RotationRepositoryImpl(api = get(), store = get())
+    }
 
     // Persistence
     single { AppDatabase.build(androidContext()) }

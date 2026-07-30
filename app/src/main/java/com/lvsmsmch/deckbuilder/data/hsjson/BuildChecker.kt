@@ -1,10 +1,10 @@
 package com.lvsmsmch.deckbuilder.data.hsjson
 
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
 
 private const val TAG = "DB.HsJson.Build"
 
@@ -20,25 +20,16 @@ private const val TAG = "DB.HsJson.Build"
  * `hsJsonLocale` parameter is accepted for API compatibility but unused.
  */
 class BuildChecker(
-    private val client: OkHttpClient,
+    private val client: HttpClient,
     private val baseUrl: String = "https://api.hearthstonejson.com/v1/",
 ) {
-    // OkHttp's blocking execute() must stay off the main thread: callers invoke
-    // this from viewModelScope/rememberCoroutineScope (Main), where a bare
-    // execute() throws NetworkOnMainThreadException and the check silently fails.
     suspend fun latestBuild(@Suppress("UNUSED_PARAMETER") hsJsonLocale: String): String? =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                val url = "${baseUrl}latest/"
-                val request = Request.Builder().url(url).get().build()
-                client.newCall(request).execute().use { resp ->
-                    if (!resp.isSuccessful) error("HTTP ${resp.code}")
-                    val body = resp.body?.string() ?: error("empty index body")
-                    parseBuildFromIndex(body)
-                }
-            }.onFailure { Log.w(TAG, "latestBuild failed: ${it.message}") }
-                .getOrNull()
-        }
+        runCatching {
+            val resp = client.get("${baseUrl}latest/")
+            if (!resp.status.isSuccess()) error("HTTP ${resp.status.value}")
+            parseBuildFromIndex(resp.bodyAsText())
+        }.onFailure { Log.w(TAG, "latestBuild failed: ${it.message}") }
+            .getOrNull()
 
     internal fun parseBuildFromIndex(html: String): String? =
         BUILD_LINK_REGEX.find(html)?.groupValues?.get(1)

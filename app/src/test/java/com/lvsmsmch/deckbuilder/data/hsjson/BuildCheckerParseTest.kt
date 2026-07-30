@@ -1,13 +1,14 @@
 package com.lvsmsmch.deckbuilder.data.hsjson
 
-import okhttp3.OkHttpClient
+import io.ktor.client.HttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
 class BuildCheckerParseTest {
 
-    private val checker = BuildChecker(OkHttpClient())
+    // Parse-only tests: the client is never used.
+    private val checker = BuildChecker(HttpClient())
 
     @Test
     fun `parses first build link from tree-style index`() {
