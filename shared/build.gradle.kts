@@ -68,6 +68,7 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.crashkios.crashlytics)
         }
         androidUnitTest.dependencies {
             implementation(libs.junit)

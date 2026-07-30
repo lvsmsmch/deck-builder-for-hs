@@ -1,9 +1,15 @@
 import SwiftUI
 import Shared
+import FirebaseCrashlytics
 
 struct ComposeView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController()
+        MainViewControllerKt.MainViewController(
+            setCrashCollectionEnabled: { enabled in
+                Crashlytics.crashlytics()
+                    .setCrashlyticsCollectionEnabled(enabled.boolValue)
+            }
+        )
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}

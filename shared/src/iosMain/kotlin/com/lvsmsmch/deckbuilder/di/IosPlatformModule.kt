@@ -2,7 +2,7 @@ package com.lvsmsmch.deckbuilder.di
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.lvsmsmch.deckbuilder.data.crash.CrashLogger
-import com.lvsmsmch.deckbuilder.data.crash.NoopCrashLogger
+import com.lvsmsmch.deckbuilder.data.crash.IosCrashLogger
 import com.lvsmsmch.deckbuilder.data.db.createAppDatabase
 import com.lvsmsmch.deckbuilder.presentation.platform.AppInfo
 import com.lvsmsmch.deckbuilder.presentation.platform.IosNetworkMonitor
@@ -39,7 +39,7 @@ val iosPlatformModule = module {
 
     single { createAppDatabase() }
 
-    single<CrashLogger> { NoopCrashLogger }
+    single<CrashLogger> { IosCrashLogger() }
 
     single<Toaster> { IosToaster() }
 
