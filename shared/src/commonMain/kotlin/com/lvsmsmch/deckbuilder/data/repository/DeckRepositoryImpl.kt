@@ -30,7 +30,7 @@ class DeckRepositoryImpl(
     private val locales: CurrentLocaleProvider,
     private val sessionLog: SessionLog,
 ) : DeckRepository {
-    private val memoryCache = ConcurrentCache<String, Deck>()
+    private val memoryCache = ConcurrentCache<String, Deck>(maxSize = 64)
 
     override fun cachedDeck(code: String): Deck? = memoryCache[code]
 

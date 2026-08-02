@@ -27,7 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -54,7 +53,8 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.compose.LocalPlatformContext
 import com.lvsmsmch.deckbuilder.presentation.platform.AppInfo
-import com.lvsmsmch.deckbuilder.presentation.platform.Toaster
+import com.lvsmsmch.deckbuilder.presentation.SnackbarController
+import com.lvsmsmch.deckbuilder.presentation.UiText
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.util.formatBytes
@@ -62,8 +62,6 @@ import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
-import com.lvsmsmch.deckbuilder.presentation.await
-import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
@@ -84,14 +82,11 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel(parameters = { parametersOf(initialPreferences) }),
 ) {
     val state by viewModel.state.collectAsState()
-    val snackbar = remember { SnackbarHostState() }
     val platformContext = LocalPlatformContext.current
     val clipboard = LocalClipboardManager.current
     val uriHandler = LocalUriHandler.current
-    val toaster: Toaster = koinInject()
+    val snackbar: SnackbarController = koinInject()
     val appInfo: AppInfo = koinInject()
-    val cacheClearedMessage = stringResource(Res.string.settings_image_cache_cleared)
-    val logsCopiedMessage = stringResource(Res.string.settings_debug_logs_copied)
     val scope = rememberCoroutineScope()
     // Disk cache size is file-system IO — never compute it during composition
     // on the main thread.
@@ -106,7 +101,7 @@ fun SettingsScreen(
 
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbar.showAppSnackbar(it.await())
+            snackbar.show(it)
             viewModel.dismissMessage()
         }
     }
@@ -203,7 +198,7 @@ fun SettingsScreen(
                                 trailingIcon = null,
                                 onClick = {
                                     clipboard.setText(AnnotatedString(sessionLog.dump()))
-                                    toaster.show(logsCopiedMessage)
+                                    snackbar.show(UiText.of(Res.string.settings_debug_logs_copied))
                                 },
                             )
                             Divider()
@@ -238,10 +233,6 @@ fun SettingsScreen(
             }
         }
 
-        AppSnackbarHost(
-            hostState = snackbar,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
     }
 
     if (showThemePicker) {
@@ -278,7 +269,7 @@ fun SettingsScreen(
                     scope.launch {
                         withContext(IoDispatcher) { clearImageCache(platformContext) }
                         imageCacheBytes = withContext(IoDispatcher) { imageCacheSize(platformContext) }
-                        toaster.show(cacheClearedMessage)
+                        snackbar.show(UiText.of(Res.string.settings_image_cache_cleared))
                     }
                 }) {
                     Text(stringResource(Res.string.action_clear), color = DeckBuilderColors.Error)

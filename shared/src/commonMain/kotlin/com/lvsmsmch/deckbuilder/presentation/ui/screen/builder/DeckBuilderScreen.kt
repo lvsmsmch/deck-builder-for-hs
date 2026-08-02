@@ -50,8 +50,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -101,9 +99,9 @@ import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
-import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
+import com.lvsmsmch.deckbuilder.presentation.SnackbarController
 import com.lvsmsmch.deckbuilder.presentation.UiText
-import com.lvsmsmch.deckbuilder.presentation.await
+import com.lvsmsmch.deckbuilder.presentation.resolve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardSearchRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.SortChoices
@@ -121,6 +119,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.FilterSheet
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -134,8 +133,7 @@ fun DeckBuilderScreen(
     viewModel: DeckBuilderViewModel = koinViewModel(parameters = { parametersOf(editCode, savedName) }),
 ) {
     val state by viewModel.state.collectAsState()
-    val snackbar = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    val snackbar: SnackbarController = koinInject()
     var showExitConfirm by remember { mutableStateOf(false) }
     var showIncompleteSaveConfirm by remember { mutableStateOf(false) }
     val requestExit = {
@@ -158,21 +156,17 @@ fun DeckBuilderScreen(
     }
     LaunchedEffect(state.toast) {
         state.toast?.let {
-            snackbar.showAppSnackbar(it.await())
+            snackbar.show(it)
             viewModel.dismissToast()
         }
     }
     fun removeWithUndo(card: Card) {
         viewModel.removeCard(card)
-        scope.launch {
-            val result = snackbar.showAppSnackbar(
-                message = getString(Res.string.builder_toast_card_removed, card.name),
-                actionLabel = getString(Res.string.action_undo),
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                viewModel.addCard(card)
-            }
-        }
+        snackbar.show(
+            text = UiText.of(Res.string.builder_toast_card_removed, card.name),
+            actionLabel = UiText.of(Res.string.action_undo),
+            onAction = { viewModel.addCard(card) },
+        )
     }
 
     Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
@@ -198,10 +192,6 @@ fun DeckBuilderScreen(
             )
         }
 
-        AppSnackbarHost(
-            hostState = snackbar,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
     }
 
     PlatformBackHandler { requestExit() }
@@ -1077,7 +1067,7 @@ private fun DeckPane(
 private fun BottomActions(
     canSave: Boolean,
     isSaving: Boolean,
-    error: String?,
+    error: UiText?,
     cardCount: Int,
     maxDeckSize: Int,
     onSave: () -> Unit,
@@ -1090,7 +1080,7 @@ private fun BottomActions(
     ) {
         if (error != null) {
             Text(
-                text = error,
+                text = error.resolve(),
                 style = MaterialTheme.typography.bodySmall,
                 color = DeckBuilderColors.Error,
                 modifier = Modifier.padding(bottom = 8.dp),

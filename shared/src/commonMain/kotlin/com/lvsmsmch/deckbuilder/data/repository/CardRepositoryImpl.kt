@@ -31,8 +31,9 @@ class CardRepositoryImpl(
     private val sessionLog: SessionLog,
     private val rotation: RotationRepository,
 ) : CardRepository {
-    private val memoryCache = ConcurrentCache<String, Card>()
-    private val searchCache = ConcurrentCache<String, List<HsJsonCardEntity>>()
+    // Bounded: every viewed card was cached under three keys and never freed.
+    private val memoryCache = ConcurrentCache<String, Card>(maxSize = 600)
+    private val searchCache = ConcurrentCache<String, List<HsJsonCardEntity>>(maxSize = 24)
 
     /**
      * Locale+build the search cache was built against. When card data updates

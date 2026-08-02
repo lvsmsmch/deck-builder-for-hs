@@ -1,10 +1,5 @@
 package com.lvsmsmch.deckbuilder.presentation.platform
 
-/** Short user-visible notification (Android Toast; iOS falls back to console/log). */
-interface Toaster {
-    fun show(message: String)
-}
-
 enum class NetworkType { Wifi, Mobile, None }
 
 interface NetworkMonitor {

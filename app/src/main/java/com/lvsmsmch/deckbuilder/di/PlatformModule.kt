@@ -3,7 +3,6 @@ package com.lvsmsmch.deckbuilder.di
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.widget.Toast
 import com.lvsmsmch.deckbuilder.BuildConfig
 import com.lvsmsmch.deckbuilder.data.crash.CrashLogger
 import com.lvsmsmch.deckbuilder.data.crash.CrashReporter
@@ -12,7 +11,6 @@ import com.lvsmsmch.deckbuilder.data.prefs.userPrefsStore
 import com.lvsmsmch.deckbuilder.presentation.platform.AppInfo
 import com.lvsmsmch.deckbuilder.presentation.platform.NetworkMonitor
 import com.lvsmsmch.deckbuilder.presentation.platform.NetworkType
-import com.lvsmsmch.deckbuilder.presentation.platform.Toaster
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,15 +26,6 @@ val platformModule = module {
     single { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     single { CrashReporter(prefs = get(), scope = get()) }
     single<CrashLogger> { get<CrashReporter>() }
-
-    single<Toaster> {
-        val context = androidContext()
-        object : Toaster {
-            override fun show(message: String) {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
     single<NetworkMonitor> {
         val context = androidContext()

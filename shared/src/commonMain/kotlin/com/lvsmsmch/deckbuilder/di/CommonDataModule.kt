@@ -21,6 +21,7 @@ import com.lvsmsmch.deckbuilder.domain.repositories.DeckRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.PreferencesRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.SavedDeckRepository
+import com.lvsmsmch.deckbuilder.presentation.SnackbarController
 import com.lvsmsmch.deckbuilder.presentation.platform.AppInfo
 import com.lvsmsmch.deckbuilder.presentation.platform.NetworkMonitor
 import com.lvsmsmch.deckbuilder.presentation.platform.NetworkType
@@ -92,6 +93,7 @@ val commonDataModule = module {
     }
 
     single { SessionLog() }
+    single { SnackbarController() }
     single { UpdateNotifier() }
 
     single { HsJsonApi(client = get(HSJSON), notifier = get()) }

@@ -72,6 +72,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
+import com.lvsmsmch.deckbuilder.presentation.resolve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardSearchRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.EmptyState
@@ -188,8 +189,8 @@ fun CardLibraryScreen(
             when {
                 // No cards yet: show one of the three full-screen states.
                 state.cards.isEmpty() && state.isLoadingFirstPage -> CenteredSpinner(cardDataProgress)
-                state.cards.isEmpty() && state.errorMessage != null -> ErrorState(
-                    message = state.errorMessage!!,
+                state.cards.isEmpty() && state.error != null -> ErrorState(
+                    message = state.error!!.resolve(),
                     onRetry = viewModel::retry,
                 )
                 state.cards.isEmpty() -> EmptyState(hasFilters = state.filters.hasFilters)

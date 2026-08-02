@@ -17,7 +17,7 @@ data class BuilderState(
     val deck: Map<Int, DeckCardEntry> = emptyMap(),
     val pool: CardPageState = CardPageState(),
     val isSaving: Boolean = false,
-    val saveError: String? = null,
+    val saveError: UiText? = null,
     val toast: UiText? = null,
     val singleton: Boolean = false,
     val skipExitConfirm: Boolean = false,

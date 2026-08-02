@@ -71,6 +71,8 @@ import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
+import com.lvsmsmch.deckbuilder.presentation.resolve
+import com.lvsmsmch.deckbuilder.presentation.toUiText
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ErrorState
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.rarityColor
@@ -107,7 +109,7 @@ fun CardDetailScreen(
             UiState.Idle, UiState.Loading -> CardLoadingShell()
 
             is UiState.Failed -> ErrorState(
-                message = cardState.throwable.message ?: cardState.throwable::class.simpleName.orEmpty(),
+                message = cardState.throwable.toUiText().resolve(),
                 onRetry = viewModel::load,
             )
 
@@ -158,11 +160,7 @@ private fun CardLoadingShell() {
 
 @Composable
 private fun TopBar(title: String, onBack: () -> Unit) {
-    ScreenTopBar(
-        title = title,
-        onBack = onBack,
-        titleStyle = MaterialTheme.typography.titleSmall,
-    )
+    ScreenTopBar(title = title, onBack = onBack)
 }
 
 @Composable

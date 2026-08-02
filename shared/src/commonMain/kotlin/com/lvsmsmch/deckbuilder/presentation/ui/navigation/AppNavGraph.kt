@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,8 +33,10 @@ import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.data.update.UpdateEvent
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
+import com.lvsmsmch.deckbuilder.presentation.SnackbarController
+import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.presentation.await
 import com.lvsmsmch.deckbuilder.presentation.platform.PlatformBackHandler
-import com.lvsmsmch.deckbuilder.presentation.platform.Toaster
 import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
 import com.lvsmsmch.deckbuilder.presentation.ui.components.BottomBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardDataUpdateDialog
@@ -64,8 +67,7 @@ fun AppNavGraph(
     val notifier: UpdateNotifier = koinInject()
     val hsJson: HsJsonRepository = koinInject()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    val deckSavedMessage = stringResource(Res.string.deck_saved_toast)
+    val snackbar: SnackbarController = koinInject()
     var showStartupCardDataDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentPreferences.cardLocale) {
@@ -76,9 +78,20 @@ fun AppNavGraph(
         notifier.events.collect { event ->
             when (event) {
                 is UpdateEvent.CardsUpdated ->
-                    snackbarHostState.showAppSnackbar(getString(Res.string.snackbar_cards_updated, event.build))
+                    snackbar.show(UiText.of(Res.string.snackbar_cards_updated, event.build))
                 is UpdateEvent.RotationUpdated -> Unit
             }
+        }
+    }
+
+    // Single collector for every snackbar in the app.
+    LaunchedEffect(snackbar) {
+        snackbar.messages.collect { message ->
+            val result = snackbarHostState.showAppSnackbar(
+                message = message.text.await(),
+                actionLabel = message.actionLabel?.await(),
+            )
+            if (result == SnackbarResult.ActionPerformed) message.onAction?.invoke()
         }
     }
 
@@ -117,7 +130,7 @@ fun AppNavGraph(
                     editCode = args.editCode,
                     savedName = args.savedName,
                     onDeckSaved = { code ->
-                        scope.launch { snackbarHostState.showAppSnackbar(deckSavedMessage) }
+                        snackbar.show(UiText.of(Res.string.deck_saved_toast))
                         navController.navigate(DeckView(code = code, savedName = args.savedName)) {
                             if (args.editCode != null) {
                                 popUpTo(DeckView(code = args.editCode, savedName = args.savedName)) {
@@ -200,8 +213,7 @@ private fun HomeScreen(
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val toaster: Toaster = koinInject()
-    val pressAgainMessage = stringResource(Res.string.action_press_back_again_exit)
+    val snackbar: SnackbarController = koinInject()
     var lastBackAt by remember { mutableLongStateOf(0L) }
 
     PlatformBackHandler {
@@ -210,7 +222,7 @@ private fun HomeScreen(
             onExitApp()
         } else {
             lastBackAt = now
-            toaster.show(pressAgainMessage)
+            snackbar.show(UiText.of(Res.string.action_press_back_again_exit))
         }
     }
 

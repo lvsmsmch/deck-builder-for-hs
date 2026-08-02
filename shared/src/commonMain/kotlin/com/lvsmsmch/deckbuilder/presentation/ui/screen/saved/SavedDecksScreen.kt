@@ -63,7 +63,8 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
-import com.lvsmsmch.deckbuilder.presentation.platform.Toaster
+import com.lvsmsmch.deckbuilder.presentation.SnackbarController
+import com.lvsmsmch.deckbuilder.presentation.UiText
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -78,8 +79,7 @@ fun SavedDecksScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val clipboard = LocalClipboardManager.current
-    val toaster: Toaster = koinInject()
-    val copiedMessage = stringResource(Res.string.deck_view_copied)
+    val snackbar: SnackbarController = koinInject()
     var showChooser by remember { mutableStateOf(false) }
     var showImportSheet by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<DeckPreview?>(null) }
@@ -133,7 +133,7 @@ fun SavedDecksScreen(
                             onClick = { onOpenDeck(deck.code, deck.name) },
                             onCopy = {
                                 clipboard.setText(AnnotatedString(deck.code))
-                                toaster.show(copiedMessage)
+                                snackbar.show(UiText.of(Res.string.deck_view_copied))
                             },
                             onInfo = { statsCode = deck.code },
                             onEdit = { onEditDeck(deck.code, deck.name) },

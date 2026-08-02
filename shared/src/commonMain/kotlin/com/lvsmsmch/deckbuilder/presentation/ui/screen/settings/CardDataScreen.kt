@@ -22,7 +22,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
@@ -42,13 +41,13 @@ import com.lvsmsmch.deckbuilder.util.formatBytes
 import com.lvsmsmch.deckbuilder.util.formatDateTime
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
+import com.lvsmsmch.deckbuilder.presentation.SnackbarController
 import com.lvsmsmch.deckbuilder.presentation.UiText
-import com.lvsmsmch.deckbuilder.presentation.await
-import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardDataUpdateDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -59,11 +58,11 @@ fun CardDataScreen(
     viewModel: SettingsViewModel = koinViewModel(parameters = { parametersOf(initialPreferences) }),
 ) {
     val state by viewModel.state.collectAsState()
-    val snackbar = remember { SnackbarHostState() }
+    val snackbar: SnackbarController = koinInject()
     var showRefreshDialog by remember { mutableStateOf(false) }
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbar.showAppSnackbar(it.await())
+            snackbar.show(it)
             viewModel.dismissMessage()
         }
     }
@@ -116,10 +115,6 @@ fun CardDataScreen(
             )
         }
 
-        AppSnackbarHost(
-            hostState = snackbar,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
     }
 
     if (showRefreshDialog) {

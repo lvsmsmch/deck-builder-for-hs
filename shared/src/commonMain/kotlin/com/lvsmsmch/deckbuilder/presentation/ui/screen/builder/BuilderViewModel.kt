@@ -23,6 +23,7 @@ import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
 import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.presentation.toUiText
 import com.lvsmsmch.deckbuilder.presentation.paging.CardPageState
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.builder_toast_deck_full_size
@@ -141,7 +142,7 @@ class DeckBuilderViewModel(
                     _state.update {
                         it.copy(
                             phase = Phase.ClassPicker,
-                            saveError = result.throwable.message ?: result.throwable::class.simpleName.orEmpty(),
+                            saveError = result.throwable.toUiText(),
                         )
                     }
                     flashToast(result.throwable.message?.let(UiText::Raw) ?: UiText.of(Res.string.builder_toast_load_failed))
@@ -294,7 +295,7 @@ class DeckBuilderViewModel(
                 is Result.Error -> _state.update {
                     it.copy(
                         isSaving = false,
-                        saveError = r.throwable.message ?: r.throwable::class.simpleName.orEmpty(),
+                        saveError = r.throwable.toUiText(),
                     )
                 }
             }

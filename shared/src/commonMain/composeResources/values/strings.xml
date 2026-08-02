@@ -343,4 +343,9 @@
     <string name="card_data_refreshed">Card data refreshed</string>
     <string name="card_data_refresh_failed">Refresh failed</string>
     <string name="import_error_invalid_code">This deck code looks invalid.</string>
+    <string name="error_no_network">No internet connection.</string>
+    <string name="error_timeout">The server took too long to respond.</string>
+    <string name="error_server">Card data service is unavailable right now.</string>
+    <string name="error_card_data_missing">Card data is not loaded yet.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
 </resources>

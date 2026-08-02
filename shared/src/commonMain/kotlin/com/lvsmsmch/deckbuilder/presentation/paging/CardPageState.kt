@@ -5,6 +5,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
 import com.lvsmsmch.deckbuilder.domain.entities.Page
 import com.lvsmsmch.deckbuilder.domain.entities.isDefaultHeroAvatar
+import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.presentation.toUiText
 
 /**
  * One paged card list: filters, loaded items, paging cursor and load state.
@@ -22,7 +24,7 @@ data class CardPageState(
     val totalCount: Int = 0,
     val isLoadingFirstPage: Boolean = false,
     val isLoadingMore: Boolean = false,
-    val errorMessage: String? = null,
+    val error: UiText? = null,
     val contentVersion: Long = 0L,
 ) {
     val hasMore: Boolean get() = page < pageCount
@@ -33,7 +35,7 @@ data class CardPageState(
     val canLoadMore: Boolean get() = hasMore && !isLoadingMore && !isLoadingFirstPage
 
     fun onLoadStarted(replace: Boolean): CardPageState =
-        copy(isLoadingFirstPage = replace, isLoadingMore = !replace, errorMessage = null)
+        copy(isLoadingFirstPage = replace, isLoadingMore = !replace, error = null)
 
     fun onPageLoaded(loaded: Page<Card>, replace: Boolean): CardPageState {
         // Default hero avatars are collectible HERO cards; they are noise in
@@ -46,7 +48,7 @@ data class CardPageState(
             totalCount = loaded.totalCount,
             isLoadingFirstPage = false,
             isLoadingMore = false,
-            errorMessage = null,
+            error = null,
             contentVersion = if (replace) contentVersion + 1 else contentVersion,
         )
     }
@@ -54,7 +56,7 @@ data class CardPageState(
     fun onLoadFailed(t: Throwable): CardPageState = copy(
         isLoadingFirstPage = false,
         isLoadingMore = false,
-        errorMessage = t.message ?: t::class.simpleName.orEmpty(),
+        error = t.toUiText(),
     )
 
     /** Applies a search result, whichever way it went. */

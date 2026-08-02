@@ -341,4 +341,9 @@
     <string name="card_data_refreshed">Данные карт обновлены</string>
     <string name="card_data_refresh_failed">Не удалось обновить</string>
     <string name="import_error_invalid_code">Похоже, этот код колоды неверный.</string>
+    <string name="error_no_network">Нет подключения к интернету.</string>
+    <string name="error_timeout">Сервер слишком долго не отвечает.</string>
+    <string name="error_server">Сервис данных карт сейчас недоступен.</string>
+    <string name="error_card_data_missing">Данные карт ещё не загружены.</string>
+    <string name="error_generic">Что-то пошло не так. Попробуйте ещё раз.</string>
 </resources>

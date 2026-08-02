@@ -6,9 +6,7 @@ import com.lvsmsmch.deckbuilder.data.crash.IosCrashLogger
 import com.lvsmsmch.deckbuilder.data.db.createAppDatabase
 import com.lvsmsmch.deckbuilder.presentation.platform.AppInfo
 import com.lvsmsmch.deckbuilder.presentation.platform.IosNetworkMonitor
-import com.lvsmsmch.deckbuilder.presentation.platform.IosToaster
 import com.lvsmsmch.deckbuilder.presentation.platform.NetworkMonitor
-import com.lvsmsmch.deckbuilder.presentation.platform.Toaster
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path.Companion.toPath
 import org.koin.dsl.module
@@ -40,8 +38,6 @@ val iosPlatformModule = module {
     single { createAppDatabase() }
 
     single<CrashLogger> { IosCrashLogger() }
-
-    single<Toaster> { IosToaster() }
 
     single<NetworkMonitor> { IosNetworkMonitor() }
 

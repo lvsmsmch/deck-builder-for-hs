@@ -74,6 +74,8 @@ import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckGridCard
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialog
+import com.lvsmsmch.deckbuilder.presentation.resolve
+import com.lvsmsmch.deckbuilder.presentation.toUiText
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ErrorState
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
@@ -84,7 +86,8 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.DeckActionsMenu
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.saved.DeckWarning
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
-import com.lvsmsmch.deckbuilder.presentation.platform.Toaster
+import com.lvsmsmch.deckbuilder.presentation.SnackbarController
+import com.lvsmsmch.deckbuilder.presentation.UiText
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -100,8 +103,7 @@ fun DeckViewScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val clipboard = LocalClipboardManager.current
-    val toaster: Toaster = koinInject()
-    val copiedMessage = stringResource(Res.string.deck_view_copied)
+    val snackbar: SnackbarController = koinInject()
     val focusManager = LocalFocusManager.current
 
     Column(
@@ -123,7 +125,7 @@ fun DeckViewScreen(
             }
 
             is UiState.Failed -> ErrorState(
-                message = deckState.throwable.message ?: deckState.throwable::class.simpleName.orEmpty(),
+                message = deckState.throwable.toUiText().resolve(),
                 onRetry = viewModel::load,
             )
 
@@ -141,7 +143,7 @@ fun DeckViewScreen(
                 onCardClick = onCardClick,
                 onCopyCode = {
                     clipboard.setText(AnnotatedString(deckState.data.code))
-                    toaster.show(copiedMessage)
+                    snackbar.show(UiText.of(Res.string.deck_view_copied))
                 },
             )
         }
