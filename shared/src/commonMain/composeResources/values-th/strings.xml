@@ -24,4 +24,14 @@
     <string name="race_beast">สัตว์ร้าย</string><string name="race_demon">ปีศาจ</string><string name="race_dragon">มังกร</string><string name="race_elemental">ธาตุ</string><string name="race_mech">จักรกล</string><string name="race_murloc">เมอร์ล็อค</string><string name="race_naga">นากา</string><string name="race_pirate">โจรสลัด</string><string name="race_quilboar">ควิลบอร์</string><string name="race_totem">โทเท็ม</string><string name="race_undead">อันเดด</string>
     <string name="school_arcane">อาคม</string><string name="school_fire">ไฟ</string><string name="school_frost">น้ำแข็ง</string><string name="school_holy">ศักดิ์สิทธิ์</string><string name="school_nature">ธรรมชาติ</string><string name="school_shadow">เงา</string><string name="school_fel">เฟล</string>
     <string name="deck_saved_toast">บันทึกเด็คแล้ว</string>
+    <string name="builder_toast_wrong_class_named">Not a %1$s or Neutral card</string>
+    <string name="builder_toast_max_copies">Maximum copies already added</string>
+    <string name="builder_toast_deck_full_size">Deck is full (%1$d/%1$d)</string>
+    <string name="builder_toast_renathal_lock">Remove cards down to 30 before removing Prince Renathal</string>
+    <string name="builder_toast_load_failed">Could not load deck</string>
+    <string name="builder_toast_card_removed">%1$s removed</string>
+    <string name="action_undo">UNDO</string>
+    <string name="card_data_refreshed">Card data refreshed</string>
+    <string name="card_data_refresh_failed">Refresh failed</string>
+    <string name="import_error_invalid_code">This deck code looks invalid.</string>
 </resources>

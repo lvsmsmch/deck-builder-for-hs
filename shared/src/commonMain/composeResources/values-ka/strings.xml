@@ -24,4 +24,14 @@
     <string name="race_beast">მხეცი</string><string name="race_demon">დემონი</string><string name="race_dragon">დრაკონი</string><string name="race_elemental">ელემენტალი</string><string name="race_mech">მექა</string><string name="race_murloc">მურლოკი</string><string name="race_naga">ნაგა</string><string name="race_pirate">მეკობრე</string><string name="race_quilboar">ქუილბორი</string><string name="race_totem">ტოტემი</string><string name="race_undead">უკვდავი</string>
     <string name="school_arcane">არკანი</string><string name="school_fire">ცეცხლი</string><string name="school_frost">ყინვა</string><string name="school_holy">წმინდა</string><string name="school_nature">ბუნება</string><string name="school_shadow">ჩრდილი</string><string name="school_fel">ფელი</string>
     <string name="deck_saved_toast">დეკი შენახულია</string>
+    <string name="builder_toast_wrong_class_named">Not a %1$s or Neutral card</string>
+    <string name="builder_toast_max_copies">Maximum copies already added</string>
+    <string name="builder_toast_deck_full_size">Deck is full (%1$d/%1$d)</string>
+    <string name="builder_toast_renathal_lock">Remove cards down to 30 before removing Prince Renathal</string>
+    <string name="builder_toast_load_failed">Could not load deck</string>
+    <string name="builder_toast_card_removed">%1$s removed</string>
+    <string name="action_undo">UNDO</string>
+    <string name="card_data_refreshed">Card data refreshed</string>
+    <string name="card_data_refresh_failed">Refresh failed</string>
+    <string name="import_error_invalid_code">This deck code looks invalid.</string>
 </resources>

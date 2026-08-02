@@ -57,6 +57,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialogForCode
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
+import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
@@ -411,13 +412,6 @@ private fun FormatChip(format: GameFormat) {
     }
 }
 
-private fun formatColor(format: GameFormat): Color = when (format) {
-    GameFormat.STANDARD -> Color(0xFF3E8BFF)
-    GameFormat.WILD -> Color(0xFFE09F3E)
-    GameFormat.TWIST -> Color(0xFF9B6CFF)
-    GameFormat.CLASSIC -> Color(0xFF5EC28A)
-    GameFormat.UNKNOWN -> Color(0xFF8B929C)
-}
 
 @Composable
 private fun EmptyState() {

@@ -40,13 +40,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
+import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.presentation.resolve
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImportDeckSheet(
     isImporting: Boolean,
-    error: String?,
+    error: UiText?,
     onDismiss: () -> Unit,
     onErrorDismiss: () -> Unit,
     onSubmit: (String) -> Unit,
@@ -134,7 +136,7 @@ fun ImportDeckSheet(
 
             if (error != null) {
                 Text(
-                    text = error,
+                    text = error.resolve(),
                     style = MaterialTheme.typography.bodySmall,
                     color = DeckBuilderColors.Error,
                 )

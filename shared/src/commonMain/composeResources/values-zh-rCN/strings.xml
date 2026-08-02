@@ -19,4 +19,14 @@
     <string name="class_druid">德鲁伊</string><string name="class_hunter">猎人</string><string name="class_mage">法师</string><string name="class_paladin">圣骑士</string><string name="class_priest">牧师</string><string name="class_rogue">潜行者</string><string name="class_shaman">萨满祭司</string><string name="class_warlock">术士</string><string name="class_warrior">战士</string><string name="class_demonhunter">恶魔猎手</string><string name="class_demonhunter_short">恶魔猎手</string><string name="class_deathknight">死亡骑士</string><string name="class_deathknight_short">死亡骑士</string><string name="class_neutral">中立</string>
     <string name="rarity_free">免费</string><string name="rarity_common">普通</string><string name="rarity_rare">稀有</string><string name="rarity_epic">史诗</string><string name="rarity_legendary">传说</string><string name="type_minion">随从</string><string name="type_spell">法术</string><string name="type_weapon">武器</string><string name="type_hero">英雄</string><string name="type_location">地标</string><string name="race_beast">野兽</string><string name="race_demon">恶魔</string><string name="race_dragon">龙</string><string name="race_elemental">元素</string><string name="race_mech">机械</string><string name="race_murloc">鱼人</string><string name="race_naga">纳迦</string><string name="race_pirate">海盗</string><string name="race_quilboar">野猪人</string><string name="race_totem">图腾</string><string name="race_undead">亡灵</string><string name="school_arcane">奥术</string><string name="school_fire">火焰</string><string name="school_frost">冰霜</string><string name="school_holy">神圣</string><string name="school_nature">自然</string><string name="school_shadow">暗影</string><string name="school_fel">邪能</string>
     <string name="deck_saved_toast">套牌已保存</string>
+    <string name="builder_toast_wrong_class_named">Not a %1$s or Neutral card</string>
+    <string name="builder_toast_max_copies">Maximum copies already added</string>
+    <string name="builder_toast_deck_full_size">Deck is full (%1$d/%1$d)</string>
+    <string name="builder_toast_renathal_lock">Remove cards down to 30 before removing Prince Renathal</string>
+    <string name="builder_toast_load_failed">Could not load deck</string>
+    <string name="builder_toast_card_removed">%1$s removed</string>
+    <string name="action_undo">UNDO</string>
+    <string name="card_data_refreshed">Card data refreshed</string>
+    <string name="card_data_refresh_failed">Refresh failed</string>
+    <string name="import_error_invalid_code">This deck code looks invalid.</string>
 </resources>

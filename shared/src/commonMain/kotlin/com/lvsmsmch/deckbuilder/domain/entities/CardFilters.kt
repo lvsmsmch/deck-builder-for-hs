@@ -29,6 +29,23 @@ data class CardFilters(
             manaCosts.isNotEmpty() ||
             !collectibleOnly ||
             textQuery.isNotBlank()
+
+    /** Number of active filter groups — drives the badge on the filter button. */
+    val activeFilterCount: Int
+        get() = listOf(
+            classes.isNotEmpty(),
+            classScope != CardClassScope.ALL,
+            sets.isNotEmpty(),
+            format != CardFormatFilter.ALL,
+            rarities.isNotEmpty(),
+            types.isNotEmpty(),
+            minionTypes.isNotEmpty(),
+            keywords.isNotEmpty(),
+            spellSchools.isNotEmpty(),
+            manaCosts.isNotEmpty(),
+            !collectibleOnly,
+            textQuery.isNotBlank(),
+        ).count { it }
 }
 
 enum class CardClassScope {

@@ -42,8 +42,11 @@ import com.lvsmsmch.deckbuilder.util.formatBytes
 import com.lvsmsmch.deckbuilder.util.formatDateTime
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
+import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.presentation.await
 import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardDataUpdateDialog
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
@@ -60,7 +63,7 @@ fun CardDataScreen(
     var showRefreshDialog by remember { mutableStateOf(false) }
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbar.showAppSnackbar(it)
+            snackbar.showAppSnackbar(it.await())
             viewModel.dismissMessage()
         }
     }
@@ -70,26 +73,10 @@ fun CardDataScreen(
 
     Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = stringResource(Res.string.action_back),
-                        tint = DeckBuilderColors.OnSurface,
-                    )
-                }
-                Text(
-                    text = stringResource(Res.string.more_card_data),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = DeckBuilderColors.OnSurface,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            ScreenTopBar(
+                title = stringResource(Res.string.more_card_data),
+                onBack = onBack,
+            )
 
             Box(
                 modifier = Modifier
@@ -135,7 +122,6 @@ fun CardDataScreen(
         )
     }
 
-    val upToDateMessage = stringResource(Res.string.card_data_up_to_date)
     if (showRefreshDialog) {
         CardDataUpdateDialog(
             required = false,
@@ -146,7 +132,7 @@ fun CardDataScreen(
             },
             onExitApp = onBack,
             onResult = { updated ->
-                if (!updated) viewModel.showMessage(upToDateMessage)
+                if (!updated) viewModel.showMessage(UiText.of(Res.string.card_data_up_to_date))
             },
         )
     }

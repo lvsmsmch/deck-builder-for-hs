@@ -74,6 +74,9 @@ import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckGridCard
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialog
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ErrorState
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
+import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
@@ -183,28 +186,7 @@ private fun TopBar(
     title: String,
     onBack: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(Res.string.action_back),
-                tint = DeckBuilderColors.OnSurface,
-            )
-        }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = DeckBuilderColors.OnSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-    }
+    ScreenTopBar(title = title, onBack = onBack, bottomPadding = 4.dp)
 }
 
 @Composable
@@ -512,33 +494,4 @@ private fun DeckWarnings(deck: Deck) {
     }
 }
 
-@Composable
-private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(text = message, color = DeckBuilderColors.Error, style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(12.dp))
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(DeckBuilderColors.Primary)
-                .clickable(onClick = onRetry)
-                .padding(horizontal = 18.dp, vertical = 10.dp),
-        ) {
-            Text(text = stringResource(Res.string.action_retry), color = DeckBuilderColors.OnPrimary, style = MaterialTheme.typography.labelLarge)
-        }
-    }
-}
 
-private fun formatColor(format: GameFormat): Color = when (format) {
-    GameFormat.STANDARD -> Color(0xFF3E8BFF)
-    GameFormat.WILD -> Color(0xFFE09F3E)
-    GameFormat.TWIST -> Color(0xFF9B6CFF)
-    GameFormat.CLASSIC -> Color(0xFF5EC28A)
-    GameFormat.UNKNOWN -> Color(0xFF8B929C)
-}

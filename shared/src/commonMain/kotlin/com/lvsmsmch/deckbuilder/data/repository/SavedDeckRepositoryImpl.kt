@@ -6,6 +6,7 @@ import com.lvsmsmch.deckbuilder.data.db.entity.SavedDeckEntity
 import com.lvsmsmch.deckbuilder.data.deckstring.Deckstring
 import com.lvsmsmch.deckbuilder.data.deckstring.DeckstringFormat
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
+import com.lvsmsmch.deckbuilder.domain.entities.DeckRules
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.SavedDeckSource
@@ -126,14 +127,8 @@ class SavedDeckRepositoryImpl(
 private fun String.toCardIds(): List<Int> =
     split(',').mapNotNull { it.trim().toIntOrNull() }
 
-private fun maxCardCountFor(cardIdsCsv: String): Int {
-    val ids = cardIdsCsv.split(',').filter { it.isNotBlank() }.toSet()
-    return when {
-        ids.any { it in WHIZBANG_DBF_IDS } -> 1
-        ids.any { it in PRINCE_RENATHAL_DBF_IDS } -> 40
-        else -> 30
-    }
-}
+private fun maxCardCountFor(cardIdsCsv: String): Int =
+    DeckRules.maxCardCountForDbfIds(cardIdsCsv.toCardIds())
 
 private fun SavedDeckEntity.formatFromCode(): GameFormat =
     runCatching { Deckstring.decode(code).format.toGameFormat() }
@@ -146,6 +141,4 @@ private fun DeckstringFormat.toGameFormat(): GameFormat = when (this) {
     DeckstringFormat.TWIST -> GameFormat.TWIST
 }
 
-private val PRINCE_RENATHAL_DBF_IDS = setOf("79767", "111689")
-private val WHIZBANG_DBF_IDS = setOf("50477", "104819")
 private const val MAX_DECK_NAME_LENGTH = 100

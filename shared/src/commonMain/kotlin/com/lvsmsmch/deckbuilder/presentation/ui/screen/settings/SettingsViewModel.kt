@@ -10,6 +10,10 @@ import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCardLocaleUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetCrashReportingEnabledUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetThemeUseCase
+import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.resources.Res
+import com.lvsmsmch.deckbuilder.resources.card_data_refresh_failed
+import com.lvsmsmch.deckbuilder.resources.card_data_refreshed
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,25 +65,12 @@ class SettingsViewModel(
         viewModelScope.launch { setCrashReporting(enabled) }
     }
 
-    fun refreshCardDataNow() {
-        viewModelScope.launch {
-            _state.update { it.copy(isRefreshingCardData = true, message = null) }
-            val result = runCatching { updateRunner.runOnce(reason = "card data screen") }
-            refreshCardDataMetadata(_state.value.prefs.cardLocale)
-            _state.update {
-                it.copy(
-                    isRefreshingCardData = false,
-                    message = if (result.isSuccess) "Card data refreshed" else "Refresh failed",
-                )
-            }
-        }
-    }
 
     fun dismissMessage() {
         _state.update { it.copy(message = null) }
     }
 
-    fun showMessage(text: String) {
+    fun showMessage(text: UiText) {
         _state.update { it.copy(message = text) }
     }
 

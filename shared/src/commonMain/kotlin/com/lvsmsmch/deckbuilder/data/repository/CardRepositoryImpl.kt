@@ -96,11 +96,20 @@ class CardRepositoryImpl(
             } else {
                 emptySet()
             }
-            val cacheKey = listOf(resolved, filters, standardSets.sorted()).joinToString("|")
-            val sorted = searchCache.getOrPut(cacheKey) {
+            // Filter combinations are few and repeat, so they are worth caching.
+            // Text queries change on every keystroke: caching them would grow
+            // the cache without bound, and filtering in memory is cheap anyway.
+            val cacheable = filters.textQuery.isBlank()
+            val compute = {
                 val pred = buildPredicate(filters, standardSets)
                 val matched = snap.cards.filter(pred)
                 sort(matched, filters.sort.key, filters.sort.direction)
+            }
+            val sorted = if (cacheable) {
+                val cacheKey = listOf(resolved, filters, standardSets.sorted()).joinToString("|")
+                searchCache.getOrPut(cacheKey, compute)
+            } else {
+                compute()
             }
             val total = sorted.size
             val pageCount = if (pageSize > 0 && total > 0) (total + pageSize - 1) / pageSize else 1

@@ -1,6 +1,7 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.ui.graphics.Color
+import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.ClassMeta
 import com.lvsmsmch.deckbuilder.domain.entities.Rarity
@@ -35,3 +36,15 @@ fun colorForRaritySlug(slug: String?): Color = when (slug?.lowercase()) {
 }
 
 fun rarityColor(rarity: Rarity?): Color = colorForRaritySlug(rarity?.slug)
+
+/**
+ * Format accent color (Standard/Wild/Twist/Classic). Constant across themes,
+ * like the class palette — the format badge should read the same everywhere.
+ */
+fun formatColor(format: GameFormat): Color = when (format) {
+    GameFormat.STANDARD -> Color(0xFF3E8BFF)
+    GameFormat.WILD -> Color(0xFFE09F3E)
+    GameFormat.TWIST -> Color(0xFF9B6CFF)
+    GameFormat.CLASSIC -> Color(0xFF5EC28A)
+    GameFormat.UNKNOWN -> Color(0xFF8B929C)
+}

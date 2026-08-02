@@ -329,4 +329,14 @@
     <string name="school_shadow">Sombra</string>
     <string name="school_fel">Vil</string>
     <string name="deck_saved_toast">Baralho guardado</string>
+    <string name="builder_toast_wrong_class_named">Not a %1$s or Neutral card</string>
+    <string name="builder_toast_max_copies">Maximum copies already added</string>
+    <string name="builder_toast_deck_full_size">Deck is full (%1$d/%1$d)</string>
+    <string name="builder_toast_renathal_lock">Remove cards down to 30 before removing Prince Renathal</string>
+    <string name="builder_toast_load_failed">Could not load deck</string>
+    <string name="builder_toast_card_removed">%1$s removed</string>
+    <string name="action_undo">UNDO</string>
+    <string name="card_data_refreshed">Card data refreshed</string>
+    <string name="card_data_refresh_failed">Refresh failed</string>
+    <string name="import_error_invalid_code">This deck code looks invalid.</string>
 </resources>

@@ -9,6 +9,9 @@ import com.lvsmsmch.deckbuilder.domain.usecases.InvalidDeckCodeException
 import com.lvsmsmch.deckbuilder.domain.usecases.ObserveSavedDecksUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.RenameSavedDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
+import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.resources.Res
+import com.lvsmsmch.deckbuilder.resources.import_error_invalid_code
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,9 +79,9 @@ class SavedDecksViewModel(
         _state.update { it.copy(importError = null) }
     }
 
-    private fun friendlyError(t: Throwable): String = when (t) {
-        is InvalidDeckCodeException -> "This deck code looks invalid."
-        else -> t.message ?: t::class.simpleName.orEmpty()
+    private fun friendlyError(t: Throwable): UiText = when (t) {
+        is InvalidDeckCodeException -> UiText.of(Res.string.import_error_invalid_code)
+        else -> UiText.Raw(t.message ?: t::class.simpleName.orEmpty())
     }
 
     sealed interface NavEffect {

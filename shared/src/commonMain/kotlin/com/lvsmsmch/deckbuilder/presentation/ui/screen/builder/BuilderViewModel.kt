@@ -22,6 +22,14 @@ import com.lvsmsmch.deckbuilder.domain.usecases.AssembleDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.ObservePreferencesUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SaveDeckUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SearchCardsUseCase
+import com.lvsmsmch.deckbuilder.presentation.UiText
+import com.lvsmsmch.deckbuilder.presentation.paging.CardPageState
+import com.lvsmsmch.deckbuilder.resources.Res
+import com.lvsmsmch.deckbuilder.resources.builder_toast_deck_full_size
+import com.lvsmsmch.deckbuilder.resources.builder_toast_load_failed
+import com.lvsmsmch.deckbuilder.resources.builder_toast_max_copies
+import com.lvsmsmch.deckbuilder.resources.builder_toast_renathal_lock
+import com.lvsmsmch.deckbuilder.resources.builder_toast_wrong_class_named
 import com.lvsmsmch.deckbuilder.domain.usecases.SetSkipBuilderExitConfirmUseCase
 import com.lvsmsmch.deckbuilder.domain.usecases.SetSkipIncompleteSaveConfirmUseCase
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
@@ -61,7 +69,7 @@ class DeckBuilderViewModel(
         else BuilderState(
             phase = Phase.Loading,
             deckName = savedName?.take(MAX_DECK_NAME_LENGTH),
-            pool = PoolState(isLoading = true),
+            pool = CardPageState(isLoadingFirstPage = true),
         ),
     )
     val state: StateFlow<BuilderState> = _state.asStateFlow()
@@ -123,7 +131,7 @@ class DeckBuilderViewModel(
                             heroCardId = deck.hero?.id ?: meta?.slug?.let(DefaultHeroes::dbfIdFor),
                             format = deck.format.takeUnless { f -> f == GameFormat.UNKNOWN } ?: GameFormat.STANDARD,
                             deck = deck.cards.associateBy { entry -> entry.card.id },
-                            pool = PoolState(isLoading = true),
+                            pool = CardPageState(isLoadingFirstPage = true),
                             saveError = null,
                         )
                     }
@@ -136,7 +144,7 @@ class DeckBuilderViewModel(
                             saveError = result.throwable.message ?: result.throwable::class.simpleName.orEmpty(),
                         )
                     }
-                    flashToast(result.throwable.message ?: "Could not load deck")
+                    flashToast(result.throwable.message?.let(UiText::Raw) ?: UiText.of(Res.string.builder_toast_load_failed))
                 }
             }
         }
@@ -154,7 +162,7 @@ class DeckBuilderViewModel(
                     deckName = null,
                     heroCardId = canonicalDbf,
                     deck = emptyMap(),
-                    pool = PoolState(isLoading = true),
+                    pool = CardPageState(isLoadingFirstPage = true),
                     saveError = null,
                 )
             }
@@ -162,21 +170,6 @@ class DeckBuilderViewModel(
         }
     }
 
-    fun backToPicker() {
-        poolJob?.cancel()
-        pickJob?.cancel()
-        _state.update {
-            it.copy(
-                phase = Phase.ClassPicker,
-                chosenClass = null,
-                deckName = null,
-                heroCardId = null,
-                deck = emptyMap(),
-                pool = PoolState(),
-                saveError = null,
-            )
-        }
-    }
 
     fun setPoolQuery(query: String) {
         _state.update { it.copy(pool = it.pool.copy(filters = it.pool.filters.copy(textQuery = query))) }
@@ -189,14 +182,6 @@ class DeckBuilderViewModel(
         reloadPoolFirstPage()
     }
 
-    fun togglePoolManaCost(cost: Int) {
-        _state.update {
-            val current = it.pool.filters.manaCosts
-            val next = if (cost in current) current - cost else current + cost
-            it.copy(pool = it.pool.copy(filters = it.pool.filters.copy(manaCosts = next)))
-        }
-        reloadPoolFirstPage()
-    }
 
     fun applyPoolFilters(filters: CardFilters) {
         if (filters == _state.value.pool.filters) return
@@ -206,7 +191,7 @@ class DeckBuilderViewModel(
 
     fun loadNextPoolPage() {
         val pool = _state.value.pool
-        if (!pool.hasMore || pool.isLoadingMore || pool.isLoading) return
+        if (!pool.canLoadMore) return
         runPoolFetch(targetPage = pool.page + 1, replace = false)
     }
 
@@ -214,7 +199,7 @@ class DeckBuilderViewModel(
         val st = _state.value
         val clsSlug = st.chosenClass?.slug
         if (clsSlug != null && !card.fitsClass(clsSlug)) {
-            flashToast("Not a $clsSlug or Neutral card")
+            flashToast(UiText.of(Res.string.builder_toast_wrong_class_named, clsSlug))
             return
         }
         val existingCount = st.deck[card.id]?.count ?: 0
@@ -225,7 +210,7 @@ class DeckBuilderViewModel(
         }
         val target = (existingCount + count).coerceAtMost(cap)
         if (target == existingCount) {
-            flashToast("Maximum copies already added")
+            flashToast(UiText.of(Res.string.builder_toast_max_copies))
             return
         }
         val resultingMaxSize = when {
@@ -234,7 +219,7 @@ class DeckBuilderViewModel(
             else -> st.maxDeckSize
         }
         if (st.cardCount + (target - existingCount) > resultingMaxSize) {
-            flashToast("Deck is full (${st.maxDeckSize}/${st.maxDeckSize})")
+            flashToast(UiText.of(Res.string.builder_toast_deck_full_size, st.maxDeckSize))
             return
         }
         _state.update {
@@ -244,7 +229,7 @@ class DeckBuilderViewModel(
 
     fun removeCard(card: Card) {
         if (card.isPrinceRenathal && _state.value.cardCount > 30) {
-            flashToast("Remove cards down to 30 before removing Prince Renathal")
+            flashToast(UiText.of(Res.string.builder_toast_renathal_lock))
             return
         }
         val current = _state.value.deck[card.id] ?: return
@@ -257,17 +242,7 @@ class DeckBuilderViewModel(
         }
     }
 
-    fun clearDeck() {
-        _state.update { it.copy(deck = emptyMap()) }
-    }
 
-    fun toggleSingleton() {
-        _state.update {
-            val next = !it.singleton
-            val deck = if (next) it.deck.mapValues { (_, e) -> e.copy(count = 1) } else it.deck
-            it.copy(singleton = next, deck = deck)
-        }
-    }
 
     fun setFormat(format: GameFormat) {
         if (format == _state.value.format) return
@@ -333,64 +308,30 @@ class DeckBuilderViewModel(
 
     private fun runPoolFetch(targetPage: Int, replace: Boolean) {
         poolJob?.cancel()
-        _state.update {
-            it.copy(
-                pool = it.pool.copy(
-                    isLoading = replace,
-                    isLoadingMore = !replace,
-                    errorMessage = null,
-                ),
-            )
-        }
+        _state.update { it.copy(pool = it.pool.onLoadStarted(replace = replace)) }
+
         val st = _state.value
         val clsSlug = st.chosenClass?.slug ?: return
+        // The pool is always scoped to the deck's class (plus neutrals) and to
+        // collectible cards, whatever the sheet's own class filters say.
         val classes = when (st.pool.filters.classScope) {
             CardClassScope.ALL -> setOf(clsSlug, "neutral")
             CardClassScope.CLASS_ONLY -> setOf(clsSlug)
             CardClassScope.NEUTRAL_ONLY -> setOf("neutral")
         }
+        val filters = st.pool.filters.copy(
+            classes = classes,
+            collectibleOnly = true,
+            format = st.format.toCardFormatFilter(),
+        )
+
         poolJob = viewModelScope.launch {
-            val filters = st.pool.filters.copy(
-                classes = classes,
-                collectibleOnly = true,
-                format = st.format.toCardFormatFilter(),
-            )
             val result = searchCards(filters, page = targetPage)
-
-            if (result is Result.Error) {
-                _state.update {
-                    it.copy(
-                        pool = it.pool.copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            errorMessage = result.throwable.message,
-                        ),
-                    )
-                }
-                return@launch
-            }
-            result as Result.Success
-            val page = result.data
-            val visible = page.items.filterNot(::isDefaultHeroAvatar)
-
-            _state.update {
-                val newCards = if (replace) visible else it.pool.cards + visible
-                it.copy(
-                    pool = it.pool.copy(
-                        cards = newCards,
-                        page = page.pageNumber,
-                        pageCount = page.pageCount,
-                        totalCount = page.totalCount,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        contentVersion = if (replace) it.pool.contentVersion + 1 else it.pool.contentVersion,
-                    ),
-                )
-            }
+            _state.update { it.copy(pool = it.pool.onResult(result, replace = replace)) }
         }
     }
 
-    private fun flashToast(message: String) {
+    private fun flashToast(message: UiText) {
         _state.update { it.copy(toast = message) }
     }
 
@@ -402,15 +343,6 @@ class DeckBuilderViewModel(
     private fun Card.isLegendary(): Boolean =
         rarity?.slug?.equals("legendary", ignoreCase = true) == true
 
-    private fun isDefaultHeroAvatar(card: Card): Boolean {
-        if (!card.cardType.slug.equals("hero", ignoreCase = true)) return false
-        if (card.text?.isNotBlank() == true) return false
-        return CanonicalHeroId.matches(card.slug)
-    }
-
-    private companion object {
-        val CanonicalHeroId = Regex("""^HERO_\d+[a-z]*$""")
-    }
 }
 
 private const val MAX_DECK_NAME_LENGTH = 100

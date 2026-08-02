@@ -331,4 +331,14 @@
     <string name="school_shadow">Тьма</string>
     <string name="school_fel">Скверна</string>
     <string name="deck_saved_toast">Колода сохранена</string>
+    <string name="builder_toast_wrong_class_named">Это карта другого класса (нужен %1$s или нейтрал)</string>
+    <string name="builder_toast_max_copies">Все копии этой карты уже добавлены</string>
+    <string name="builder_toast_deck_full_size">Колода заполнена (%1$d/%1$d)</string>
+    <string name="builder_toast_renathal_lock">Сначала уберите карты до 30, потом убирайте Принца Ренатала</string>
+    <string name="builder_toast_load_failed">Не удалось загрузить колоду</string>
+    <string name="builder_toast_card_removed">%1$s убрана</string>
+    <string name="action_undo">ОТМЕНИТЬ</string>
+    <string name="card_data_refreshed">Данные карт обновлены</string>
+    <string name="card_data_refresh_failed">Не удалось обновить</string>
+    <string name="import_error_invalid_code">Похоже, этот код колоды неверный.</string>
 </resources>

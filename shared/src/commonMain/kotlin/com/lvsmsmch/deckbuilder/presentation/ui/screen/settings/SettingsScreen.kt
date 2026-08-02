@@ -62,7 +62,9 @@ import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
+import com.lvsmsmch.deckbuilder.presentation.await
 import com.lvsmsmch.deckbuilder.presentation.ui.components.AppSnackbarHost
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
@@ -104,7 +106,7 @@ fun SettingsScreen(
 
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbar.showAppSnackbar(it)
+            snackbar.showAppSnackbar(it.await())
             viewModel.dismissMessage()
         }
     }
@@ -293,26 +295,7 @@ fun SettingsScreen(
 
 @Composable
 private fun TopBar(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(Res.string.action_back),
-                tint = DeckBuilderColors.OnSurface,
-            )
-        }
-        Text(
-            text = stringResource(Res.string.settings_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = DeckBuilderColors.OnSurface,
-            modifier = Modifier.weight(1f),
-        )
-    }
+    ScreenTopBar(title = stringResource(Res.string.settings_title), onBack = onBack)
 }
 
 @Composable

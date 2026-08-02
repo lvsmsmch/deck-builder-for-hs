@@ -73,19 +73,6 @@ class DeckViewViewModel(
         }
     }
 
-    fun toggleSave() {
-        val deck = (state.value.deck as? UiState.Loaded)?.data ?: return
-        viewModelScope.launch {
-            if (state.value.isSaved) {
-                deleteDeck(code)
-                _state.update { it.copy(isSaved = false, savedName = null) }
-            } else {
-                saveDeck(deck)
-                val name = savedRepo.get(code)?.name
-                _state.update { it.copy(isSaved = true, savedName = name) }
-            }
-        }
-    }
 
     fun deleteSavedDeck() {
         viewModelScope.launch {
@@ -103,7 +90,4 @@ class DeckViewViewModel(
         }
     }
 
-    fun toggleStats() {
-        _state.update { it.copy(showStats = !it.showStats) }
-    }
 }

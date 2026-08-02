@@ -24,4 +24,14 @@
     <string name="race_beast">Bestia</string><string name="race_demon">Demone</string><string name="race_dragon">Drago</string><string name="race_elemental">Elementale</string><string name="race_mech">Robot</string><string name="race_murloc">Murloc</string><string name="race_naga">Naga</string><string name="race_pirate">Pirata</string><string name="race_quilboar">Verrospino</string><string name="race_totem">Totem</string><string name="race_undead">Non Morto</string>
     <string name="school_arcane">Arcano</string><string name="school_fire">Fuoco</string><string name="school_frost">Gelo</string><string name="school_holy">Sacro</string><string name="school_nature">Natura</string><string name="school_shadow">Ombra</string><string name="school_fel">Vil</string>
     <string name="deck_saved_toast">Mazzo salvato</string>
+    <string name="builder_toast_wrong_class_named">Not a %1$s or Neutral card</string>
+    <string name="builder_toast_max_copies">Maximum copies already added</string>
+    <string name="builder_toast_deck_full_size">Deck is full (%1$d/%1$d)</string>
+    <string name="builder_toast_renathal_lock">Remove cards down to 30 before removing Prince Renathal</string>
+    <string name="builder_toast_load_failed">Could not load deck</string>
+    <string name="builder_toast_card_removed">%1$s removed</string>
+    <string name="action_undo">UNDO</string>
+    <string name="card_data_refreshed">Card data refreshed</string>
+    <string name="card_data_refresh_failed">Refresh failed</string>
+    <string name="import_error_invalid_code">This deck code looks invalid.</string>
 </resources>

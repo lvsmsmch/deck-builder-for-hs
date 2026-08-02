@@ -24,4 +24,14 @@
     <string name="race_beast">Canavar</string><string name="race_demon">İblis</string><string name="race_dragon">Ejderha</string><string name="race_elemental">Elemental</string><string name="race_mech">Mekanik</string><string name="race_murloc">Murloc</string><string name="race_naga">Naga</string><string name="race_pirate">Korsan</string><string name="race_quilboar">Quilboar</string><string name="race_totem">Totem</string><string name="race_undead">Ölümsüz</string>
     <string name="school_arcane">Arcane</string><string name="school_fire">Ateş</string><string name="school_frost">Buz</string><string name="school_holy">Kutsal</string><string name="school_nature">Doğa</string><string name="school_shadow">Gölge</string><string name="school_fel">Fel</string>
     <string name="deck_saved_toast">Deste kaydedildi</string>
+    <string name="builder_toast_wrong_class_named">Not a %1$s or Neutral card</string>
+    <string name="builder_toast_max_copies">Maximum copies already added</string>
+    <string name="builder_toast_deck_full_size">Deck is full (%1$d/%1$d)</string>
+    <string name="builder_toast_renathal_lock">Remove cards down to 30 before removing Prince Renathal</string>
+    <string name="builder_toast_load_failed">Could not load deck</string>
+    <string name="builder_toast_card_removed">%1$s removed</string>
+    <string name="action_undo">UNDO</string>
+    <string name="card_data_refreshed">Card data refreshed</string>
+    <string name="card_data_refresh_failed">Refresh failed</string>
+    <string name="import_error_invalid_code">This deck code looks invalid.</string>
 </resources>

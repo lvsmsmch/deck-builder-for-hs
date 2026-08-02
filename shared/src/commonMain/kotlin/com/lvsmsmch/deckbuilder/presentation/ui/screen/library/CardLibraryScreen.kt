@@ -72,7 +72,13 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CardSearchRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
+import com.lvsmsmch.deckbuilder.presentation.ui.components.EmptyState
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ErrorState
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
+import com.lvsmsmch.deckbuilder.presentation.ui.components.SortChoices
+import com.lvsmsmch.deckbuilder.presentation.ui.components.SortMenuButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -168,10 +174,10 @@ fun CardLibraryScreen(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 8.dp),
         )
 
-        SearchRow(
+        CardSearchRow(
             query = state.filters.textQuery,
             onQueryChange = viewModel::setTextQuery,
-            activeFilterCount = state.filters.activeFilterCount(),
+            activeFilterCount = state.filters.activeFilterCount,
             onOpenFilters = {
                 focusManager.clearFocus()
                 showFilterSheet = true
@@ -228,21 +234,6 @@ fun CardLibraryScreen(
     }
 }
 
-private fun com.lvsmsmch.deckbuilder.domain.entities.CardFilters.activeFilterCount(): Int {
-    var n = 0
-    if (classes.isNotEmpty()) n++
-    if (sets.isNotEmpty()) n++
-    if (format != CardFormatFilter.ALL) n++
-    if (rarities.isNotEmpty()) n++
-    if (types.isNotEmpty()) n++
-    if (minionTypes.isNotEmpty()) n++
-    if (keywords.isNotEmpty()) n++
-    if (spellSchools.isNotEmpty()) n++
-    if (manaCosts.isNotEmpty()) n++
-    if (!collectibleOnly) n++
-    if (textQuery.isNotBlank()) n++
-    return n
-}
 
 @Composable
 private fun Header(
@@ -250,240 +241,18 @@ private fun Header(
     onBack: () -> Unit,
     onSortChange: (CardSort) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    ScreenTopBar(
+        title = stringResource(Res.string.library_title),
+        onBack = onBack,
+        bottomPadding = 2.dp,
     ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(Res.string.action_back),
-                tint = DeckBuilderColors.OnSurface,
-            )
-        }
-        Text(
-            text = stringResource(Res.string.library_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = DeckBuilderColors.OnSurface,
-            modifier = Modifier.weight(1f),
-        )
-        SortMenuButton(sort = sort, onSortChange = onSortChange)
+        SortMenuButton(sort = sort, choices = SortChoices.Library, onSortChange = onSortChange)
     }
 }
 
-@Composable
-private fun HeaderIconButton(
-    onClick: () -> Unit,
-    badge: String?,
-    content: @Composable () -> Unit,
-) {
-    Box {
-        Box(
-            modifier = Modifier
-                .size(width = 48.dp, height = 52.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center,
-        ) {
-            content()
-        }
-        if (badge != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(16.dp)
-                    .clip(CircleShape)
-                    .background(DeckBuilderColors.Primary),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = badge,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = DeckBuilderColors.OnPrimary,
-                    fontSize = 9.sp,
-                )
-            }
-        }
-    }
-}
 
-private data class SortChoice(val labelRes: StringResource, val sort: CardSort)
 
-private val SortChoices = listOf(
-    SortChoice(Res.string.sort_mana_asc, CardSort(SortKey.MANA_COST, SortDir.ASC)),
-    SortChoice(Res.string.sort_mana_desc, CardSort(SortKey.MANA_COST, SortDir.DESC)),
-    SortChoice(Res.string.sort_name, CardSort(SortKey.NAME, SortDir.ASC)),
-    SortChoice(Res.string.sort_newest, CardSort(SortKey.DATE_ADDED, SortDir.ASC)),
-    SortChoice(Res.string.sort_oldest, CardSort(SortKey.DATE_ADDED, SortDir.DESC)),
-    SortChoice(Res.string.sort_group_by_class, CardSort(SortKey.GROUP_BY_CLASS, SortDir.ASC)),
-)
 
-private fun currentSortLabelRes(current: CardSort): StringResource =
-    SortChoices.firstOrNull { it.sort == current }?.labelRes ?: Res.string.sort_mana_asc
-
-@Composable
-private fun SearchRow(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    activeFilterCount: Int,
-    onOpenFilters: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        TextField(
-            value = query,
-            onValueChange = onQueryChange,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
-            placeholder = {
-                Text(
-                    stringResource(Res.string.library_search_hint),
-                    color = DeckBuilderColors.OnSurfaceDimmer,
-                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
-                )
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            leadingIcon = {
-                Icon(
-                    Icons.Outlined.Search,
-                    contentDescription = null,
-                    tint = DeckBuilderColors.OnSurface,
-                )
-            },
-            trailingIcon = {
-                if (query.isNotEmpty()) {
-                    Icon(
-                        Icons.Outlined.Close,
-                        contentDescription = stringResource(Res.string.action_clear),
-                        tint = DeckBuilderColors.OnSurfaceDim,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .clickable { onQueryChange("") }
-                            .padding(4.dp),
-                    )
-                }
-            },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = DeckBuilderColors.SurfaceContainer,
-                unfocusedContainerColor = DeckBuilderColors.SurfaceContainer,
-                focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                focusedTextColor = DeckBuilderColors.OnSurface,
-                unfocusedTextColor = DeckBuilderColors.OnSurface,
-                cursorColor = DeckBuilderColors.Primary,
-            ),
-            shape = RoundedCornerShape(14.dp),
-            modifier = Modifier
-                .weight(1f)
-                .height(52.dp)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp)),
-        )
-        HeaderIconButton(
-            onClick = onOpenFilters,
-            badge = activeFilterCount.takeIf { it > 0 }?.toString(),
-        ) {
-            Icon(
-                Icons.Outlined.FilterList,
-                contentDescription = stringResource(Res.string.filters_title),
-                tint = DeckBuilderColors.OnSurface,
-                modifier = Modifier.size(21.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun SortMenuButton(
-    sort: CardSort,
-    onSortChange: (CardSort) -> Unit,
-) {
-    var sortMenuOpen by remember { mutableStateOf(false) }
-    Box {
-        Row(
-            modifier = Modifier
-                .height(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
-                .clickable { sortMenuOpen = true }
-                .padding(start = 10.dp, end = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(currentSortLabelRes(sort)),
-                color = DeckBuilderColors.OnSurface,
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Spacer(Modifier.width(4.dp))
-            Icon(
-                Icons.Outlined.ArrowDropDown,
-                contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDim,
-                modifier = Modifier.size(20.dp),
-            )
-        }
-        DropdownMenu(
-            expanded = sortMenuOpen,
-            onDismissRequest = { sortMenuOpen = false },
-        ) {
-            SortChoices.forEach { choice ->
-                DropdownMenuItem(
-                    text = { Text(stringResource(choice.labelRes)) },
-                    onClick = {
-                        onSortChange(choice.sort)
-                        sortMenuOpen = false
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ManaChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
-    val costs = remember { (0..7).toList() }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        costs.forEach { cost ->
-            val active = cost in selected
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer,
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OutlineSoft,
-                        shape = RoundedCornerShape(8.dp),
-                    )
-                    .clickable { onToggle(cost) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = if (cost == 7) "7+" else cost.toString(),
-                    color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
-                    style = MaterialTheme.typography.labelLarge,
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun CardGrid(
@@ -620,49 +389,10 @@ private fun RotationLagBanner(
 
 @Composable
 private fun EmptyState(hasFilters: Boolean) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(
-                if (hasFilters) Res.string.library_empty_with_filters else Res.string.library_empty_no_filters,
-            ),
-            color = DeckBuilderColors.OnSurfaceDim,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
+    EmptyState(
+        message = stringResource(
+            if (hasFilters) Res.string.library_empty_with_filters else Res.string.library_empty_no_filters,
+        ),
+    )
 }
 
-@Composable
-private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = message,
-            color = DeckBuilderColors.Error,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Spacer(Modifier.height(12.dp))
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(DeckBuilderColors.Primary)
-                .clickable { onRetry() }
-                .padding(horizontal = 18.dp, vertical = 10.dp),
-        ) {
-            Text(
-                text = stringResource(Res.string.action_retry),
-                color = DeckBuilderColors.OnPrimary,
-                style = MaterialTheme.typography.labelLarge,
-            )
-        }
-    }
-}

@@ -71,6 +71,8 @@ import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ErrorState
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.rarityColor
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
@@ -156,28 +158,11 @@ private fun CardLoadingShell() {
 
 @Composable
 private fun TopBar(title: String, onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(Res.string.action_back),
-                tint = DeckBuilderColors.OnSurface,
-            )
-        }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = DeckBuilderColors.OnSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-    }
+    ScreenTopBar(
+        title = title,
+        onBack = onBack,
+        titleStyle = MaterialTheme.typography.titleSmall,
+    )
 }
 
 @Composable
@@ -526,33 +511,3 @@ private fun RelatedCardsSection(
     }
 }
 
-@Composable
-private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = message,
-            color = DeckBuilderColors.Error,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Spacer(Modifier.height(12.dp))
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(DeckBuilderColors.Primary)
-                .clickable { onRetry() }
-                .padding(horizontal = 18.dp, vertical = 10.dp),
-        ) {
-            Text(
-                text = stringResource(Res.string.action_retry),
-                color = DeckBuilderColors.OnPrimary,
-                style = MaterialTheme.typography.labelLarge,
-            )
-        }
-    }
-}
