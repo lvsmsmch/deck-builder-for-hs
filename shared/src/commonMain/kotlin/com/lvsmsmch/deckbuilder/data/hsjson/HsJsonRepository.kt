@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.data.hsjson
 
 import com.lvsmsmch.deckbuilder.util.AppLog
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
+import com.lvsmsmch.deckbuilder.data.db.HiddenCardSets
 import com.lvsmsmch.deckbuilder.data.db.dao.HsJsonCardDao
 import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 import com.lvsmsmch.deckbuilder.data.update.CardDataProgress
@@ -42,9 +43,15 @@ class HsJsonRepository(
         return dao.count(hs) > 0 && builds.hasFullCardsDataset(hs)
     }
 
-    /** Sets that appear on collectible cards — input for the rotation cross-check. */
+    /**
+     * Sets that appear on collectible cards — input for the rotation
+     * cross-check. Sets the app hides are left out: they are duplicates and
+     * internal buckets, not releases python-hearthstone could ever know about.
+     */
     suspend fun collectibleSets(appLocale: String): Set<String> =
-        dao.collectibleSets(appLocaleToHsJson(appLocale)).toSet()
+        dao.collectibleSets(appLocaleToHsJson(appLocale))
+            .filterNot { HiddenCardSets.isHidden(it) }
+            .toSet()
 
     /**
      * Makes sure the locale has card data, downloading it when missing, and

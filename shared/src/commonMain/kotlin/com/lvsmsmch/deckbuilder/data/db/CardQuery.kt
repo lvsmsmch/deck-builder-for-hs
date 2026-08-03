@@ -15,9 +15,6 @@ import com.lvsmsmch.deckbuilder.domain.entities.SortKey
  */
 internal object CardQuery {
 
-    /** Sets that exist in the data but should never show up in the app. */
-    private val EXCLUDED_SETS = listOf("EXPERT1", "VANILLA", "LEGACY")
-
     data class Sql(val where: String, val args: List<Any>, val orderBy: String)
 
     fun build(filters: CardFilters, locale: String, standardSets: Set<String>): Sql {
@@ -27,8 +24,9 @@ internal object CardQuery {
         clauses += "locale = ?"
         args.add(locale)
 
-        clauses += "(cardSet IS NULL OR (cardSet NOT IN (${placeholders(EXCLUDED_SETS.size)}) AND cardSet NOT LIKE 'PLACEHOLDER%'))"
-        args.addAll(EXCLUDED_SETS)
+        clauses += "(cardSet IS NULL OR (cardSet NOT IN (${placeholders(HiddenCardSets.TOKENS.size)}) " +
+            "AND cardSet NOT LIKE '${HiddenCardSets.PLACEHOLDER_PREFIX}%'))"
+        args.addAll(HiddenCardSets.TOKENS)
 
         if (filters.collectibleOnly) {
             clauses += "collectible = 1"
