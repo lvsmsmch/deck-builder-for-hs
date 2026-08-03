@@ -1,6 +1,5 @@
 package com.lvsmsmch.deckbuilder.data.hsjson
 
-import kotlin.concurrent.Volatile
 import com.lvsmsmch.deckbuilder.util.AppLog
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.data.db.dao.HsJsonCardDao
@@ -37,48 +36,34 @@ class HsJsonRepository(
     private val mutex = Mutex()
     private val cachedBuilds = ConcurrentCache<String, String>()
 
-    /**
-     * Last materialised snapshot (one locale at a time). `dao.all()` pulls the
-     * whole card table with full JSON payloads — seconds of work — so callers
-     * on hot paths (deck assembly, search) must not trigger it repeatedly.
-     */
-    @Volatile
-    private var snapshotCache: Snapshot? = null
-
-    data class Snapshot(
-        val locale: String,
-        val build: String?,
-        val cards: List<HsJsonCardEntity>,
-    )
-
-    /** Returns cached rows for the locale, or null if nothing has been fetched yet. */
-    suspend fun cached(appLocale: String): Snapshot? {
+    /** True once the locale has a complete card dataset stored. */
+    suspend fun hasCards(appLocale: String): Boolean {
         val hs = appLocaleToHsJson(appLocale)
-        snapshotCache?.takeIf { it.locale == hs }?.let { return it }
-        val rows = dao.all(hs)
-        if (rows.isEmpty()) return null
-        val build = builds.get(hs)
-        build?.let { cachedBuilds[hs] = it }
-        return Snapshot(locale = hs, build = build, cards = rows).also { snapshotCache = it }
+        return dao.count(hs) > 0 && builds.hasFullCardsDataset(hs)
     }
 
+    /** Sets that appear on collectible cards — input for the rotation cross-check. */
+    suspend fun collectibleSets(appLocale: String): Set<String> =
+        dao.collectibleSets(appLocaleToHsJson(appLocale)).toSet()
+
     /**
-     * Ensures cards exist for [appLocale]. If empty, fetches latest build and
-     * populates Room. Returns the snapshot (possibly fresh, possibly cached).
+     * Makes sure the locale has card data, downloading it when missing, and
+     * returns the HearthstoneJSON locale to query with. Nothing is held in
+     * memory: callers query Room directly.
      */
-    suspend fun ensureLoaded(appLocale: String): Snapshot {
+    suspend fun ensureLoaded(appLocale: String): String {
         val hs = appLocaleToHsJson(appLocale)
-        snapshotCache?.takeIf { it.locale == hs }?.let { return it }
+        if (dao.count(hs) > 0 && builds.hasFullCardsDataset(hs)) {
+            builds.get(hs)?.let { cachedBuilds[hs] = it }
+            return hs
+        }
         return mutex.withLock {
-            snapshotCache?.takeIf { it.locale == hs }?.let { return it }
-            val existing = dao.all(hs)
-            if (existing.isNotEmpty() && builds.hasFullCardsDataset(hs)) {
-                sessionLog.add(TAG, "cache hit locale=$hs cards=${existing.size}")
-                val build = builds.get(hs)
-                build?.let { cachedBuilds[hs] = it }
-                Snapshot(hs, build, existing).also { snapshotCache = it }
+            if (dao.count(hs) > 0 && builds.hasFullCardsDataset(hs)) {
+                builds.get(hs)?.let { cachedBuilds[hs] = it }
+                hs
             } else {
                 fetchAndStore(hs = hs, reason = "ensureLoaded")
+                hs
             }
         }
     }
@@ -90,13 +75,7 @@ class HsJsonRepository(
      */
     suspend fun cardsByDbfIds(appLocale: String, dbfIds: Collection<Int>): List<HsJsonCardEntity> {
         if (dbfIds.isEmpty()) return emptyList()
-        val hs = appLocaleToHsJson(appLocale)
-        snapshotCache?.takeIf { it.locale == hs }?.let { snap ->
-            val wanted = dbfIds.toSet()
-            return snap.cards.filter { it.dbfId in wanted }
-        }
-        if (dao.count(hs) > 0) return dao.byDbfIds(hs, dbfIds.toList())
-        ensureLoaded(appLocale)
+        val hs = ensureLoaded(appLocale)
         return dao.byDbfIds(hs, dbfIds.toList())
     }
 
@@ -144,7 +123,7 @@ class HsJsonRepository(
         hs: String,
         build: String? = null,
         reason: String,
-    ): Snapshot {
+    ) {
         try {
             notifier.setCardDataProgress(CardDataProgress(CardDataProgress.Stage.RESOLVING_BUILD))
             val resolvedBuild = build ?: buildChecker.latestBuild(hs)
@@ -162,7 +141,7 @@ class HsJsonRepository(
             notifier.setCardDataProgress(null)
             AppLog.i(TAG, "$reason: stored ${rows.size} cards build=$resolvedBuild locale=$hs")
             sessionLog.add(TAG, "$reason locale=$hs build=$resolvedBuild cards=${rows.size}")
-            return Snapshot(hs, resolvedBuild, rows).also { snapshotCache = it }
+            return
         } catch (t: Throwable) {
             notifier.setCardDataProgress(null)
             throw t

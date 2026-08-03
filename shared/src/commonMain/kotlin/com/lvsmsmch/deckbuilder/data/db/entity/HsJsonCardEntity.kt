@@ -16,6 +16,7 @@ import androidx.room.Index
         Index(value = ["locale", "cardClass"]),
         Index(value = ["locale", "cardSet"]),
         Index(value = ["locale", "cost"]),
+        Index(value = ["locale", "collectible"]),
     ],
 )
 data class HsJsonCardEntity(
@@ -39,5 +40,11 @@ data class HsJsonCardEntity(
     val spellSchool: String?,
     val mechanicsCsv: String?,
     val collectible: Boolean,
+    /**
+     * Lowercased `name + text`, computed in Kotlin because SQLite's LOWER()
+     * only folds ASCII — a Russian or Greek query would otherwise be
+     * case-sensitive. Card search matches against this column.
+     */
+    val searchText: String,
     val payloadJson: String,
 )

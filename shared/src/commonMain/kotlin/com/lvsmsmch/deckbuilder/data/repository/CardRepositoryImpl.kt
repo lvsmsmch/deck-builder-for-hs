@@ -1,55 +1,45 @@
 package com.lvsmsmch.deckbuilder.data.repository
 
-import kotlin.concurrent.Volatile
-import kotlinx.datetime.Clock
-import com.lvsmsmch.deckbuilder.util.AppLog
+import androidx.room.RoomRawQuery
+import androidx.sqlite.SQLiteStatement
+import com.lvsmsmch.deckbuilder.data.db.CardQuery
+import com.lvsmsmch.deckbuilder.data.db.dao.HsJsonCardDao
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
-import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
-import com.lvsmsmch.deckbuilder.data.hsjson.parseClassTokens
 import com.lvsmsmch.deckbuilder.data.hsjson.toDomain
-import com.lvsmsmch.deckbuilder.data.hsjson.toDomainSlug
 import com.lvsmsmch.deckbuilder.data.prefs.CurrentLocaleProvider
 import com.lvsmsmch.deckbuilder.domain.common.Result
 import com.lvsmsmch.deckbuilder.domain.common.runCatchingResult
 import com.lvsmsmch.deckbuilder.domain.entities.Card
-import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.CardFilters
+import com.lvsmsmch.deckbuilder.domain.entities.CardFormatFilter
 import com.lvsmsmch.deckbuilder.domain.entities.Page
-import com.lvsmsmch.deckbuilder.domain.entities.SortDir
-import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.domain.repositories.CardRepository
 import com.lvsmsmch.deckbuilder.domain.repositories.RotationRepository
+import com.lvsmsmch.deckbuilder.util.AppLog
+import com.lvsmsmch.deckbuilder.util.ConcurrentCache
 import com.lvsmsmch.deckbuilder.util.IoDispatcher
 import kotlinx.coroutines.withContext
-import com.lvsmsmch.deckbuilder.util.ConcurrentCache
+import kotlinx.datetime.Clock
 
 private const val TAG = "DB.CardRepo"
+
+/**
+ * Card queries run in SQLite: filtering, sorting and paging are all done by
+ * the database, so only one page of rows is ever materialized. The card table
+ * holds tens of thousands of rows with a JSON payload each — loading it into
+ * memory to filter it (as this repository used to) cost tens of megabytes.
+ */
 class CardRepositoryImpl(
     private val hsJson: HsJsonRepository,
+    private val dao: HsJsonCardDao,
     private val locales: CurrentLocaleProvider,
     private val sessionLog: SessionLog,
     private val rotation: RotationRepository,
 ) : CardRepository {
+
     // Bounded: every viewed card was cached under three keys and never freed.
     private val memoryCache = ConcurrentCache<String, Card>(maxSize = 600)
-    private val searchCache = ConcurrentCache<String, List<HsJsonCardEntity>>(maxSize = 24)
-
-    /**
-     * Locale+build the search cache was built against. When card data updates
-     * (new build) or the user switches locale, cached result lists point at the
-     * previous dataset — drop them instead of serving stale cards until restart.
-     */
-    @Volatile
-    private var searchCacheStamp: String? = null
-
-    private fun invalidateSearchCacheIfStale(locale: String, build: String?) {
-        val stamp = "$locale|$build"
-        if (stamp != searchCacheStamp) {
-            searchCache.clear()
-            searchCacheStamp = stamp
-        }
-    }
 
     override fun cachedCard(idOrSlug: String): Card? = memoryCache[idOrSlug.lowercase()]
 
@@ -57,21 +47,22 @@ class CardRepositoryImpl(
         withContext(IoDispatcher) {
             val started = Clock.System.now().toEpochMilliseconds()
             runCatchingResult {
-                val resolved = locales.resolve(locale)
-                val snap = hsJson.ensureLoaded(resolved)
-                val asInt = idOrSlug.toIntOrNull()
-                val row = if (asInt != null) {
-                    snap.cards.firstOrNull { it.dbfId == asInt }
+                val hsLocale = hsJson.ensureLoaded(locales.resolve(locale))
+                val dbfId = idOrSlug.toIntOrNull()
+                val row = if (dbfId != null) {
+                    dao.byDbfId(hsLocale, dbfId)
                 } else {
-                    snap.cards.firstOrNull { it.cardId.equals(idOrSlug, ignoreCase = true) }
-                        ?: snap.cards.firstOrNull { it.name.equals(idOrSlug, ignoreCase = true) }
+                    dao.byCardId(hsLocale, idOrSlug) ?: dao.byName(hsLocale, idOrSlug)
                 } ?: error("Card not found in HsJson pool: $idOrSlug")
                 row.toDomain().also(::remember)
             }.also { r ->
                 when (r) {
                     is Result.Success -> {
                         AppLog.i(TAG, "getCard: OK idOrSlug=$idOrSlug name='${r.data.name}'")
-                        sessionLog.add(TAG, "getCard id=$idOrSlug name='${r.data.name}' ms=${Clock.System.now().toEpochMilliseconds() - started}")
+                        sessionLog.add(
+                            TAG,
+                            "getCard id=$idOrSlug name='${r.data.name}' ms=${elapsedSince(started)}",
+                        )
                     }
                     is Result.Error -> {
                         AppLog.w(TAG, "getCard: FAILED idOrSlug=$idOrSlug: ${r.throwable.message}", r.throwable)
@@ -89,34 +80,33 @@ class CardRepositoryImpl(
     ): Result<Page<Card>> = withContext(IoDispatcher) {
         val started = Clock.System.now().toEpochMilliseconds()
         runCatchingResult {
-            val resolved = locales.resolve(locale)
-            val snap = hsJson.ensureLoaded(resolved)
-            invalidateSearchCacheIfStale(snap.locale, snap.build)
+            val hsLocale = hsJson.ensureLoaded(locales.resolve(locale))
             val standardSets = if (filters.format != CardFormatFilter.ALL) {
                 rotation.ensureLoaded().standardSets
             } else {
                 emptySet()
             }
-            // Filter combinations are few and repeat, so they are worth caching.
-            // Text queries change on every keystroke: caching them would grow
-            // the cache without bound, and filtering in memory is cheap anyway.
-            val cacheable = filters.textQuery.isBlank()
-            val compute = {
-                val pred = buildPredicate(filters, standardSets)
-                val matched = snap.cards.filter(pred)
-                sort(matched, filters.sort.key, filters.sort.direction)
-            }
-            val sorted = if (cacheable) {
-                val cacheKey = listOf(resolved, filters, standardSets.sorted()).joinToString("|")
-                searchCache.getOrPut(cacheKey, compute)
-            } else {
-                compute()
-            }
-            val total = sorted.size
+
+            val query = CardQuery.build(filters, hsLocale, standardSets)
+            val total = dao.count(
+                rawQuery("SELECT COUNT(*) FROM hsjson_cards WHERE ${query.where}", query.args),
+            )
             val pageCount = if (pageSize > 0 && total > 0) (total + pageSize - 1) / pageSize else 1
-            val from = ((page - 1).coerceAtLeast(0)) * pageSize
-            val items = sorted.drop(from).take(pageSize).map { it.toDomain().also(::remember) }
-            Page(items = items, pageNumber = page, pageCount = pageCount, totalCount = total)
+            val offset = ((page - 1).coerceAtLeast(0)) * pageSize
+            val rows = dao.search(
+                rawQuery(
+                    sql = "SELECT * FROM hsjson_cards WHERE ${query.where} " +
+                        "ORDER BY ${query.orderBy} LIMIT ? OFFSET ?",
+                    args = query.args + listOf(pageSize, offset),
+                ),
+            )
+
+            Page(
+                items = rows.map { it.toDomain().also(::remember) },
+                pageNumber = page,
+                pageCount = pageCount,
+                totalCount = total,
+            )
         }.also { r ->
             val summary = "page=$page " +
                 "classes=${filters.classes} sets=${filters.sets.size} format=${filters.format} " +
@@ -130,101 +120,29 @@ class CardRepositoryImpl(
                 )
                 is Result.Error -> AppLog.w(TAG, "searchCards: FAILED $summary: ${r.throwable.message}", r.throwable)
             }
-            sessionLog.add(TAG, "search $summary result=${(r as? Result.Success)?.data?.items?.size ?: "FAILED"} ms=${Clock.System.now().toEpochMilliseconds() - started}")
+            sessionLog.add(
+                TAG,
+                "search $summary result=${(r as? Result.Success)?.data?.items?.size ?: "FAILED"} " +
+                    "ms=${elapsedSince(started)}",
+            )
         }
     }
 
-    private fun buildPredicate(
-        filters: CardFilters,
-        standardSets: Set<String>,
-    ): (HsJsonCardEntity) -> Boolean {
-        // UI filters use lowercase class slugs, while cached rows store uppercase
-        // HearthstoneJSON tokens. Compare on the normalized domain projection.
-        val classes = filters.classes.map { it.lowercase() }.toSet()
-        val sets = filters.sets.map { it.lowercase() }.toSet()
-        val rarities = filters.rarities.map { it.lowercase() }.toSet()
-        val types = filters.types.map { it.lowercase() }.toSet()
-        val minionTypes = filters.minionTypes.map { it.lowercase() }.toSet()
-        val spellSchools = filters.spellSchools.map { it.lowercase() }.toSet()
-        val keywords = filters.keywords.map { it.lowercase() }.toSet()
-        val normalizedStandardSets = standardSets.flatMap { set ->
-            listOf(set.toRotationToken(), set.toDomainSlug())
-        }.toSet()
-        val expandedManaCosts: Set<Int> = filters.manaCosts
-            .flatMap { c -> if (c >= 7) (7..30).toList() else listOf(c) }
-            .toSet()
-        val q = filters.textQuery.trim().takeIf { it.isNotBlank() }?.lowercase()
-
-        return predicate@{ row ->
-            val rowSetSlug = row.cardSet?.toDomainSlug()
-            if (rowSetSlug != null && rowSetSlug.isExcludedSetSlug()) return@predicate false
-            if (filters.collectibleOnly && !row.collectible) return@predicate false
-            if (filters.collectibleOnly && row.isCosmeticHeroSkin()) return@predicate false
-            if (filters.format != CardFormatFilter.ALL) {
-                val set = row.cardSet ?: return@predicate false
-                val isStandard = set.toRotationToken() in normalizedStandardSets ||
-                    set.toDomainSlug() in normalizedStandardSets
-                when (filters.format) {
-                    CardFormatFilter.STANDARD -> if (!isStandard) return@predicate false
-                    CardFormatFilter.WILD -> Unit
-                    CardFormatFilter.ALL -> Unit
+    /** Binds [args] positionally; only the types the query builder produces. */
+    private fun rawQuery(sql: String, args: List<Any>): RoomRawQuery =
+        RoomRawQuery(sql) { statement: SQLiteStatement ->
+            args.forEachIndexed { index, arg ->
+                val position = index + 1
+                when (arg) {
+                    is Int -> statement.bindInt(position, arg)
+                    is Long -> statement.bindLong(position, arg)
+                    is Boolean -> statement.bindInt(position, if (arg) 1 else 0)
+                    else -> statement.bindText(position, arg.toString())
                 }
             }
-
-            if (classes.isNotEmpty()) {
-                val rowClasses = row.parseClassTokens().map { it.toDomainSlug() }
-                if (rowClasses.none { it in classes }) return@predicate false
-            }
-            if (sets.isNotEmpty()) {
-                val s = rowSetSlug ?: return@predicate false
-                if (s !in sets) return@predicate false
-            }
-            if (rarities.isNotEmpty()) {
-                val r = row.rarity?.toDomainSlug() ?: return@predicate false
-                if (r !in rarities) return@predicate false
-            }
-            if (types.isNotEmpty()) {
-                val t = row.type?.toDomainSlug() ?: return@predicate false
-                if (t !in types) return@predicate false
-            }
-            if (minionTypes.isNotEmpty()) {
-                val races = (row.raceCsv?.trim(',')?.split(',') ?: emptyList())
-                    .map { it.toDomainSlug() }
-                if (races.none { it in minionTypes }) return@predicate false
-            }
-            if (spellSchools.isNotEmpty()) {
-                val s = row.spellSchool?.toDomainSlug() ?: return@predicate false
-                if (s !in spellSchools) return@predicate false
-            }
-            if (keywords.isNotEmpty()) {
-                val mech = (row.mechanicsCsv?.trim(',')?.split(',') ?: emptyList())
-                    .map { it.toDomainSlug() }
-                if (mech.none { it in keywords }) return@predicate false
-            }
-            if (expandedManaCosts.isNotEmpty()) {
-                val c = row.cost ?: return@predicate false
-                if (c !in expandedManaCosts) return@predicate false
-            }
-            if (q != null) {
-                val haystack = row.name.lowercase() + " " + (row.text?.lowercase().orEmpty())
-                if (!haystack.contains(q)) return@predicate false
-            }
-            true
         }
-    }
 
-    private fun sort(rows: List<HsJsonCardEntity>, key: SortKey, dir: SortDir): List<HsJsonCardEntity> {
-        // DATE_ADDED uses dbfId as a proxy: higher dbfId == newer, so DESC = Newest, ASC = Oldest.
-        // Other keys are flipped via Comparator.reversed() when dir == DESC.
-        val base: Comparator<HsJsonCardEntity> = when (key) {
-            SortKey.MANA_COST -> compareBy({ it.cost ?: Int.MAX_VALUE }, { it.name })
-            SortKey.NAME -> compareBy { it.name }
-            SortKey.DATE_ADDED -> compareByDescending<HsJsonCardEntity> { it.dbfId }.thenBy { it.name }
-            SortKey.GROUP_BY_CLASS -> compareBy({ it.cardClass ?: "" }, { it.cost ?: Int.MAX_VALUE }, { it.name })
-        }
-        val cmp = if (dir == SortDir.DESC) base.reversed() else base
-        return rows.sortedWith(cmp)
-    }
+    private fun elapsedSince(startMs: Long): Long = Clock.System.now().toEpochMilliseconds() - startMs
 
     private fun remember(card: Card) {
         memoryCache[card.id.toString()] = card
@@ -232,17 +150,3 @@ class CardRepositoryImpl(
         memoryCache[card.name.lowercase()] = card
     }
 }
-
-private fun String.toRotationToken(): String = uppercase().replace('-', '_')
-
-private val ExcludedSetSlugs = setOf(
-    "expert1",
-    "vanilla",
-    "legacy",
-)
-
-private fun String.isExcludedSetSlug(): Boolean =
-    this in ExcludedSetSlugs || startsWith("placeholder")
-
-private fun HsJsonCardEntity.isCosmeticHeroSkin(): Boolean =
-    type.equals("HERO", ignoreCase = true) && text.isNullOrBlank()

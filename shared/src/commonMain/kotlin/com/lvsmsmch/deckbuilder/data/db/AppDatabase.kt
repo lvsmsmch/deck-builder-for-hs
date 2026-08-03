@@ -14,7 +14,7 @@ import com.lvsmsmch.deckbuilder.data.db.entity.SavedDeckEntity
         SavedDeckEntity::class,
         HsJsonCardEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = false,
 )
 @ConstructedBy(AppDatabaseConstructor::class)

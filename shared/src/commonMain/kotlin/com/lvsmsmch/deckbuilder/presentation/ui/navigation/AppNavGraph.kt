@@ -71,7 +71,7 @@ fun AppNavGraph(
     var showStartupCardDataDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentPreferences.cardLocale) {
-        showStartupCardDataDialog = hsJson.cached(currentPreferences.cardLocale) == null
+        showStartupCardDataDialog = !hsJson.hasCards(currentPreferences.cardLocale)
     }
 
     LaunchedEffect(notifier) {

@@ -20,6 +20,7 @@ fun createAppDatabase(): AppDatabase {
     )
     val path = requireNotNull(documents?.path) { "Cannot resolve documents directory" }
     return Room.databaseBuilder<AppDatabase>(name = "$path/${AppDatabase.NAME}")
+        .addMigrations(*AppDatabaseMigrations)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .fallbackToDestructiveMigration(dropAllTables = true)

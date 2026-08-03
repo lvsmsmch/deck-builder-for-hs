@@ -84,12 +84,8 @@ class UpdateRunner(
         // Re-publish lag status against current snapshot.
         runCatching {
             val rot = rotation.cached() ?: return@runCatching
-            val snap = hsJson.cached(locale) ?: return@runCatching
-            val collectibleSets = snap.cards
-                .asSequence()
-                .filter { it.collectible }
-                .mapNotNull { it.cardSet }
-                .toSet()
+            val collectibleSets = hsJson.collectibleSets(locale)
+            if (collectibleSets.isEmpty()) return@runCatching
             val status = rotation.status(rot, collectibleSets)
             notifier.setRotationStatus(status)
             if (status.isOutdated) {

@@ -31,6 +31,10 @@ internal fun HsJsonCardDto.toEntity(locale: String, json: Json): HsJsonCardEntit
             .takeIf { it.isNotEmpty() }
             ?.joinToCsv(),
         collectible = collectible == true,
+        searchText = buildString {
+            append(name.orEmpty())
+            text?.let { append(' ').append(it) }
+        }.lowercase(),
         payloadJson = json.encodeToString(this),
     )
 }

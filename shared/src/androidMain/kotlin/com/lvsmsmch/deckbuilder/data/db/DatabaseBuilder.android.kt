@@ -10,6 +10,7 @@ fun createAppDatabase(context: Context): AppDatabase =
         context = context.applicationContext,
         name = context.getDatabasePath(AppDatabase.NAME).absolutePath,
     )
+        .addMigrations(*AppDatabaseMigrations)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .fallbackToDestructiveMigration(dropAllTables = true)

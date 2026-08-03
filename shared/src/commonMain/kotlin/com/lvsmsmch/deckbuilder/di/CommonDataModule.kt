@@ -122,7 +122,13 @@ val commonDataModule = module {
     single { CurrentLocaleProvider(prefs = get()) }
 
     single<CardRepository> {
-        CardRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get(), rotation = get())
+        CardRepositoryImpl(
+            hsJson = get(),
+            dao = get(),
+            locales = get(),
+            sessionLog = get(),
+            rotation = get(),
+        )
     }
     single<DeckRepository> { DeckRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get()) }
     single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }

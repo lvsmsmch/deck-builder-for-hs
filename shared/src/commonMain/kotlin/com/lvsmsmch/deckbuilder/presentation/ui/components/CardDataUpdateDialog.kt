@@ -74,7 +74,7 @@ fun CardDataUpdateDialog(
             val updated = runCatching {
                 updateRunner.runOnce(reason = if (required) "startup gate" else "manual refresh")
             }.getOrDefault(false)
-            val hasCards = runCatching { hsJson.cached(preferences.cardLocale) != null }.getOrDefault(false)
+            val hasCards = runCatching { hsJson.hasCards(preferences.cardLocale) }.getOrDefault(false)
             mode = if (hasCards) {
                 onResult?.invoke(updated)
                 onDismiss()
@@ -97,7 +97,7 @@ fun CardDataUpdateDialog(
     }
 
     LaunchedEffect(preferences.cardLocale) {
-        val hasCards = runCatching { hsJson.cached(preferences.cardLocale) != null }.getOrDefault(false)
+        val hasCards = runCatching { hsJson.hasCards(preferences.cardLocale) }.getOrDefault(false)
         if (!forceRefresh && hasCards) {
             onDismiss()
         } else {
