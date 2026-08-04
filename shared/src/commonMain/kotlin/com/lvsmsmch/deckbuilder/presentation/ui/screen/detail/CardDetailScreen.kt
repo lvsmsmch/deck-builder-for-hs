@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -96,6 +97,8 @@ fun CardDetailScreen(
     idOrSlug: String,
     onBack: () -> Unit,
     onCardClick: (Card) -> Unit = {},
+    canAddToDeck: Boolean = false,
+    onAddToDeck: (Card) -> Unit = {},
     viewModel: CardDetailViewModel = koinViewModel(parameters = { parametersOf(idOrSlug) }),
 ) {
     val state by viewModel.state.collectAsState()
@@ -119,12 +122,48 @@ fun CardDetailScreen(
                 onRetry = viewModel::load,
             )
 
-            is UiState.Loaded -> Body(
-                card = cardState.data,
-                isStandardLegal = state.isStandardLegal,
-                related = state.relatedCards,
-                isLoadingRelated = state.isLoadingRelated,
-                onRelatedClick = onCardClick,
+            is UiState.Loaded -> {
+                Body(
+                    card = cardState.data,
+                    isStandardLegal = state.isStandardLegal,
+                    related = state.relatedCards,
+                    isLoadingRelated = state.isLoadingRelated,
+                    onRelatedClick = onCardClick,
+                    modifier = Modifier.weight(1f),
+                )
+                // Only the deck editor has a deck to add to, so the bar shows up
+                // exclusively on the trip that started there.
+                if (canAddToDeck) {
+                    AddToDeckBar(onClick = { onAddToDeck(cardState.data) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddToDeckBar(onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(DeckBuilderColors.SurfaceContainer)
+            .navigationBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(46.dp)
+                .clip(RoundedCornerShape(13.dp))
+                .background(DeckBuilderColors.OnSurface)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = stringResource(Res.string.card_detail_add_to_deck),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = DeckBuilderColors.Surface,
             )
         }
     }
@@ -176,12 +215,13 @@ private fun Body(
     related: List<Card>,
     isLoadingRelated: Boolean,
     onRelatedClick: (Card) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val rarityColor = rarityColor(card.rarity)
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp),
     ) {

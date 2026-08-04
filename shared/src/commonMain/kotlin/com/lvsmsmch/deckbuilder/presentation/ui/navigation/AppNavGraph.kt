@@ -33,6 +33,7 @@ import com.lvsmsmch.deckbuilder.data.hsjson.HsJsonRepository
 import com.lvsmsmch.deckbuilder.data.update.UpdateEvent
 import com.lvsmsmch.deckbuilder.data.update.UpdateNotifier
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
+import com.lvsmsmch.deckbuilder.presentation.PendingDeckAdditions
 import com.lvsmsmch.deckbuilder.presentation.SnackbarController
 import com.lvsmsmch.deckbuilder.presentation.UiText
 import com.lvsmsmch.deckbuilder.presentation.await
@@ -68,6 +69,7 @@ fun AppNavGraph(
     val hsJson: HsJsonRepository = koinInject()
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbar: SnackbarController = koinInject()
+    val pendingDeckAdditions: PendingDeckAdditions = koinInject()
     var showStartupCardDataDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentPreferences.cardLocale) {
@@ -143,7 +145,9 @@ fun AppNavGraph(
                         }
                     },
                     onExit = { navController.navigateUp() },
-                    onOpenCard = { card -> navController.navigate(CardDetail(idOrSlug = card.id.toString())) },
+                    onOpenCard = { card ->
+                        navController.navigate(CardDetail(idOrSlug = card.id.toString(), fromBuilder = true))
+                    },
                 )
             }
             composable<CardDetail> { entry ->
@@ -152,7 +156,14 @@ fun AppNavGraph(
                     idOrSlug = args.idOrSlug,
                     onBack = { navController.navigateUp() },
                     onCardClick = { card ->
-                        navController.navigate(CardDetail(idOrSlug = card.id.toString()))
+                        navController.navigate(
+                            CardDetail(idOrSlug = card.id.toString(), fromBuilder = args.fromBuilder),
+                        )
+                    },
+                    canAddToDeck = args.fromBuilder,
+                    onAddToDeck = { card ->
+                        pendingDeckAdditions.add(card)
+                        navController.navigateUp()
                     },
                 )
             }

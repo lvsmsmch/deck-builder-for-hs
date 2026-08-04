@@ -24,7 +24,9 @@ data class Builder(
 @Serializable data object Cards : Route
 @Serializable data object More : Route
 
-@Serializable data class CardDetail(val idOrSlug: String) : Route
+/** [fromBuilder] marks the trip that started in the deck editor, which is the
+ *  only place where the card screen can offer to add the card to a deck. */
+@Serializable data class CardDetail(val idOrSlug: String, val fromBuilder: Boolean = false) : Route
 @Serializable data class DeckView(val code: String, val savedName: String? = null) : Route
 
 @Serializable data object Settings : Route

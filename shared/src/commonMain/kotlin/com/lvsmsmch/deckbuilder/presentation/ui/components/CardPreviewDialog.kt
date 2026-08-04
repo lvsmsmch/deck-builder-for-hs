@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -67,6 +68,8 @@ private const val CARD_RENDER_ASPECT = 0.72f
 fun CardPreviewDialog(
     card: Card,
     onDismiss: () -> Unit,
+    /** Set only where the full card screen is not reachable by a plain tap. */
+    onOpenDetails: (() -> Unit)? = null,
 ) {
     val highUrl = card.image.takeIf { it.isNotBlank() }?.replace("/256x/", "/512x/") ?: card.cropImage
     val fallbackUrl = card.image.takeIf { it.isNotBlank() } ?: card.cropImage
@@ -231,6 +234,27 @@ fun CardPreviewDialog(
                             tint = DeckBuilderColors.Surface,
                             modifier = Modifier.size(22.dp),
                         )
+                    }
+                    if (onOpenDetails != null) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .offset(y = (-8).dp)
+                                .padding(start = 4.dp)
+                                .size(44.dp)
+                                .graphicsLayer { alpha = chromeAlpha }
+                                .clip(RoundedCornerShape(99.dp))
+                                .background(DeckBuilderColors.OnSurface)
+                                .clickable(enabled = chromeAlpha > 0.5f, onClick = onOpenDetails),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = stringResource(Res.string.action_info),
+                                tint = DeckBuilderColors.Surface,
+                                modifier = Modifier.size(22.dp),
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.height(8.dp))
