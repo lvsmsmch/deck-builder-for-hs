@@ -48,3 +48,9 @@ data class HsJsonCardEntity(
     val searchText: String,
     val payloadJson: String,
 )
+
+/** Projection for the saved-deck mana curves — id and cost, nothing else. */
+data class CardManaCost(
+    val dbfId: Int,
+    val cost: Int?,
+)

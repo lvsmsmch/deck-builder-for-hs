@@ -73,6 +73,15 @@ import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
 import com.lvsmsmch.deckbuilder.presentation.resolve
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CardListRow
+import com.lvsmsmch.deckbuilder.presentation.ui.components.SegmentedToggle
+import com.lvsmsmch.deckbuilder.presentation.ui.components.primaryClassColor
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.SetReleaseDates
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.expansionLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardSearchRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.ui.components.EmptyState
@@ -91,7 +100,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun CardLibraryScreen(
     initialKeyword: String? = null,
     initialSetSlug: String? = null,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)? = null,
     onCardClick: (Card) -> Unit = {},
     viewModel: CardLibraryViewModel = koinViewModel(
         parameters = { org.koin.core.parameter.parametersOf(initialKeyword, initialSetSlug) },
@@ -99,8 +108,10 @@ fun CardLibraryScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val gridState = rememberLazyGridState()
+    val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
     var showFilterSheet by remember { mutableStateOf(false) }
+    var listMode by rememberSaveable { mutableStateOf(true) }
     var previewCard by remember { mutableStateOf<Card?>(null) }
     var seenContentVersion by remember { mutableStateOf(state.contentVersion) }
 
@@ -111,14 +122,22 @@ fun CardLibraryScreen(
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
     var rechecking by remember { mutableStateOf(false) }
 
-    val nearEnd by remember {
+    // Both layouts page the same list; whichever is on screen drives loading.
+    val nearEnd by remember(listMode) {
         derivedStateOf {
-            val total = gridState.layoutInfo.totalItemsCount
-            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total: Int
+            val lastVisible: Int
+            if (listMode) {
+                total = listState.layoutInfo.totalItemsCount
+                lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            } else {
+                total = gridState.layoutInfo.totalItemsCount
+                lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            }
             total > 0 && lastVisible >= total - 10
         }
     }
-    LaunchedEffect(gridState) {
+    LaunchedEffect(listMode) {
         snapshotFlow { nearEnd }.distinctUntilChanged().collect { atEnd ->
             if (atEnd) viewModel.loadNextPage()
         }
@@ -127,12 +146,13 @@ fun CardLibraryScreen(
         if (state.contentVersion != seenContentVersion) {
             seenContentVersion = state.contentVersion
             gridState.scrollToItem(0)
+            listState.scrollToItem(0)
         }
     }
-    LaunchedEffect(gridState) {
-        snapshotFlow { gridState.isScrollInProgress }.distinctUntilChanged().collect { scrolling ->
-            if (scrolling) focusManager.clearFocus()
-        }
+    LaunchedEffect(listMode) {
+        snapshotFlow { gridState.isScrollInProgress || listState.isScrollInProgress }
+            .distinctUntilChanged()
+            .collect { scrolling -> if (scrolling) focusManager.clearFocus() }
     }
 
     Column(
@@ -168,13 +188,6 @@ fun CardLibraryScreen(
             )
         }
 
-        Text(
-            text = stringResource(Res.string.library_found_count, state.totalCount),
-            style = MaterialTheme.typography.labelSmall,
-            color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 8.dp),
-        )
-
         CardSearchRow(
             query = state.filters.textQuery,
             onQueryChange = viewModel::setTextQuery,
@@ -184,6 +197,29 @@ fun CardLibraryScreen(
                 showFilterSheet = true
             },
         )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SegmentedToggle(
+                options = listOf(
+                    true to stringResource(Res.string.library_view_list),
+                    false to stringResource(Res.string.library_view_grid),
+                ),
+                selected = listMode,
+                onSelect = { listMode = it },
+                modifier = Modifier.width(132.dp),
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = stringResource(Res.string.library_found_count, state.totalCount),
+                style = MaterialTheme.typography.labelSmall,
+                color = DeckBuilderColors.OnSurfaceDimmer,
+            )
+        }
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
@@ -198,6 +234,19 @@ fun CardLibraryScreen(
                 // We already have cards — keep them visible while a new query is
                 // in flight, with a thin progress bar across the top so the user
                 // can see that filter changes are being applied.
+                listMode -> CardList(
+                    state = state,
+                    listState = listState,
+                    onCardClick = {
+                        focusManager.clearFocus()
+                        previewCard = it
+                    },
+                    onCardLongClick = {
+                        focusManager.clearFocus()
+                        onCardClick(it)
+                    },
+                )
+
                 else -> CardGrid(
                     state = state,
                     gridState = gridState,
@@ -224,6 +273,7 @@ fun CardLibraryScreen(
             current = state.filters,
             onChange = viewModel::applyFilters,
             onDismiss = { showFilterSheet = false },
+            resultCount = state.totalCount,
         )
     }
 
@@ -239,7 +289,7 @@ fun CardLibraryScreen(
 @Composable
 private fun Header(
     sort: CardSort,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onSortChange: (CardSort) -> Unit,
 ) {
     ScreenTopBar(
@@ -254,6 +304,63 @@ private fun Header(
 
 
 
+
+/**
+ * Dense list: twelve cards on screen instead of four, with the set and year a
+ * player actually searches by.
+ */
+@Composable
+private fun CardList(
+    state: CardLibraryState,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onCardClick: (Card) -> Unit,
+    onCardLongClick: (Card) -> Unit,
+) {
+    LazyColumn(
+        state = listState,
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 16.dp),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        items(state.cards, key = { it.id }) { card ->
+            CardListRow(
+                manaCost = card.manaCost,
+                name = card.name,
+                raritySlug = card.rarity?.slug,
+                artUrl = card.cropImage ?: card.image,
+                accent = primaryClassColor(card),
+                subtitle = cardSubtitle(card),
+                onClick = { onCardClick(card) },
+                onLongClick = { onCardLongClick(card) },
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+        }
+        if (state.isLoadingMore || state.hasMore) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(28.dp),
+                        color = DeckBuilderColors.Primary,
+                        strokeWidth = 2.5.dp,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** "Titans · 2023" — the set with its release year, or just the set. */
+@Composable
+private fun cardSubtitle(card: Card): String {
+    val setSlug = card.cardSet?.slug
+    val setName = expansionLabel(setSlug, card.cardSet?.name.orEmpty())
+    val year = SetReleaseDates.releaseMonthFor(setSlug)?.first
+    return if (year != null) "$setName · $year" else setName
+}
 
 @Composable
 private fun CardGrid(

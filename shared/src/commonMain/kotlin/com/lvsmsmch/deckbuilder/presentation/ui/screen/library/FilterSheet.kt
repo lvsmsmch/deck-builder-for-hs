@@ -45,6 +45,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.raceLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.spellSchoolLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
+import androidx.compose.ui.text.font.FontWeight
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 /**
@@ -59,6 +60,7 @@ fun FilterSheet(
     current: CardFilters,
     onChange: (CardFilters) -> Unit,
     onDismiss: () -> Unit,
+    resultCount: Int? = null,
     classScopeLabel: String? = null,
     showFormatSection: Boolean = true,
     showClassSection: Boolean = true,
@@ -90,7 +92,8 @@ fun FilterSheet(
 
             LazyColumn(
                 modifier = Modifier
-                    .heightIn(max = 560.dp)
+                    .weight(1f, fill = false)
+                    .heightIn(max = 520.dp)
                     .padding(horizontal = 20.dp),
             ) {
                 item { ManaSection(current, onChange) }
@@ -109,7 +112,29 @@ fun FilterSheet(
                 item { SpellSchoolSection(current, onChange) }
                 item { SetSection(current, onChange) }
                 item { CollectibleSection(current, onChange) }
-                item { Spacer(Modifier.height(20.dp)) }
+                item { Spacer(Modifier.height(12.dp)) }
+            }
+
+            if (resultCount != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp)
+                        .height(46.dp)
+                        .clip(RoundedCornerShape(13.dp))
+                        .background(DeckBuilderColors.OnSurface)
+                        .clickable(onClick = onDismiss),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.filters_show_results, resultCount),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = DeckBuilderColors.Surface,
+                    )
+                }
+            } else {
+                Spacer(Modifier.height(18.dp))
             }
         }
     }
@@ -117,7 +142,7 @@ fun FilterSheet(
 
 @Composable
 private fun ClassSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    SectionHeader(stringResource(Res.string.filters_section_class))
+    SectionHeader(stringResource(Res.string.filters_section_class), draft.classes.size)
     ChipFlow {
         CardLabels.ClassOrder.forEach { slug ->
             Chip(
@@ -209,14 +234,37 @@ private fun Header(hasFilters: Boolean, onReset: () -> Unit) {
     }
 }
 
+/** Section label with the count of choices active inside it. */
 @Composable
-private fun SectionHeader(title: String) {
-    Text(
-        text = title.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
-        color = DeckBuilderColors.OnSurface,
-        modifier = Modifier.padding(top = 14.dp, bottom = 8.dp),
-    )
+private fun SectionHeader(title: String, selected: Int = 0) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 14.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = DeckBuilderColors.OnSurfaceDim,
+        )
+        if (selected > 0) {
+            Spacer(Modifier.width(6.dp))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(DeckBuilderColors.PrimarySoft)
+                    .padding(horizontal = 5.dp, vertical = 1.dp),
+            ) {
+                Text(
+                    text = selected.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = DeckBuilderColors.Primary,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -261,7 +309,7 @@ private fun Chip(
 
 @Composable
 private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    SectionHeader(stringResource(Res.string.filters_section_mana))
+    SectionHeader(stringResource(Res.string.filters_section_mana), draft.manaCosts.size)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -271,13 +319,13 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(46.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(if (active) DeckBuilderColors.Primary else DeckBuilderColors.SurfaceContainer)
                     .border(
                         1.dp,
-                        if (active) DeckBuilderColors.Primary else DeckBuilderColors.OutlineSoft,
-                        RoundedCornerShape(8.dp),
+                        if (active) DeckBuilderColors.Primary else DeckBuilderColors.Outline,
+                        RoundedCornerShape(9.dp),
                     )
                     .clickable {
                         val next = if (cost in draft.manaCosts) draft.manaCosts - cost else draft.manaCosts + cost
@@ -287,8 +335,9 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             ) {
                 Text(
                     text = if (cost == 7) "7+" else cost.toString(),
-                    color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurface,
+                    color = if (active) DeckBuilderColors.OnPrimary else DeckBuilderColors.OnSurfaceDim,
                     style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
@@ -336,7 +385,7 @@ private val SetSlugs = listOf(
 
 @Composable
 private fun SetSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    SectionHeader(stringResource(Res.string.filters_section_set))
+    SectionHeader(stringResource(Res.string.filters_section_set), draft.sets.size)
     ChipFlow {
         SetSlugs.asReversed().forEach { slug ->
             Chip(
@@ -353,7 +402,7 @@ private fun SetSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
 
 @Composable
 private fun RaritySection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    SectionHeader(stringResource(Res.string.filters_section_rarity))
+    SectionHeader(stringResource(Res.string.filters_section_rarity), draft.rarities.size)
     ChipFlow {
         RaritySlugs.forEach { slug ->
             Chip(
@@ -373,7 +422,7 @@ private val TypeSlugs = listOf("minion", "spell", "weapon", "hero", "location")
 
 @Composable
 private fun TypeSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    SectionHeader(stringResource(Res.string.filters_section_type))
+    SectionHeader(stringResource(Res.string.filters_section_type), draft.types.size)
     ChipFlow {
         TypeSlugs.forEach { slug ->
             Chip(
@@ -395,7 +444,7 @@ private val MinionTypeSlugs = listOf(
 
 @Composable
 private fun MinionTypeSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    SectionHeader(stringResource(Res.string.filters_section_minion_type))
+    SectionHeader(stringResource(Res.string.filters_section_minion_type), draft.minionTypes.size)
     ChipFlow {
         MinionTypeSlugs.forEach { slug ->
             Chip(
@@ -414,7 +463,7 @@ private val SpellSchoolSlugs = listOf("arcane", "fire", "frost", "holy", "nature
 
 @Composable
 private fun SpellSchoolSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
-    SectionHeader(stringResource(Res.string.filters_section_spell_school))
+    SectionHeader(stringResource(Res.string.filters_section_spell_school), draft.spellSchools.size)
     ChipFlow {
         SpellSchoolSlugs.forEach { slug ->
             Chip(

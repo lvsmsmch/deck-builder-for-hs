@@ -131,7 +131,14 @@ val commonDataModule = module {
         )
     }
     single<DeckRepository> { DeckRepositoryImpl(hsJson = get(), locales = get(), sessionLog = get()) }
-    single<SavedDeckRepository> { SavedDeckRepositoryImpl(get()) }
+    single<SavedDeckRepository> {
+        val hsJson = get<HsJsonRepository>()
+        val locales = get<CurrentLocaleProvider>()
+        SavedDeckRepositoryImpl(
+            dao = get(),
+            manaCostsOf = { ids -> hsJson.manaCostsByDbfIds(locales.resolve(), ids) },
+        )
+    }
 
     single {
         UpdateRunner(

@@ -34,4 +34,23 @@
     <string name="error_server">Card data service is unavailable right now.</string>
     <string name="error_card_data_missing">Card data is not loaded yet.</string>
     <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="deck_stats_avg_mana_short">mana</string>
+    <string name="deck_stats_cards_short">cards</string>
+    <string name="deck_stats_dust_short">dust</string>
+    <string name="deck_section_cards">Cards</string>
+    <string name="deck_section_copies">Copies</string>
+    <string name="deck_curve_title">Mana curve</string>
+    <string name="library_view_list">List</string>
+    <string name="library_view_grid">Grid</string>
+    <string name="filters_show_results">Show %1$d cards</string>
+    <string name="card_detail_add_to_deck">Add to deck</string>
+    <string name="card_detail_class">Class</string>
+    <string name="card_detail_type">Type</string>
+    <string name="card_detail_set">Set</string>
+    <string name="card_detail_format">Format</string>
+    <string name="card_detail_craft">Crafting cost</string>
+    <string name="card_detail_dust_value">%1$d dust</string>
+    <string name="card_detail_standard_legal">Standard · legal</string>
+    <string name="card_detail_wild_only">Wild only</string>
+    <string name="builder_deck_strip_label">In deck</string>
 </resources>

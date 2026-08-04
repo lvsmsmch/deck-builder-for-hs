@@ -55,7 +55,11 @@ import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import androidx.compose.foundation.border
+import androidx.compose.ui.text.style.TextOverflow
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckProgress
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialogForCode
+import com.lvsmsmch.deckbuilder.presentation.ui.components.MiniManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
@@ -128,6 +132,7 @@ fun SavedDecksScreen(
                         .padding(horizontal = 20.dp),
                 ) {
                     items(state.decks, key = { it.code }) { deck ->
+                        Spacer(Modifier.height(9.dp))
                         SavedDeckRow(
                             deck = deck,
                             onClick = { onOpenDeck(deck.code, deck.name) },
@@ -220,6 +225,11 @@ private fun Header() {
     }
 }
 
+/**
+ * Deck tile. The class colour runs down the edge and tints the portrait, the
+ * mini curve shows the deck's shape, and the fill bar answers the question the
+ * list is really for: is this deck finished?
+ */
 @Composable
 private fun SavedDeckRow(
     deck: DeckPreview,
@@ -230,85 +240,93 @@ private fun SavedDeckRow(
     onDelete: () -> Unit,
 ) {
     val classColor = colorForClassSlug(deck.classSlug)
-    val incompleteCount = (deck.maxCardCount - deck.cardCount).takeIf { it > 0 }
     var menuOpen by remember { mutableStateOf(false) }
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
+            .clip(RoundedCornerShape(14.dp))
+            .background(DeckBuilderColors.SurfaceContainer)
+            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .width(3.dp)
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(classColor),
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .height(66.dp)
+                .background(classColor),
+        )
+        Box(
+            modifier = Modifier
+                .padding(start = 10.dp)
+                .size(46.dp)
+                .clip(RoundedCornerShape(11.dp)),
+        ) {
+            HeroTile(
+                cardId = DefaultHeroes.cardIdFor(deck.classSlug) ?: deck.heroSlug,
+                contentDescription = deck.className,
+                modifier = Modifier.fillMaxSize(),
+                verticalFocus = 0.26f,
             )
-            Spacer(Modifier.width(12.dp))
             Box(
                 modifier = Modifier
-                    .width(96.dp)
-                    .height(32.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-            ) {
-                HeroTile(
-                    cardId = DefaultHeroes.cardIdFor(deck.classSlug) ?: deck.heroSlug,
-                    contentDescription = deck.className,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = deck.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = DeckBuilderColors.OnSurface,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 2.dp),
-                ) {
-                    FormatChip(deck.format)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "${classLabel(deck.classSlug)} · ${deck.cardCount}/${deck.maxCardCount}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = DeckBuilderColors.OnSurfaceDim,
-                    )
-                }
-            }
-            Box {
-                Box(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable { menuOpen = true }
-                        .padding(8.dp),
-                ) {
-                    Icon(
-                        Icons.Outlined.MoreVert,
-                        contentDescription = stringResource(Res.string.action_more),
-                        tint = DeckBuilderColors.OnSurface,
-                    )
-                }
-                DeckActionsMenu(
-                    expanded = menuOpen,
-                    onDismiss = { menuOpen = false },
-                    onCopy = onCopy,
-                    onInfo = onInfo,
-                    onEdit = onEdit,
-                    onDelete = onDelete,
-                )
-            }
+                    .fillMaxSize()
+                    .background(classColor.copy(alpha = 0.18f)),
+            )
         }
-        if (incompleteCount != null) {
-            Spacer(Modifier.height(6.dp))
-            DeckWarning(
-                text = stringResource(Res.string.deck_warning_incomplete, deck.cardCount, deck.maxCardCount),
-                modifier = Modifier.padding(start = 4.dp),
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 11.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Text(
+                text = deck.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = DeckBuilderColors.OnSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                FormatChip(deck.format)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "${deck.cardCount}/${deck.maxCardCount}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = DeckBuilderColors.OnSurfaceDim,
+                )
+                if (deck.manaCurve.isNotEmpty()) {
+                    Spacer(Modifier.width(10.dp))
+                    MiniManaCurve(
+                        counts = deck.manaCurve,
+                        modifier = Modifier.width(62.dp),
+                    )
+                }
+            }
+            DeckProgress(cardCount = deck.cardCount, maxCardCount = deck.maxCardCount)
+        }
+        Box {
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable { menuOpen = true }
+                    .padding(8.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.MoreVert,
+                    contentDescription = stringResource(Res.string.action_more),
+                    tint = DeckBuilderColors.OnSurfaceDimmer,
+                )
+            }
+            DeckActionsMenu(
+                expanded = menuOpen,
+                onDismiss = { menuOpen = false },
+                onCopy = onCopy,
+                onInfo = onInfo,
+                onEdit = onEdit,
+                onDelete = onDelete,
             )
         }
     }

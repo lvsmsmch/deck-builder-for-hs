@@ -20,16 +20,44 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "DB.SavedDeckRepo"
 
+/**
+ * [manaCostsOf] resolves dbfIds to mana costs for the list's deck curves. It is
+ * a plain function rather than the card repository so this class keeps its one
+ * real dependency — the saved-deck table — and defaults to no curves.
+ */
 class SavedDeckRepositoryImpl(
     private val dao: SavedDeckDao,
+    private val manaCostsOf: suspend (Collection<Int>) -> Map<Int, Int> = { emptyMap() },
     private val nowMs: () -> Long = { kotlinx.datetime.Clock.System.now().toEpochMilliseconds() },
 ) : SavedDeckRepository {
 
     override fun observeAll(): Flow<List<DeckPreview>> =
         dao.observeAll()
             .onEach { rows -> AppLog.d(TAG, "observeAll: emit ${rows.size} rows") }
-            .map { rows -> rows.map(::toPreview) }
+            .map { rows -> rows.map { row -> toPreview(row, curvesFor(rows)[row.code].orEmpty()) } }
             .flowOn(IoDispatcher)
+
+    /**
+     * Mana curves for every listed deck in one query: the ids of all decks are
+     * looked up together, then each deck's curve is counted from that map.
+     * Falls back to empty curves when card data has not been downloaded yet.
+     */
+    private suspend fun curvesFor(rows: List<SavedDeckEntity>): Map<String, List<Int>> {
+        if (rows.isEmpty()) return emptyMap()
+        val idsByDeck = rows.associate { it.code to it.cardIdsCsv.toCardIds() }
+        val allIds = idsByDeck.values.flatten().toSet()
+        val costs = runCatching { manaCostsOf(allIds) }.getOrElse { return emptyMap() }
+        if (costs.isEmpty()) return emptyMap()
+        return idsByDeck.mapValues { (_, ids) ->
+            val buckets = MutableList(CURVE_BUCKETS) { 0 }
+            ids.forEach { id ->
+                val cost = costs[id] ?: return@forEach
+                val index = cost.coerceIn(0, CURVE_BUCKETS - 1)
+                buckets[index] = buckets[index] + 1
+            }
+            if (buckets.all { it == 0 }) emptyList() else buckets
+        }
+    }
 
     override suspend fun isSaved(code: String): Boolean = withContext(IoDispatcher) {
         val exists = dao.exists(code)
@@ -105,7 +133,7 @@ class SavedDeckRepositoryImpl(
         }
     }
 
-    private fun toPreview(row: SavedDeckEntity): DeckPreview = DeckPreview(
+    private fun toPreview(row: SavedDeckEntity, manaCurve: List<Int> = emptyList()): DeckPreview = DeckPreview(
         code = row.code,
         name = row.name,
         classSlug = row.classSlug,
@@ -116,6 +144,7 @@ class SavedDeckRepositoryImpl(
         cardCount = row.cardCount,
         maxCardCount = maxCardCountFor(row.cardIdsCsv),
         savedAtMs = row.updatedAtMs,
+        manaCurve = manaCurve,
     )
 
     private fun defaultName(deck: Deck): String {
@@ -142,3 +171,4 @@ private fun DeckstringFormat.toGameFormat(): GameFormat = when (this) {
 }
 
 private const val MAX_DECK_NAME_LENGTH = 100
+private const val CURVE_BUCKETS = 8

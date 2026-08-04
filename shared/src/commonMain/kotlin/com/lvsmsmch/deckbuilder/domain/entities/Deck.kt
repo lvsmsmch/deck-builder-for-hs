@@ -35,6 +35,8 @@ data class DeckPreview(
     val cardCount: Int,
     val maxCardCount: Int,
     val savedAtMs: Long,
+    /** Cards per mana cost, 0..7+; empty when card data is not loaded yet. */
+    val manaCurve: List<Int> = emptyList(),
 )
 
 data class SavedDeckSource(

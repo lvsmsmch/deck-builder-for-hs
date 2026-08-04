@@ -71,6 +71,20 @@ import com.lvsmsmch.deckbuilder.domain.common.UiState
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.domain.entities.Deck
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CardListRow
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CopyCount
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ManaCurve
+import com.lvsmsmch.deckbuilder.presentation.ui.components.StatValue
+import com.lvsmsmch.deckbuilder.presentation.ui.components.averageManaCost
+import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
+import com.lvsmsmch.deckbuilder.presentation.ui.components.craftingCostOf
+import com.lvsmsmch.deckbuilder.presentation.ui.components.manaCurveOf
+import com.lvsmsmch.deckbuilder.presentation.ui.components.primaryClassColor
+import com.lvsmsmch.deckbuilder.util.formatFixed
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckGridCard
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialog
@@ -227,54 +241,80 @@ private fun Body(
             onInfo = { showStatsDialog = true },
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                item(span = { GridItemSpan(4) }) {
-                    DeckWarnings(deck)
-                }
+        LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            item {
+                DeckClassHeader(deck = deck, displayName = displayName)
+            }
 
-                items(deck.cards, key = { it.card.id }) { entry ->
-                    DeckGridCard(
-                        card = entry.card,
-                        count = entry.count,
-                        showCount = true,
-                        onClick = { previewCard = entry.card },
-                        onLongClick = { previewCard = entry.card },
+            item {
+                Spacer(Modifier.height(12.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(DeckBuilderColors.SurfaceContainer)
+                        .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+                        .padding(11.dp),
+                ) {
+                    Text(
+                        text = stringResource(Res.string.deck_curve_title).uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = DeckBuilderColors.OnSurfaceDimmer,
                     )
-                }
-
-                if (deck.invalidCardIds.isNotEmpty()) {
-                    item(span = { GridItemSpan(4) }) {
-                        Text(
-                            text = stringResource(Res.string.deck_view_invalid_format, deck.invalidCardIds.size),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = DeckBuilderColors.Error,
-                            modifier = Modifier.padding(vertical = 8.dp),
-                        )
-                    }
+                    Spacer(Modifier.height(8.dp))
+                    ManaCurve(counts = remember(deck.cards) { manaCurveOf(deck.cards) })
                 }
             }
 
-            FloatingActionButton(
-                onClick = onEditDeck,
-                containerColor = DeckBuilderColors.OnSurface,
-                contentColor = DeckBuilderColors.Surface,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .navigationBarsPadding()
-                    .padding(end = 20.dp, bottom = 28.dp),
-            ) {
-                Icon(
-                    Icons.Outlined.Edit,
-                    contentDescription = stringResource(Res.string.action_edit),
-                    modifier = Modifier.size(20.dp),
+            item { DeckWarnings(deck) }
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 14.dp, bottom = 8.dp, start = 2.dp, end = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "${stringResource(Res.string.deck_section_cards).uppercase()} · ${deck.cardCount}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = DeckBuilderColors.OnSurfaceDimmer,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = stringResource(Res.string.deck_section_copies).uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = DeckBuilderColors.OnSurfaceDimmer,
+                    )
+                }
+            }
+
+            items(deck.cards, key = { it.card.id }) { entry ->
+                CardListRow(
+                    manaCost = entry.card.manaCost,
+                    name = entry.card.name,
+                    raritySlug = entry.card.rarity?.slug,
+                    artUrl = entry.card.cropImage ?: entry.card.image,
+                    accent = primaryClassColor(entry.card),
+                    onClick = { previewCard = entry.card },
+                    onLongClick = { onCardClick(entry.card) },
+                    trailing = { CopyCount(entry.count) },
+                    modifier = Modifier.padding(bottom = 6.dp),
                 )
+            }
+
+            if (deck.invalidCardIds.isNotEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(Res.string.deck_view_invalid_format, deck.invalidCardIds.size),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = DeckBuilderColors.Error,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                    )
+                }
             }
         }
     }
@@ -307,6 +347,97 @@ private fun Body(
                     Text(stringResource(Res.string.action_cancel), color = DeckBuilderColors.OnSurface)
                 }
             },
+        )
+    }
+}
+
+/**
+ * Deck identity: the class colour carries the banner instead of a 3dp stripe,
+ * with the numbers a player checks first — size, average cost, dust — right
+ * underneath.
+ */
+@Composable
+private fun DeckClassHeader(deck: Deck, displayName: String) {
+    val classColor = colorForClassSlug(deck.heroClass?.slug)
+    val heroCardId = DefaultHeroes.cardIdFor(deck.heroClass?.slug)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(16.dp))
+            .background(DeckBuilderColors.SurfaceContainer),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(74.dp),
+        ) {
+            HeroTile(
+                cardId = heroCardId,
+                contentDescription = deck.heroClass?.name,
+                modifier = Modifier.fillMaxSize(),
+                verticalFocus = 0.28f,
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.linearGradient(
+                            0f to classColor.copy(alpha = 0.78f),
+                            1f to Color.Black.copy(alpha = 0.55f),
+                        ),
+                    ),
+            )
+            Text(
+                text = displayName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FormatChip(deck.format)
+            Spacer(Modifier.weight(1f))
+            StatValue("${deck.cardCount}/${deck.maxCardCount}", stringResource(Res.string.deck_stats_cards_short))
+            Spacer(Modifier.width(14.dp))
+            StatValue(
+                formatFixed(remember(deck.cards) { averageManaCost(deck.cards) }, 1),
+                stringResource(Res.string.deck_stats_avg_mana_short),
+            )
+            Spacer(Modifier.width(14.dp))
+            StatValue(
+                remember(deck.cards) { craftingCostOf(deck.cards) }.toString(),
+                stringResource(Res.string.deck_stats_dust_short),
+            )
+        }
+    }
+}
+
+/** Format badge — Standard on the mana accent, Wild on gold. */
+@Composable
+fun FormatChip(format: GameFormat, modifier: Modifier = Modifier) {
+    val color = formatColor(format)
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(color.copy(alpha = 0.16f))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    ) {
+        Text(
+            text = formatLabel(format).uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = color,
         )
     }
 }

@@ -3,6 +3,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.components
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bookmark
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -25,6 +26,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
+import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Cards
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.More
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Route
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Saved
@@ -40,6 +42,9 @@ fun BottomBar(navController: NavController, destination: NavDestination?) {
     NavigationBar(containerColor = DeckBuilderColors.SurfaceContainer) {
         TabItem(navController, selectedTab, BottomTab.Decks, Saved, Icons.Outlined.Bookmark, Res.string.nav_decks) {
             selectedTab = BottomTab.Decks
+        }
+        TabItem(navController, selectedTab, BottomTab.Cards, Cards, Icons.Outlined.GridView, Res.string.nav_library) {
+            selectedTab = BottomTab.Cards
         }
         TabItem(navController, selectedTab, BottomTab.More, More, Icons.Outlined.MoreHoriz, Res.string.nav_more) {
             selectedTab = BottomTab.More
@@ -70,19 +75,20 @@ private inline fun <reified T : Route> RowScope.TabItem(
         icon = { Icon(icon, contentDescription = null) },
         label = { Text(stringResource(labelRes)) },
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = DeckBuilderColors.OnSurface,
-            selectedTextColor = DeckBuilderColors.OnSurface,
-            indicatorColor = DeckBuilderColors.SurfaceContainerHigh,
+            selectedIconColor = DeckBuilderColors.Primary,
+            selectedTextColor = DeckBuilderColors.Primary,
+            indicatorColor = DeckBuilderColors.PrimarySoft,
             unselectedIconColor = DeckBuilderColors.OnSurfaceDimmer,
             unselectedTextColor = DeckBuilderColors.OnSurfaceDimmer,
         ),
     )
 }
 
-private enum class BottomTab { Decks, More }
+private enum class BottomTab { Decks, Cards, More }
 
 private fun NavDestination.toBottomTab(): BottomTab? = when {
     hierarchy.any { it.hasRoute(Saved::class) } -> BottomTab.Decks
+    hierarchy.any { it.hasRoute(Cards::class) } -> BottomTab.Cards
     hierarchy.any { it.hasRoute(More::class) } -> BottomTab.More
     else -> null
 }

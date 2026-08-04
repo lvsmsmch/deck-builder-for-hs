@@ -75,6 +75,15 @@ class HsJsonRepository(
         }
     }
 
+    /** Mana cost per dbfId, for deck curves. Missing ids simply have no entry. */
+    suspend fun manaCostsByDbfIds(appLocale: String, dbfIds: Collection<Int>): Map<Int, Int> {
+        if (dbfIds.isEmpty()) return emptyMap()
+        val hs = appLocaleToHsJson(appLocale)
+        return dao.manaCosts(hs, dbfIds.toList())
+            .mapNotNull { row -> row.cost?.let { row.dbfId to it } }
+            .toMap()
+    }
+
     /**
      * Targeted lookup for deck assembly: a WHERE dbfId IN (...) query instead
      * of materialising the entire table. Triggers a full fetch only when the

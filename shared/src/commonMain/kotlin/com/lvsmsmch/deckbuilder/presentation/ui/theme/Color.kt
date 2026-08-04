@@ -30,42 +30,47 @@ data class AppTokens(
     val success: Color,
 )
 
+/**
+ * Warm stone neutrals with a cool mana-crystal accent — blue gems on a wooden
+ * board, the game's own material pairing. Gold is reserved for legendaries and
+ * Wild, never for decoration.
+ */
 internal val DarkAppTokens = AppTokens(
     isDark = true,
-    surface = Color(0xFF0B0B0E),
-    surfaceContainer = Color(0xFF15161B),
-    surfaceContainerHigh = Color(0xFF1E1F26),
-    surfaceContainerHighest = Color(0xFF262830),
-    outline = Color(0xFF2A2C34),
-    outlineSoft = Color(0xFF23252C),
-    onSurface = Color(0xFFECEDEF),
-    onSurfaceDim = Color(0xFF9AA0A6),
-    onSurfaceDimmer = Color(0xFF6B7178),
-    primary = Color(0xFF7C8CFF),
-    onPrimary = Color(0xFF0B0B0E),
-    primarySoft = Color(0x227C8CFF),
-    secondary = Color(0xFFFFB454),
-    error = Color(0xFFFF6E6E),
-    success = Color(0xFF5CC58A),
+    surface = Color(0xFF131009),
+    surfaceContainer = Color(0xFF1E1811),
+    surfaceContainerHigh = Color(0xFF272016),
+    surfaceContainerHighest = Color(0xFF31281B),
+    outline = Color(0xFF362C1E),
+    outlineSoft = Color(0xFF2C2418),
+    onSurface = Color(0xFFF3EADA),
+    onSurfaceDim = Color(0xFFA9997F),
+    onSurfaceDimmer = Color(0xFF7C6F5C),
+    primary = Color(0xFF6FB6FF),
+    onPrimary = Color(0xFF0A1622),
+    primarySoft = Color(0x296FB6FF),
+    secondary = Color(0xFFE3AF5C),
+    error = Color(0xFFE2705F),
+    success = Color(0xFF6BC08A),
 )
 
 internal val LightAppTokens = AppTokens(
     isDark = false,
-    surface = Color(0xFFF7F7FA),
-    surfaceContainer = Color(0xFFFFFFFF),
-    surfaceContainerHigh = Color(0xFFF1F2F5),
-    surfaceContainerHighest = Color(0xFFE7E9EE),
-    outline = Color(0xFFD7DAE0),
-    outlineSoft = Color(0xFFE3E5EA),
-    onSurface = Color(0xFF111218),
-    onSurfaceDim = Color(0xFF52575F),
-    onSurfaceDimmer = Color(0xFF7A7E86),
-    primary = Color(0xFF4F60E0),
+    surface = Color(0xFFEBE5DA),
+    surfaceContainer = Color(0xFFFDFBF7),
+    surfaceContainerHigh = Color(0xFFF3EDE3),
+    surfaceContainerHighest = Color(0xFFE8E0D2),
+    outline = Color(0xFFDCD3C4),
+    outlineSoft = Color(0xFFE7E0D3),
+    onSurface = Color(0xFF1E1811),
+    onSurfaceDim = Color(0xFF6B6053),
+    onSurfaceDimmer = Color(0xFF948877),
+    primary = Color(0xFF1D6FC4),
     onPrimary = Color(0xFFFFFFFF),
-    primarySoft = Color(0x224F60E0),
-    secondary = Color(0xFFB76C00),
-    error = Color(0xFFC02525),
-    success = Color(0xFF1F7B45),
+    primarySoft = Color(0x1F1D6FC4),
+    secondary = Color(0xFFA8752A),
+    error = Color(0xFFB23A2E),
+    success = Color(0xFF2F7D4F),
 )
 
 /** Default to dark — Theme.kt overrides at the Composable boundary. */
@@ -118,25 +123,25 @@ object DeckBuilderColors {
      * are part of brand identity and we want them recognisable regardless of theme.
      */
     object Class {
-        val Druid = Color(0xFF9C7B4F)
-        val Hunter = Color(0xFF5A6E3F)
-        val Mage = Color(0xFF3F6CB5)
-        val Paladin = Color(0xFFC9A24C)
-        val Priest = Color(0xFFD6D6D6)
-        val Rogue = Color(0xFF9B9FA7)
-        val Shaman = Color(0xFF4A6C9D)
-        val Warlock = Color(0xFF7E5BA8)
-        val Warrior = Color(0xFFA05A45)
-        val DemonHunter = Color(0xFF5C8E3D)
-        val DeathKnight = Color(0xFF9E5C5C)
-        val Neutral = Color(0xFF7A7A7A)
+        val Druid = Color(0xFFC08A4E)
+        val Hunter = Color(0xFF7FA65B)
+        val Mage = Color(0xFF5B92D6)
+        val Paladin = Color(0xFFE0BA5C)
+        val Priest = Color(0xFFC9CBD0)
+        val Rogue = Color(0xFF9AA0A8)
+        val Shaman = Color(0xFF4E7FBF)
+        val Warlock = Color(0xFF9A72C4)
+        val Warrior = Color(0xFFC0705A)
+        val DemonHunter = Color(0xFF79B04F)
+        val DeathKnight = Color(0xFF7FA9C9)
+        val Neutral = Color(0xFF8C8172)
     }
 
     /** Rarity palette — also constant; the gem colors are universally recognised. */
     object Rarity {
-        val Common = Color(0xFFB7BBC2)
-        val Rare = Color(0xFF5BA6FF)
-        val Epic = Color(0xFFB176FF)
-        val Legendary = Color(0xFFFFC857)
+        val Common = Color(0xFF9AA1AB)
+        val Rare = Color(0xFF4E8FE0)
+        val Epic = Color(0xFFA46BD8)
+        val Legendary = Color(0xFFD79A3C)
     }
 }

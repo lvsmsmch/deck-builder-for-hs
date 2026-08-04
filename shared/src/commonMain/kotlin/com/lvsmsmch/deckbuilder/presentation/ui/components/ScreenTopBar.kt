@@ -2,8 +2,10 @@ package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
@@ -29,7 +31,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ScreenTopBar(
     title: String,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
     titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
     bottomPadding: Dp = 8.dp,
@@ -41,12 +43,16 @@ fun ScreenTopBar(
             .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = bottomPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(Res.string.action_back),
-                tint = DeckBuilderColors.OnSurface,
-            )
+        if (onBack != null) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(Res.string.action_back),
+                    tint = DeckBuilderColors.OnSurface,
+                )
+            }
+        } else {
+            Spacer(Modifier.width(16.dp))
         }
         Text(
             text = title,

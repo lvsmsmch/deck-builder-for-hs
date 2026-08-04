@@ -108,6 +108,7 @@ fun AppNavGraph(
             composable<Home> {
                 HomeScreen(
                     onExitApp = onExitApp,
+                    onOpenCard = { card -> navController.navigate(CardDetail(idOrSlug = card.id.toString())) },
                     onOpenDeck = { code, savedName -> navController.navigate(DeckView(code = code, savedName = savedName)) },
                     onEditDeck = { code, savedName -> navController.navigate(Builder(editCode = code, savedName = savedName)) },
                     onCreateDeck = { navController.navigate(Builder()) },
@@ -205,6 +206,7 @@ fun AppNavGraph(
 @Composable
 private fun HomeScreen(
     onExitApp: () -> Unit,
+    onOpenCard: (com.lvsmsmch.deckbuilder.domain.entities.Card) -> Unit,
     onOpenDeck: (String, String?) -> Unit,
     onEditDeck: (String, String?) -> Unit,
     onCreateDeck: () -> Unit,
@@ -251,6 +253,12 @@ private fun HomeScreen(
                     onOpenDeck = onOpenDeck,
                     onEditDeck = onEditDeck,
                     onCreateFromScratch = onCreateDeck,
+                )
+            }
+            composable<Cards> {
+                CardLibraryScreen(
+                    onBack = null,
+                    onCardClick = { card -> onOpenCard(card) },
                 )
             }
             composable<More> {

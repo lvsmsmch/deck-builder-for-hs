@@ -346,4 +346,23 @@
     <string name="error_server">Сервис данных карт сейчас недоступен.</string>
     <string name="error_card_data_missing">Данные карт ещё не загружены.</string>
     <string name="error_generic">Что-то пошло не так. Попробуйте ещё раз.</string>
+    <string name="deck_stats_avg_mana_short">мана</string>
+    <string name="deck_stats_cards_short">карт</string>
+    <string name="deck_stats_dust_short">пыль</string>
+    <string name="deck_section_cards">Карты</string>
+    <string name="deck_section_copies">Копий</string>
+    <string name="deck_curve_title">Кривая маны</string>
+    <string name="library_view_list">Список</string>
+    <string name="library_view_grid">Сетка</string>
+    <string name="filters_show_results">Показать %1$d карт</string>
+    <string name="card_detail_add_to_deck">Добавить в колоду</string>
+    <string name="card_detail_class">Класс</string>
+    <string name="card_detail_type">Тип</string>
+    <string name="card_detail_set">Дополнение</string>
+    <string name="card_detail_format">Формат</string>
+    <string name="card_detail_craft">Крафт</string>
+    <string name="card_detail_dust_value">%1$d пыли</string>
+    <string name="card_detail_standard_legal">Standard · легальна</string>
+    <string name="card_detail_wild_only">Только Wild</string>
+    <string name="builder_deck_strip_label">В колоде</string>
 </resources>

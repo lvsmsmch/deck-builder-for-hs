@@ -59,6 +59,7 @@ import coil3.compose.LocalPlatformContext
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -73,6 +74,11 @@ import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardThumbnail
 import com.lvsmsmch.deckbuilder.presentation.resolve
 import com.lvsmsmch.deckbuilder.presentation.toUiText
+import androidx.compose.foundation.border
+import com.lvsmsmch.deckbuilder.presentation.ui.components.RarityDot
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.SetReleaseDates
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.expansionLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ErrorState
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.rarityColor
@@ -207,8 +213,9 @@ private fun Body(
                     )
                 }
             }
-            SubtitleRow(card, isStandardLegal)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
+            CardFacts(card = card, isStandardLegal = isStandardLegal)
+            Spacer(Modifier.height(10.dp))
             FlavorTextBlock(card.flavorText)
         }
 
@@ -418,8 +425,91 @@ private fun FullscreenCardImage(card: Card, onDismiss: () -> Unit) {
     }
 }
 
+/**
+ * The facts a player checks before crafting: who can play it, what it is, when
+ * it shipped, whether it is Standard-legal, and what it costs in dust.
+ */
 @Composable
-private fun SubtitleRow(card: Card, isStandardLegal: Boolean?) {
+private fun CardFacts(card: Card, isStandardLegal: Boolean?) {
+    val classes = card.classes.map { classLabel(it.slug) }.joinToString(" / ").ifBlank { classLabel("neutral") }
+    val typeAndRarity = buildString {
+        append(typeLabel(card.cardType.slug))
+        card.rarity?.let { append(", ").append(rarityLabel(it.slug).lowercase()) }
+    }
+    val setSlug = card.cardSet?.slug
+    val setName = expansionLabel(setSlug, card.cardSet?.name.orEmpty())
+    val released = SetReleaseDates.label(setSlug)
+    val craft = card.rarity?.craftingCost?.firstOrNull()?.takeIf { it > 0 }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(DeckBuilderColors.SurfaceContainer)
+            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp),
+    ) {
+        FactRow(stringResource(Res.string.card_detail_class), classes)
+        FactRow(stringResource(Res.string.card_detail_type), typeAndRarity, dot = card.rarity?.slug)
+        if (setName.isNotBlank()) {
+            FactRow(
+                stringResource(Res.string.card_detail_set),
+                if (released != null) "$setName · $released" else setName,
+            )
+        }
+        if (isStandardLegal != null) {
+            FactRow(
+                label = stringResource(Res.string.card_detail_format),
+                value = stringResource(
+                    if (isStandardLegal) Res.string.card_detail_standard_legal else Res.string.card_detail_wild_only,
+                ),
+                valueColor = if (isStandardLegal) DeckBuilderColors.Success else DeckBuilderColors.Secondary,
+            )
+        }
+        if (craft != null) {
+            FactRow(
+                stringResource(Res.string.card_detail_craft),
+                stringResource(Res.string.card_detail_dust_value, craft),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FactRow(
+    label: String,
+    value: String,
+    dot: String? = null,
+    valueColor: androidx.compose.ui.graphics.Color? = null,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = DeckBuilderColors.OnSurfaceDim,
+            modifier = Modifier.weight(1f),
+        )
+        if (dot != null) {
+            RarityDot(dot)
+            Spacer(Modifier.width(6.dp))
+        }
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = valueColor ?: DeckBuilderColors.OnSurface,
+            textAlign = TextAlign.End,
+        )
+    }
+}
+
+@Composable
+private fun SubtitleRowLegacy(card: Card, isStandardLegal: Boolean?) {
     val localizedClass = card.classes.firstOrNull()?.let { classLabel(it.slug) }
     val localizedType = card.cardType.slug.takeIf { it.isNotBlank() }?.let { typeLabel(it) }
     val set = card.cardSet?.name

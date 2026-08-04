@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.Transaction
+import com.lvsmsmch.deckbuilder.data.db.entity.CardManaCost
 import com.lvsmsmch.deckbuilder.data.db.entity.HsJsonCardEntity
 
 @Dao
@@ -26,6 +27,14 @@ interface HsJsonCardDao {
 
     @Query("SELECT * FROM hsjson_cards WHERE locale = :locale AND dbfId IN (:dbfIds)")
     suspend fun byDbfIds(locale: String, dbfIds: List<Int>): List<HsJsonCardEntity>
+
+    /**
+     * Mana costs only. The saved-deck list needs a curve per deck; pulling full
+     * rows (each carrying its JSON payload) for every listed deck would be
+     * hundreds of kilobytes per refresh.
+     */
+    @Query("SELECT dbfId, cost FROM hsjson_cards WHERE locale = :locale AND dbfId IN (:dbfIds)")
+    suspend fun manaCosts(locale: String, dbfIds: List<Int>): List<CardManaCost>
 
     @Query("SELECT * FROM hsjson_cards WHERE locale = :locale AND cardId = :cardId LIMIT 1")
     suspend fun byCardId(locale: String, cardId: String): HsJsonCardEntity?

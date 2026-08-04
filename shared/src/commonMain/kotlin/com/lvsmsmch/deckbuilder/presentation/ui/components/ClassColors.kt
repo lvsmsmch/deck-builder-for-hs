@@ -1,5 +1,7 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.domain.entities.Card
@@ -38,13 +40,16 @@ fun colorForRaritySlug(slug: String?): Color = when (slug?.lowercase()) {
 fun rarityColor(rarity: Rarity?): Color = colorForRaritySlug(rarity?.slug)
 
 /**
- * Format accent color (Standard/Wild/Twist/Classic). Constant across themes,
- * like the class palette — the format badge should read the same everywhere.
+ * Format accent. Standard rides the mana accent (the format most decks live
+ * in), Wild takes gold; both come from the theme so they stay legible on
+ * either ground.
  */
+@Composable
+@ReadOnlyComposable
 fun formatColor(format: GameFormat): Color = when (format) {
-    GameFormat.STANDARD -> Color(0xFF3E8BFF)
-    GameFormat.WILD -> Color(0xFFE09F3E)
+    GameFormat.STANDARD -> DeckBuilderColors.Primary
+    GameFormat.WILD -> DeckBuilderColors.Secondary
     GameFormat.TWIST -> Color(0xFF9B6CFF)
-    GameFormat.CLASSIC -> Color(0xFF5EC28A)
-    GameFormat.UNKNOWN -> Color(0xFF8B929C)
+    GameFormat.CLASSIC -> DeckBuilderColors.Success
+    GameFormat.UNKNOWN -> DeckBuilderColors.OnSurfaceDimmer
 }

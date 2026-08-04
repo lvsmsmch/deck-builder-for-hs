@@ -19,6 +19,9 @@ data class Builder(
     val savedName: String? = null,
 ) : Route
 @Serializable data object Saved : Route
+
+/** Card library as a bottom-nav tab (the old push-from-More entry point). */
+@Serializable data object Cards : Route
 @Serializable data object More : Route
 
 @Serializable data class CardDetail(val idOrSlug: String) : Route
