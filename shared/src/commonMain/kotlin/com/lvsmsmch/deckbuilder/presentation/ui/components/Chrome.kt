@@ -241,10 +241,34 @@ fun GlassPane(
     modifier: Modifier = Modifier,
     radius: Dp = 20.dp,
     heavy: Boolean = false,
+    /** True where content passes behind it and the glass has to actually frost. */
+    frosted: Boolean = false,
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val shape = RoundedCornerShape(radius)
+    if (frosted) {
+        FrostedSurface(
+            modifier = modifier.clip(shape).border(1.dp, DeckBuilderColors.Outline, shape),
+            tint = DeckBuilderColors.SurfaceContainer,
+        ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0f to DeckBuilderColors.OnSurface.copy(alpha = 0.07f),
+                            0.35f to Color.Transparent,
+                        ),
+                    ),
+            )
+            Box(
+                modifier = Modifier
+                    .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+            ) { content() }
+        }
+        return
+    }
     Box(
         modifier = modifier
             .clip(shape)

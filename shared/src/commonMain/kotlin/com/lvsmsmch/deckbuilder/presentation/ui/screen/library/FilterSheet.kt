@@ -77,17 +77,30 @@ fun FilterSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = DeckBuilderColors.Surface,
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 10.dp, bottom = 4.dp)
-                    .size(width = 36.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(DeckBuilderColors.Outline),
-            )
-        },
+        containerColor = Color.Transparent,
+        contentColor = DeckBuilderColors.OnSurface,
+        scrimColor = if (DeckBuilderColors.IsDark) Color(0x8C05070B) else Color(0x59161B23),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        dragHandle = null,
     ) {
+      // The sheet paints its own glass on the content column, whose height is
+      // always its own — a backing measured from the outside stopped short of a
+      // lazy list that settles late.
+      Column(
+          modifier = Modifier
+              .fillMaxWidth()
+              .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+              .background(DeckBuilderColors.Surface.copy(alpha = 0.94f))
+              .background(DeckBuilderColors.SurfaceContainerHigh),
+      ) {
+          Box(
+              modifier = Modifier
+                  .padding(top = 12.dp, bottom = 2.dp)
+                  .align(Alignment.CenterHorizontally)
+                  .size(width = 38.dp, height = 4.dp)
+                  .clip(RoundedCornerShape(3.dp))
+                  .background(DeckBuilderColors.Outline),
+          )
         Column(modifier = Modifier.fillMaxWidth()) {
             Header(
                 hasFilters = current.hasFilters,
@@ -131,6 +144,7 @@ fun FilterSheet(
                 Spacer(Modifier.height(18.dp))
             }
         }
+      }
     }
 }
 

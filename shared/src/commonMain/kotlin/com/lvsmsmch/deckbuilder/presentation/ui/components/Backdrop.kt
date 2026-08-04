@@ -2,6 +2,7 @@ package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -12,8 +13,21 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clipToBounds
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 /**
@@ -22,6 +36,15 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
  * bottom carries the words. Every screen sits on one of these; the app owns no
  * flat ground of its own.
  */
+/**
+ * The art layers of the current screen, published so a pane of glass can draw
+ * the very thing behind it rather than a tint that pretends to.
+ */
+val LocalBackdropArt = staticCompositionLocalOf<(@Composable () -> Unit)?> { null }
+
+/** The size of the surface that art was drawn at, so glass can line it up. */
+val LocalBackdropSize = staticCompositionLocalOf { DpSize.Zero }
+
 @Composable
 fun Backdrop(
     atmosphere: DeckBuilderColors.Atmosphere,
@@ -41,11 +64,10 @@ fun Backdrop(
     val veilMid = if (isDark) Color(0x94070910) else Color(0x99F4F6FA)
     val veilEnd = if (isDark) Color(0xDB070910) else Color(0xE0F4F6FA)
 
-    Box(modifier = modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+    val layers: @Composable () -> Unit = {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .blur(blurRadius)
                 .background(atmosphere.ground),
         ) {
             when {
@@ -92,6 +114,11 @@ fun Backdrop(
                     ),
             )
         }
+    }
+
+    BoxWithConstraints(modifier = modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+        val screen = DpSize(maxWidth, maxHeight)
+        Box(modifier = Modifier.fillMaxSize().blur(blurRadius)) { layers() }
         // The scrim is the only reason any of this stays readable.
         Box(
             modifier = Modifier
@@ -104,6 +131,74 @@ fun Backdrop(
                     ),
                 ),
         )
+        CompositionLocalProvider(
+            LocalBackdropArt provides layers,
+            LocalBackdropSize provides screen,
+        ) {
+            content()
+        }
+    }
+}
+
+/**
+ * Frosted glass that means it: the pane redraws the screen's own backdrop,
+ * shifted by its position and thrown further out of focus, then lays a light
+ * over it. Reserved for the pinned pieces — a bar, a sheet — where the eye
+ * expects to see something through the glass.
+ */
+@Composable
+fun FrostedSurface(
+    modifier: Modifier = Modifier,
+    tint: Color = DeckBuilderColors.SurfaceContainer,
+    blurRadius: Dp = 30.dp,
+    /**
+     * How much of the ground goes under the tint. Zero where only the backdrop
+     * is behind the glass; near one where real content passes beneath it and
+     * would otherwise read straight through — Compose cannot blur what is
+     * behind a composable, only what is inside it.
+     */
+    base: Float = 0f,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val art = LocalBackdropArt.current
+    val screen = LocalBackdropSize.current
+    val density = LocalDensity.current
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    // Measured rather than matched: a lazy list inside the pane settles its
+    // height late, and a matchParentSize backing would stop short of it.
+    var paneSize by remember { mutableStateOf(DpSize.Zero) }
+
+    Box(
+        modifier = modifier.onGloballyPositioned { coords ->
+            offset = coords.positionInRoot()
+            paneSize = with(density) {
+                DpSize(coords.size.width.toDp(), coords.size.height.toDp())
+            }
+        },
+    ) {
+        if (paneSize.width > 0.dp) {
+            Box(modifier = Modifier.size(paneSize).clipToBounds()) {
+                if (art != null && screen.width > 0.dp) {
+                    Box(
+                        modifier = Modifier
+                            .size(screen)
+                            .graphicsLayer {
+                                translationX = -offset.x
+                                translationY = -offset.y
+                            }
+                            .blur(blurRadius),
+                    ) { art() }
+                }
+            }
+            if (base > 0f) {
+                Box(
+                    modifier = Modifier
+                        .size(paneSize)
+                        .background(DeckBuilderColors.Surface.copy(alpha = base)),
+                )
+            }
+            Box(modifier = Modifier.size(paneSize).background(tint))
+        }
         content()
     }
 }

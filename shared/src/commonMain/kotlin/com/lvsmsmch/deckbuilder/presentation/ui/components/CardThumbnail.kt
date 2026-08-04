@@ -71,9 +71,9 @@ fun CardThumbnail(
     Box(
         modifier = modifier
             .aspectRatio(CARD_ASPECT)
-            .clip(RoundedCornerShape(14.dp))
-            .background(DeckBuilderColors.SurfaceContainer)
-            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(18.dp))
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(18.dp))
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,

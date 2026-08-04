@@ -53,16 +53,15 @@ fun BottomBar(navController: NavController, destination: NavDestination?) {
         destination?.toBottomTab()?.let { selectedTab = it }
     }
 
-    Row(
+    FrostedSurface(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
             .clip(CircleShape)
-            .background(DeckBuilderColors.SurfaceContainer)
-            .border(1.dp, DeckBuilderColors.Outline, CircleShape)
-            .padding(5.dp),
+            .border(1.dp, DeckBuilderColors.Outline, CircleShape),
     ) {
+      Row(modifier = Modifier.fillMaxWidth().padding(5.dp)) {
         TabItem(navController, selectedTab, BottomTab.Decks, Saved, Res.string.nav_decks) {
             selectedTab = BottomTab.Decks
         }
@@ -72,6 +71,7 @@ fun BottomBar(navController: NavController, destination: NavDestination?) {
         TabItem(navController, selectedTab, BottomTab.More, More, Res.string.nav_more) {
             selectedTab = BottomTab.More
         }
+      }
     }
 }
 

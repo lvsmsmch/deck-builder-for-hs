@@ -5,6 +5,9 @@ import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -39,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -46,6 +50,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.LocalPlatformContext
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,6 +66,7 @@ import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.entities.Card
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.SetReleaseDates
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 private const val CARD_RENDER_ASPECT = 0.72f
@@ -117,7 +124,6 @@ fun CardPreviewDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DeckBuilderColors.Surface.copy(alpha = 0.88f))
                 .clickable(
                     interactionSource = backgroundInteraction,
                     indication = null,
@@ -125,6 +131,25 @@ fun CardPreviewDialog(
                 ),
             contentAlignment = Alignment.Center,
         ) {
+            // Lit by the card itself: its own art, thrown far out of focus.
+            Box(modifier = Modifier.fillMaxSize().blur(60.dp)) {
+                ArtPatch(
+                    atmosphere = cardAtmosphere(card),
+                    modifier = Modifier.fillMaxSize(),
+                    artUrl = card.cropImage ?: card.image,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        if (DeckBuilderColors.IsDark) {
+                            Color(0xE60A0D14)
+                        } else {
+                            Color(0xE6EEF1F6)
+                        },
+                    ),
+            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -221,18 +246,19 @@ fun CardPreviewDialog(
                             .align(Alignment.TopEnd)
                             .offset(y = (-8).dp)
                             .padding(end = 4.dp)
-                            .size(38.dp)
+                            .size(42.dp)
                             .graphicsLayer { alpha = chromeAlpha }
-                            .clip(RoundedCornerShape(99.dp))
-                            .background(DeckBuilderColors.OnSurface)
+                            .clip(CircleShape)
+                            .background(DeckBuilderColors.SurfaceContainerHighest)
+                            .border(1.dp, DeckBuilderColors.Outline, CircleShape)
                             .clickable(enabled = chromeAlpha > 0.5f, onClick = onDismiss),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
                             contentDescription = stringResource(Res.string.action_close),
-                            tint = DeckBuilderColors.Surface,
-                            modifier = Modifier.size(22.dp),
+                            tint = DeckBuilderColors.OnSurface,
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                     if (onOpenDetails != null) {
@@ -241,18 +267,19 @@ fun CardPreviewDialog(
                                 .align(Alignment.TopStart)
                                 .offset(y = (-8).dp)
                                 .padding(start = 4.dp)
-                                .size(38.dp)
+                                .size(42.dp)
                                 .graphicsLayer { alpha = chromeAlpha }
-                                .clip(RoundedCornerShape(99.dp))
-                                .background(DeckBuilderColors.OnSurface)
+                                .clip(CircleShape)
+                                .background(DeckBuilderColors.SurfaceContainerHighest)
+                                .border(1.dp, DeckBuilderColors.Outline, CircleShape)
                                 .clickable(enabled = chromeAlpha > 0.5f, onClick = onOpenDetails),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Info,
                                 contentDescription = stringResource(Res.string.action_info),
-                                tint = DeckBuilderColors.Surface,
-                                modifier = Modifier.size(22.dp),
+                                tint = DeckBuilderColors.OnSurface,
+                                modifier = Modifier.size(20.dp),
                             )
                         }
                     }
@@ -261,7 +288,7 @@ fun CardPreviewDialog(
                 CardPreviewMetadata(
                     card = card,
                     modifier = Modifier
-                        .padding(horizontal = 64.dp)
+                        .padding(horizontal = 28.dp)
                         .zIndex(0f)
                         .graphicsLayer { alpha = chromeAlpha },
                 )
@@ -273,7 +300,7 @@ fun CardPreviewDialog(
 @Composable
 private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
     val parts = listOfNotNull(
-        card.classes.joinToString("/") { it.name }.takeIf { it.isNotBlank() },
+        card.classes.joinToString(" / ") { it.name }.takeIf { it.isNotBlank() },
         card.cardType.name.takeIf { it.isNotBlank() },
         card.cardSet?.name?.takeIf { it.isNotBlank() },
         SetReleaseDates.label(card.cardSet?.slug),
@@ -281,19 +308,25 @@ private fun CardPreviewMetadata(card: Card, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = parts.joinToString(" • "),
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+            text = card.name,
+            style = AppType.screenTitle.copy(fontSize = 24.sp),
             color = DeckBuilderColors.OnSurface,
             textAlign = TextAlign.Center,
         )
+        Text(
+            text = parts.joinToString(" · "),
+            style = MaterialTheme.typography.bodyMedium,
+            color = DeckBuilderColors.OnSurfaceDim,
+            textAlign = TextAlign.Center,
+        )
         card.flavorText?.takeIf { it.isNotBlank() }?.let { flavor ->
-            Spacer(Modifier.height(10.dp))
             Text(
                 text = flavor,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                color = DeckBuilderColors.OnSurface,
+                style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                color = DeckBuilderColors.OnSurfaceDimmer,
                 textAlign = TextAlign.Center,
             )
         }
