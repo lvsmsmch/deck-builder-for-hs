@@ -336,7 +336,8 @@ private fun CardList(
 ) {
     LazyColumn(
         state = listState,
-        contentPadding = PaddingValues(bottom = 12.dp),
+        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
         items(state.cards, key = { it.id }) { card ->

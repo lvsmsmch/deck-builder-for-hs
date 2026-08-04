@@ -67,7 +67,7 @@ import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Plate
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
 import com.lvsmsmch.deckbuilder.presentation.ui.components.StatusPill
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
@@ -337,10 +337,8 @@ private fun SectionHeader(label: String) {
 
 @Composable
 private fun GroupCard(content: @Composable () -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Hairline()
+    Plate(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth()) { content() }
-        Hairline()
     }
 }
 

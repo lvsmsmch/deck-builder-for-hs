@@ -84,24 +84,32 @@ fun ArtShard(
     veil: Float = 0.45f,
     art: @Composable () -> Unit,
 ) {
-    val slab = DeckBuilderColors.Surface
+    val slab = DeckBuilderColors.SurfaceContainerHigh
     // On the porcelain ground the art competes with the text sitting over it,
     // so it steps back; on the dark slab it can hold its own.
-    val ground = if (DeckBuilderColors.IsDark) alpha else alpha * 0.5f
-    val fadeStart = if (DeckBuilderColors.IsDark) fadeFrom else 0f
+    val ground = if (DeckBuilderColors.IsDark) alpha else alpha * 0.72f
+    val fadeStart = if (DeckBuilderColors.IsDark) fadeFrom else fadeFrom * 0.5f
+    val veilAmount = if (DeckBuilderColors.IsDark) veil else veil * 0.55f
     Box(modifier = modifier.fillMaxSize().clip(shardShape(skew)).alpha(ground)) {
+        // A wash, not a slab: where the illustration does not cover the shard,
+        // the class colour should read as a tint rather than a placeholder block.
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.linearGradient(listOf(gradient.first, gradient.second)),
+                    Brush.linearGradient(
+                        listOf(
+                            gradient.first.copy(alpha = 0.75f),
+                            gradient.second.copy(alpha = 0.55f),
+                        ),
+                    ),
                 ),
         )
         art()
         // Real card art is far brighter than a flat class gradient, so a veil
         // of the slab keeps it a texture rather than a picture competing with
         // the name written across it.
-        Box(modifier = Modifier.fillMaxSize().background(slab.copy(alpha = veil)))
+        Box(modifier = Modifier.fillMaxSize().background(slab.copy(alpha = veilAmount)))
         Box(
             modifier = Modifier
                 .fillMaxSize()

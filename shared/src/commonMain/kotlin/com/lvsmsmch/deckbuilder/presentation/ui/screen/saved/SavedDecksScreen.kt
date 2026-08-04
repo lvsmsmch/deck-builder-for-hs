@@ -1,8 +1,10 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.saved
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.ContentCopy
@@ -65,7 +68,6 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
 import com.lvsmsmch.deckbuilder.presentation.ui.components.TagChip
 import com.lvsmsmch.deckbuilder.presentation.ui.components.classGradient
 import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
-import com.lvsmsmch.deckbuilder.presentation.ui.components.hairlineTop
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
@@ -123,7 +125,11 @@ fun SavedDecksScreen(
         if (state.decks.isEmpty()) {
             EmptyState(modifier = Modifier.weight(1f))
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 items(state.sortedDecks, key = { it.code }) { deck ->
                     SavedDeckRow(
                         deck = deck,
@@ -278,17 +284,22 @@ private fun SavedDeckRow(
     var menuOpen by remember { mutableStateOf(false) }
     val gradient = classGradient(deck.classSlug)
 
+    val shape = RoundedCornerShape(2.dp)
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(78.dp)
-            .background(DeckBuilderColors.Surface)
-            .hairlineTop()
+            .clip(shape)
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.Outline, shape)
             .clickable(onClick = onClick),
     ) {
         ArtShard(
             gradient = gradient,
             modifier = Modifier.width(168.dp).fillMaxHeight(),
+            // The format chip and class name run across this art, and they are
+            // small — the hero steps back further here than in a card row.
+            veil = 0.62f,
         ) {
             HeroTile(
                 cardId = DefaultHeroes.cardIdFor(deck.classSlug) ?: deck.heroSlug,

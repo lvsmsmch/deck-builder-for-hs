@@ -7,9 +7,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.resources.Res
-import com.lvsmsmch.deckbuilder.resources.barlow_semicondensed_bold
-import com.lvsmsmch.deckbuilder.resources.barlow_semicondensed_medium
-import com.lvsmsmch.deckbuilder.resources.barlow_semicondensed_semibold
+import com.lvsmsmch.deckbuilder.resources.spectral_bold
+import com.lvsmsmch.deckbuilder.resources.spectral_medium
+import com.lvsmsmch.deckbuilder.resources.spectral_semibold
 import com.lvsmsmch.deckbuilder.resources.plex_mono_medium
 import com.lvsmsmch.deckbuilder.resources.plex_mono_regular
 import org.jetbrains.compose.resources.Font
@@ -17,17 +17,17 @@ import org.jetbrains.compose.resources.Font
 /**
  * Three roles, and none of them borrows another's job.
  *
- * [display] — condensed capitals for screen titles, deck names and the figures
- * that matter. [body] is the platform face, because prose should look native.
+ * [display] — an old-style serif in wide capitals for screen titles, deck names
+ * and the figures that matter. [body] is the platform face, because prose should look native.
  * [data] is monospaced so digits line up in a column: costs, counts, dust, dates.
  */
 object AppType {
 
     val display: FontFamily
         @Composable get() = FontFamily(
-            Font(Res.font.barlow_semicondensed_medium, FontWeight.Medium),
-            Font(Res.font.barlow_semicondensed_semibold, FontWeight.SemiBold),
-            Font(Res.font.barlow_semicondensed_bold, FontWeight.Bold),
+            Font(Res.font.spectral_medium, FontWeight.Medium),
+            Font(Res.font.spectral_semibold, FontWeight.SemiBold),
+            Font(Res.font.spectral_bold, FontWeight.Bold),
         )
 
     val body: FontFamily get() = FontFamily.Default
@@ -43,22 +43,22 @@ object AppType {
         @Composable get() = TextStyle(
             fontFamily = display,
             fontWeight = FontWeight.Bold,
-            fontSize = 30.sp,
-            lineHeight = 32.sp,
-            letterSpacing = 0.6.sp,
+            fontSize = 21.sp,
+            lineHeight = 26.sp,
+            letterSpacing = 1.2.sp,
         )
 
     val heroTitle: TextStyle
-        @Composable get() = screenTitle.copy(fontSize = 28.sp, lineHeight = 30.sp)
+        @Composable get() = screenTitle.copy(fontSize = 21.sp, lineHeight = 26.sp)
 
     /** Deck names in a list. */
     val deckName: TextStyle
         @Composable get() = TextStyle(
             fontFamily = display,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 20.sp,
-            lineHeight = 22.sp,
-            letterSpacing = 0.4.sp,
+            fontSize = 17.sp,
+            lineHeight = 21.sp,
+            letterSpacing = 1.2.sp,
         )
 
     /** The three figures on a deck: cards, average mana, dust. */
@@ -66,7 +66,7 @@ object AppType {
         @Composable get() = TextStyle(
             fontFamily = display,
             fontWeight = FontWeight.Bold,
-            fontSize = 25.sp,
+            fontSize = 23.sp,
             lineHeight = 26.sp,
             letterSpacing = 0.2.sp,
         )
@@ -76,21 +76,21 @@ object AppType {
         @Composable get() = TextStyle(
             fontFamily = display,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 11.sp,
+            fontSize = 10.5.sp,
             lineHeight = 14.sp,
-            letterSpacing = 1.6.sp,
+            letterSpacing = 2.0.sp,
         )
 
     val microSmall: TextStyle
-        @Composable get() = micro.copy(fontSize = 10.sp, lineHeight = 13.sp, letterSpacing = 1.2.sp)
+        @Composable get() = micro.copy(fontSize = 9.5.sp, lineHeight = 13.sp, letterSpacing = 1.6.sp)
 
     val button: TextStyle
         @Composable get() = TextStyle(
             fontFamily = display,
             fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
+            fontSize = 14.sp,
             lineHeight = 18.sp,
-            letterSpacing = 1.5.sp,
+            letterSpacing = 2.2.sp,
         )
 
     /** Mana numerals inside the crystal. */
@@ -98,7 +98,7 @@ object AppType {
         @Composable get() = TextStyle(
             fontFamily = display,
             fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
+            fontSize = 14.sp,
             lineHeight = 16.sp,
         )
 

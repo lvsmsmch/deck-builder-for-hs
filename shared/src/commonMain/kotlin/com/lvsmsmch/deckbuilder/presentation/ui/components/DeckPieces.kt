@@ -146,12 +146,14 @@ fun CardListRow(
     trailing: @Composable (() -> Unit)? = null,
 ) {
     val alpha = if (dimmed) 0.4f else 1f
+    val shape = RoundedCornerShape(2.dp)
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(54.dp)
-            .background(DeckBuilderColors.Surface)
-            .hairlineTop()
+            .clip(shape)
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.Outline, shape)
             .then(
                 if (onClick != null) {
                     Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)

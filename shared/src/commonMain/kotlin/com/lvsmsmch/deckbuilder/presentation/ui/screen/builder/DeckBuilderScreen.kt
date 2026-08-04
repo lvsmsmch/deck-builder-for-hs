@@ -500,7 +500,8 @@ private fun EditingView(
 
                 else -> LazyColumn(
                     state = poolListState,
-                    contentPadding = PaddingValues(bottom = 12.dp),
+                    contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(7.dp),
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(Unit) {
@@ -785,8 +786,8 @@ private fun Header(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, end = 14.dp, top = 6.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.Bottom,
+            .padding(start = 4.dp, end = 14.dp, top = 8.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack) {
             Icon(
@@ -798,7 +799,7 @@ private fun Header(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = (deckName ?: classText).uppercase(),
-                style = AppType.screenTitle.copy(fontSize = 26.sp),
+                style = AppType.screenTitle,
                 color = DeckBuilderColors.OnSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

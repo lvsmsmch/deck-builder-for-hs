@@ -90,7 +90,8 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
-import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
+import androidx.compose.ui.draw.drawBehind
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Plate
 import com.lvsmsmch.deckbuilder.presentation.ui.components.MicroLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
@@ -192,7 +193,7 @@ private fun TopBar(title: String, onBack: () -> Unit) {
     ScreenTopBar(
         title = title.uppercase(),
         onBack = onBack,
-        titleStyle = AppType.screenTitle.copy(fontSize = 22.sp),
+        titleStyle = AppType.screenTitle.copy(fontSize = 18.sp, letterSpacing = 0.8.sp),
     )
 }
 
@@ -221,7 +222,7 @@ private fun Body(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = card.name.uppercase(),
-                    style = AppType.screenTitle.copy(fontSize = 26.sp),
+                    style = AppType.screenTitle.copy(fontSize = 22.sp),
                     color = DeckBuilderColors.OnSurface,
                     modifier = Modifier.weight(1f),
                 )
@@ -469,9 +470,9 @@ private fun CardFacts(card: Card, isStandardLegal: Boolean?) {
     val released = SetReleaseDates.label(setSlug)
     val craft = card.rarity?.craftingCost?.firstOrNull()?.takeIf { it > 0 }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Hairline()
-        FactRow(stringResource(Res.string.card_detail_class), classes)
+    Plate(modifier = Modifier.fillMaxWidth()) {
+      Column(modifier = Modifier.fillMaxWidth()) {
+        FactRow(stringResource(Res.string.card_detail_class), classes, first = true)
         FactRow(stringResource(Res.string.card_detail_type), typeAndRarity, dot = card.rarity?.slug)
         if (setName.isNotBlank()) {
             FactRow(
@@ -494,6 +495,7 @@ private fun CardFacts(card: Card, isStandardLegal: Boolean?) {
                 stringResource(Res.string.card_detail_dust_value, craft),
             )
         }
+      }
     }
 }
 
@@ -503,11 +505,21 @@ private fun FactRow(
     value: String,
     dot: String? = null,
     valueColor: androidx.compose.ui.graphics.Color? = null,
+    first: Boolean = false,
 ) {
+    val dividerColor = if (first) androidx.compose.ui.graphics.Color.Transparent else DeckBuilderColors.OutlineSoft
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 11.dp),
+            .drawBehind {
+                drawLine(
+                    dividerColor,
+                    Offset(0f, 0f),
+                    Offset(size.width, 0f),
+                    strokeWidth = 1f,
+                )
+            }
+            .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MicroLabel(label, modifier = Modifier.weight(1f))
@@ -522,7 +534,7 @@ private fun FactRow(
             textAlign = TextAlign.End,
         )
     }
-    Hairline(color = DeckBuilderColors.OutlineSoft)
+
 }
 
 @Composable

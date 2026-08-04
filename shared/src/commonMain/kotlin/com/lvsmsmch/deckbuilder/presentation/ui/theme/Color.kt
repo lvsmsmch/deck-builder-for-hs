@@ -12,12 +12,13 @@ import androidx.compose.ui.graphics.Color
  */
 data class AppTokens(
     val isDark: Boolean,
-    /** Screen ground: the slab every list and panel sits on. */
+    /** Screen ground. Cards sit on top of it, so it is the darkest step. */
     val surface: Color,
-    /** Bars — bottom nav, action bars, the deck strip. Recedes from the slab. */
+    /** Bars — bottom nav, action bars, the deck strip. */
     val surfaceContainer: Color,
-    /** Raised fields: search, segmented controls, pressed states. */
+    /** The card itself: every row, panel and group is one of these. */
     val surfaceContainerHigh: Color,
+    /** Raised inside a card: search fields, the active segment. */
     val surfaceContainerHighest: Color,
     /** Hairline. Structure is drawn with one-pixel rules, never with shadows. */
     val outline: Color,
@@ -44,12 +45,12 @@ data class AppTokens(
  */
 internal val DarkAppTokens = AppTokens(
     isDark = true,
-    surface = Color(0xFF121722),
-    surfaceContainer = Color(0xFF0D1119),
-    surfaceContainerHigh = Color(0xFF1B2130),
-    surfaceContainerHighest = Color(0xFF232B3D),
-    outline = Color(0xFF262E40),
-    outlineSoft = Color(0xFF1B2231),
+    surface = Color(0xFF0B0F17),
+    surfaceContainer = Color(0xFF080B12),
+    surfaceContainerHigh = Color(0xFF161C29),
+    surfaceContainerHighest = Color(0xFF1F2736),
+    outline = Color(0xFF2B3446),
+    outlineSoft = Color(0xFF1E2534),
     onSurface = Color(0xFFE8EBF3),
     onSurfaceDim = Color(0xFF8A93A9),
     onSurfaceDimmer = Color(0xFF5A6379),
@@ -63,18 +64,21 @@ internal val DarkAppTokens = AppTokens(
     success = Color(0xFF4FBF8B),
 )
 
-/** Porcelain and ink — a genuine daylight build, not an inverted dark one. */
+/**
+ * Daylight: a slate-blue ground with pale cards laid on it. Deliberately not a
+ * white page — the cards have to be the light thing in the room.
+ */
 internal val LightAppTokens = AppTokens(
     isDark = false,
-    surface = Color(0xFFFFFFFF),
-    surfaceContainer = Color(0xFFF2F5F9),
-    surfaceContainerHigh = Color(0xFFF4F7FB),
-    surfaceContainerHighest = Color(0xFFE9EDF4),
-    outline = Color(0xFFD8DFEA),
-    outlineSoft = Color(0xFFE6EBF3),
-    onSurface = Color(0xFF0E1320),
-    onSurfaceDim = Color(0xFF5A6479),
-    onSurfaceDimmer = Color(0xFF8A93A9),
+    surface = Color(0xFFD5DBE6),
+    surfaceContainer = Color(0xFFC7CEDC),
+    surfaceContainerHigh = Color(0xFFF1F4FA),
+    surfaceContainerHighest = Color(0xFFE3E8F1),
+    outline = Color(0xFFB3BCCC),
+    outlineSoft = Color(0xFFCFD6E2),
+    onSurface = Color(0xFF10151F),
+    onSurfaceDim = Color(0xFF4E586B),
+    onSurfaceDimmer = Color(0xFF7C8698),
     primary = Color(0xFF96660F),
     onPrimary = Color(0xFFFFF8EC),
     primarySoft = Color(0x1A96660F),
@@ -149,7 +153,7 @@ object DeckBuilderColors {
         val Shaman = Color(0xFF12325E) to Color(0xFF2A6FD6)
         val Warlock = Color(0xFF3B2160) to Color(0xFF8B5CF6)
         val Warrior = Color(0xFF5A1E17) to Color(0xFFC0392B)
-        val Neutral = Color(0xFF2A3040) to Color(0xFF7E8798)
+        val Neutral = Color(0xFF232A3A) to Color(0xFF5D6678)
 
         fun of(slug: String?): Pair<Color, Color> = when (slug?.lowercase()) {
             "deathknight", "death-knight" -> DeathKnight

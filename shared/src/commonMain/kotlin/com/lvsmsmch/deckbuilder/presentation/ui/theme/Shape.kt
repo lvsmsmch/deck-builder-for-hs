@@ -4,11 +4,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
-/** Nightforge is a tool, not a card: corners stay tight and structure is drawn with rules. */
+/** Cut, not moulded: corners stay all but square so the cards read as plates. */
 val DeckBuilderShapes: Shapes = Shapes(
-    extraSmall = RoundedCornerShape(2.dp),
-    small = RoundedCornerShape(4.dp),
-    medium = RoundedCornerShape(4.dp),
-    large = RoundedCornerShape(6.dp),
-    extraLarge = RoundedCornerShape(10.dp),
+    extraSmall = RoundedCornerShape(1.dp),
+    small = RoundedCornerShape(2.dp),
+    medium = RoundedCornerShape(2.dp),
+    large = RoundedCornerShape(3.dp),
+    extraLarge = RoundedCornerShape(6.dp),
 )

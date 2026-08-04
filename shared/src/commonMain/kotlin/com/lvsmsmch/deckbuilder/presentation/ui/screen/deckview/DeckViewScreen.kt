@@ -106,6 +106,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
 import com.lvsmsmch.deckbuilder.presentation.ui.components.MicroLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.NoticeRow
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Plate
 import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.QuietButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.SectionLabel
@@ -261,7 +262,12 @@ private fun Body(
             item {
                 val counts = remember(deck.cards) { manaCurveOf(deck.cards) }
                 val peak = remember(counts) { counts.indexOf(counts.maxOrNull() ?: 0) }
-                Column(modifier = Modifier.padding(14.dp)) {
+                Plate(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 14.dp, end = 14.dp, top = 10.dp),
+                ) {
+                  Column(modifier = Modifier.padding(14.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -291,6 +297,7 @@ private fun Body(
                         counts = counts,
                         average = remember(deck.cards) { averageManaCost(deck.cards) },
                     )
+                  }
                 }
             }
 
@@ -305,6 +312,7 @@ private fun Body(
 
             items(deck.cards, key = { it.card.id }) { entry ->
                 CardListRow(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 3.5.dp),
                     manaCost = entry.card.manaCost,
                     name = entry.card.name,
                     raritySlug = entry.card.rarity?.slug,
@@ -482,8 +490,7 @@ private fun DeckHero(
 /** The three figures a player checks first, in a hairline-divided band. */
 @Composable
 private fun StatBand(deck: Deck) {
-    Column {
-        Hairline()
+    Plate(modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp)) {
         Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             StatValue(
                 value = "${deck.cardCount}/${deck.maxCardCount}",
@@ -503,7 +510,6 @@ private fun StatBand(deck: Deck) {
                 modifier = Modifier.weight(1f).padding(horizontal = 14.dp, vertical = 12.dp),
             )
         }
-        Hairline()
     }
 }
 

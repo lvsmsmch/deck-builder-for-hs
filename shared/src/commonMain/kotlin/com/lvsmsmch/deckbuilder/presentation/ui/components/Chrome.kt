@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -85,8 +86,9 @@ fun GhostButton(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(2.dp))
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(2.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -94,9 +96,11 @@ fun GhostButton(
     ) {
         Text(
             text = text.uppercase(),
-            style = AppType.micro.copy(fontSize = AppType.micro.fontSize),
+            style = AppType.microSmall,
             color = DeckBuilderColors.OnSurfaceDim,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.widthIn(max = 132.dp),
         )
         if (trailingIcon != null) {
             Icon(
@@ -121,12 +125,12 @@ fun BorderedIconButton(
     Box(
         modifier = modifier
             .size(38.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(2.dp))
             .background(DeckBuilderColors.SurfaceContainerHigh)
             .border(
                 1.dp,
                 if (active) DeckBuilderColors.Primary else DeckBuilderColors.Outline,
-                RoundedCornerShape(4.dp),
+                RoundedCornerShape(2.dp),
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -153,7 +157,7 @@ fun PrimaryButton(
     Box(
         modifier = modifier
             .height(44.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(2.dp))
             .background(DeckBuilderColors.Primary.copy(alpha = alpha))
             .clickable(enabled = enabled && !loading, onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -186,8 +190,8 @@ fun QuietButton(
     Box(
         modifier = modifier
             .height(44.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(2.dp))
+            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(2.dp))
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -218,6 +222,29 @@ fun ActionBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             content = content,
         )
+    }
+}
+
+/**
+ * The card. Everything the eye should treat as one object gets one of these:
+ * a row, a panel, a settings group. Pale plate, hairline edge, corners all but
+ * square — laid on the ground rather than carved out of it.
+ */
+@Composable
+fun Plate(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    val shape = RoundedCornerShape(2.dp)
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .border(1.dp, DeckBuilderColors.Outline, shape)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+    ) {
+        content()
     }
 }
 
