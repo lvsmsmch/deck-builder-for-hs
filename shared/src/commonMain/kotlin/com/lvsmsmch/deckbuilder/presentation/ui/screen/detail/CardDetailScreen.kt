@@ -63,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImagePainter
@@ -88,6 +89,11 @@ import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
+import com.lvsmsmch.deckbuilder.presentation.ui.components.MicroLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -134,37 +140,15 @@ fun CardDetailScreen(
                 // Only the deck editor has a deck to add to, so the bar shows up
                 // exclusively on the trip that started there.
                 if (canAddToDeck) {
-                    AddToDeckBar(onClick = { onAddToDeck(cardState.data) })
+                    ActionBar {
+                        PrimaryButton(
+                            text = stringResource(Res.string.card_detail_add_to_deck),
+                            onClick = { onAddToDeck(cardState.data) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun AddToDeckBar(onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(DeckBuilderColors.SurfaceContainer)
-            .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(46.dp)
-                .clip(RoundedCornerShape(13.dp))
-                .background(DeckBuilderColors.OnSurface)
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = stringResource(Res.string.card_detail_add_to_deck),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = DeckBuilderColors.Surface,
-            )
         }
     }
 }
@@ -205,7 +189,11 @@ private fun CardLoadingShell() {
 
 @Composable
 private fun TopBar(title: String, onBack: () -> Unit) {
-    ScreenTopBar(title = title, onBack = onBack)
+    ScreenTopBar(
+        title = title.uppercase(),
+        onBack = onBack,
+        titleStyle = AppType.screenTitle.copy(fontSize = 22.sp),
+    )
 }
 
 @Composable
@@ -229,11 +217,11 @@ private fun Body(
             card = card,
         )
 
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = card.name,
-                    style = MaterialTheme.typography.headlineLarge,
+                    text = card.name.uppercase(),
+                    style = AppType.screenTitle.copy(fontSize = 26.sp),
                     color = DeckBuilderColors.OnSurface,
                     modifier = Modifier.weight(1f),
                 )
@@ -247,8 +235,8 @@ private fun Body(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = rarityLabel(rarity.slug),
-                        style = MaterialTheme.typography.labelMedium,
+                        text = rarityLabel(rarity.slug).uppercase(),
+                        style = AppType.microSmall,
                         color = rarityColor,
                     )
                 }
@@ -481,14 +469,8 @@ private fun CardFacts(card: Card, isStandardLegal: Boolean?) {
     val released = SetReleaseDates.label(setSlug)
     val craft = card.rarity?.craftingCost?.firstOrNull()?.takeIf { it > 0 }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(DeckBuilderColors.SurfaceContainer)
-            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
-            .padding(horizontal = 12.dp),
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Hairline()
         FactRow(stringResource(Res.string.card_detail_class), classes)
         FactRow(stringResource(Res.string.card_detail_type), typeAndRarity, dot = card.rarity?.slug)
         if (setName.isNotBlank()) {
@@ -525,27 +507,22 @@ private fun FactRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.weight(1f),
-        )
+        MicroLabel(label, modifier = Modifier.weight(1f))
         if (dot != null) {
             RarityDot(dot)
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(7.dp))
         }
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
+            style = AppType.rowName.copy(fontSize = 13.5.sp),
             color = valueColor ?: DeckBuilderColors.OnSurface,
             textAlign = TextAlign.End,
         )
     }
+    Hairline(color = DeckBuilderColors.OutlineSoft)
 }
 
 @Composable

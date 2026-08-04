@@ -1,34 +1,31 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.screen.more
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
-import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MoreScreen(
@@ -40,30 +37,21 @@ fun MoreScreen(
             .fillMaxSize()
             .background(DeckBuilderColors.Surface),
     ) {
-        Text(
-            text = stringResource(Res.string.more_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = DeckBuilderColors.OnSurface,
-            modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+        ScreenHeader(title = stringResource(Res.string.more_title))
+        Hairline()
+        HubRow(
+            icon = Icons.Outlined.GridView,
+            title = stringResource(Res.string.more_card_library),
+            subtitle = stringResource(Res.string.more_card_library_subtitle),
+            onClick = onOpenCardLibrary,
         )
-
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            HubRow(
-                icon = Icons.Outlined.GridView,
-                title = stringResource(Res.string.more_card_library),
-                subtitle = stringResource(Res.string.more_card_library_subtitle),
-                onClick = onOpenCardLibrary,
-            )
-            HubRow(
-                icon = Icons.Outlined.Settings,
-                title = stringResource(Res.string.more_settings),
-                subtitle = stringResource(Res.string.more_settings_subtitle),
-                onClick = onOpenSettings,
-            )
-        }
+        HubRow(
+            icon = Icons.Outlined.Settings,
+            title = stringResource(Res.string.more_settings),
+            subtitle = stringResource(Res.string.more_settings_subtitle),
+            onClick = onOpenSettings,
+        )
+        Hairline()
     }
 }
 
@@ -74,43 +62,34 @@ private fun HubRow(
     subtitle: String,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(14.dp)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(DeckBuilderColors.SurfaceContainer)
-            .border(1.dp, DeckBuilderColors.OutlineSoft, shape)
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
+    Column {
+        Row(
             modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(DeckBuilderColors.SurfaceContainerHigh),
-            contentAlignment = Alignment.Center,
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(13.dp),
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = DeckBuilderColors.OnSurface,
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(20.dp),
             )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(text = title, style = AppType.rowName, color = DeckBuilderColors.OnSurface)
+                Text(
+                    text = subtitle,
+                    style = AppType.rowSub,
+                    color = DeckBuilderColors.OnSurfaceDimmer,
+                )
+            }
+            Text(text = "›", style = AppType.deckName, color = DeckBuilderColors.OnSurfaceDimmer)
         }
-        Spacer(Modifier.size(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium, color = DeckBuilderColors.OnSurface)
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = DeckBuilderColors.OnSurfaceDim,
-            )
-        }
-        Text(
-            text = "›",
-            style = MaterialTheme.typography.titleLarge,
-            color = DeckBuilderColors.OnSurfaceDimmer,
-        )
+        Hairline(color = DeckBuilderColors.OutlineSoft)
     }
 }

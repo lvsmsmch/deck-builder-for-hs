@@ -351,4 +351,7 @@
     <string name="settings_last_check_label">Diperiksa %1$s</string>
     <string name="builder_hint_pool">Ketuk kartu untuk menambahkannya ke deck</string>
     <string name="builder_hint_deck">Ketuk kartu untuk mengeluarkannya dari deck</string>
+    <string name="deck_view_edit">Ubah deck</string>
+    <string name="deck_curve_peak">Puncak di %1$s</string>
+    <string name="library_shown_count">%1$d ditampilkan</string>
 </resources>

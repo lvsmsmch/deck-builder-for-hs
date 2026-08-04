@@ -351,4 +351,7 @@
     <string name="settings_last_check_label">آخر تحقق %1$s</string>
     <string name="builder_hint_pool">المس بطاقة لإضافتها إلى التشكيلة</string>
     <string name="builder_hint_deck">المس بطاقة لإزالتها من التشكيلة</string>
+    <string name="deck_view_edit">تعديل التشكيلة</string>
+    <string name="deck_curve_peak">الذروة عند %1$s</string>
+    <string name="library_shown_count">معروض %1$d</string>
 </resources>

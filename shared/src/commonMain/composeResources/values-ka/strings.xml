@@ -69,4 +69,7 @@
     <string name="settings_last_check_label">შემოწმდა %1$s</string>
     <string name="builder_hint_pool">შეეხეთ ბარათს, რომ დაამატოთ დეკში</string>
     <string name="builder_hint_deck">შეეხეთ ბარათს, რომ ამოიღოთ დეკიდან</string>
+    <string name="deck_view_edit">დეკის რედაქტირება</string>
+    <string name="deck_curve_peak">პიკი %1$s-ზე</string>
+    <string name="library_shown_count">ნაჩვენებია %1$d</string>
 </resources>

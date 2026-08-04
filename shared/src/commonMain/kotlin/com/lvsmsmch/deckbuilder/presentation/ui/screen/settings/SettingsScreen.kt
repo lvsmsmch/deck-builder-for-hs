@@ -66,6 +66,11 @@ import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
 import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
+import com.lvsmsmch.deckbuilder.presentation.ui.components.StatusPill
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.compose.koinInject
@@ -306,29 +311,36 @@ fun SettingsScreen(
 
 @Composable
 private fun TopBar(onBack: () -> Unit) {
-    ScreenTopBar(title = stringResource(Res.string.settings_title), onBack = onBack)
+    ScreenHeader(
+        title = stringResource(Res.string.settings_title),
+        leading = {
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(Res.string.action_back),
+                    tint = DeckBuilderColors.OnSurface,
+                )
+            }
+        },
+    )
 }
 
 @Composable
 private fun SectionHeader(label: String) {
     Text(
         text = label.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
+        style = AppType.micro,
         color = DeckBuilderColors.OnSurfaceDimmer,
-        modifier = Modifier.padding(top = 18.dp, bottom = 7.dp, start = 4.dp),
+        modifier = Modifier.padding(top = 20.dp, bottom = 8.dp, start = 2.dp),
     )
 }
 
 @Composable
 private fun GroupCard(content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(DeckBuilderColors.SurfaceContainer)
-            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp)),
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Hairline()
         Column(modifier = Modifier.fillMaxWidth()) { content() }
+        Hairline()
     }
 }
 
@@ -422,19 +434,7 @@ private fun StatusRow(
                 color = DeckBuilderColors.OnSurfaceDimmer,
             )
         }
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(color.copy(alpha = 0.15f))
-                .padding(horizontal = 8.dp, vertical = 3.dp),
-        ) {
-            Text(
-                text = statusLabel.uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = color,
-            )
-        }
+        StatusPill(text = statusLabel, color = color)
     }
 }
 

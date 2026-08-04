@@ -19,9 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.width
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
-/** Two-or-more state switch; the selected segment lifts onto the surface. */
+/** Two-or-more state switch. The active segment is named in brass; the divider
+ *  between segments is the same hairline used everywhere else. */
 @Composable
 fun <T> SegmentedToggle(
     options: List<Pair<T, String>>,
@@ -32,19 +35,30 @@ fun <T> SegmentedToggle(
     Row(
         modifier = modifier
             .height(30.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(DeckBuilderColors.SurfaceContainerHigh)
-            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
-            .padding(2.dp),
+            .clip(RoundedCornerShape(4.dp))
+            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(4.dp)),
     ) {
-        options.forEach { (value, label) ->
+        options.forEachIndexed { index, (value, label) ->
             val isSelected = value == selected
+            if (index > 0) {
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxHeight()
+                        .background(DeckBuilderColors.Outline),
+                )
+            }
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (isSelected) DeckBuilderColors.SurfaceContainer else androidx.compose.ui.graphics.Color.Transparent)
+                    .background(
+                        if (isSelected) {
+                            DeckBuilderColors.SurfaceContainerHigh
+                        } else {
+                            androidx.compose.ui.graphics.Color.Transparent
+                        },
+                    )
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -52,10 +66,9 @@ fun <T> SegmentedToggle(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                    color = if (isSelected) DeckBuilderColors.OnSurface else DeckBuilderColors.OnSurfaceDim,
+                    text = label.uppercase(),
+                    style = AppType.micro,
+                    color = if (isSelected) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
                 )
             }
         }

@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -25,8 +27,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,13 +35,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.domain.entities.CardSort
 import com.lvsmsmch.deckbuilder.domain.entities.SortDir
 import com.lvsmsmch.deckbuilder.domain.entities.SortKey
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.action_clear
@@ -56,7 +60,7 @@ import com.lvsmsmch.deckbuilder.resources.sort_oldest
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-/** Square toolbar button with an optional count badge (filters, actions). */
+/** Square toolbar control with an optional count badge (filters, actions). */
 @Composable
 fun HeaderIconButton(
     onClick: () -> Unit,
@@ -64,13 +68,18 @@ fun HeaderIconButton(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val active = badge != null
     Box(modifier = modifier) {
         Box(
             modifier = Modifier
-                .size(width = 48.dp, height = 52.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+                .size(38.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(DeckBuilderColors.SurfaceContainerHigh)
+                .border(
+                    1.dp,
+                    if (active) DeckBuilderColors.Primary else DeckBuilderColors.Outline,
+                    RoundedCornerShape(4.dp),
+                )
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
@@ -80,16 +89,16 @@ fun HeaderIconButton(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .size(16.dp)
+                    .offset(x = 5.dp, y = (-5).dp)
+                    .size(15.dp)
                     .clip(CircleShape)
                     .background(DeckBuilderColors.Primary),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = badge,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = AppType.monoSmall.copy(fontSize = 9.sp),
                     color = DeckBuilderColors.OnPrimary,
-                    fontSize = 9.sp,
                 )
             }
         }
@@ -125,36 +134,28 @@ fun SortMenuButton(
     var sortMenuOpen by remember { mutableStateOf(false) }
     val currentLabel = choices.firstOrNull { it.sort == sort }?.labelRes ?: Res.string.sort_mana_asc
     Box(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .height(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(DeckBuilderColors.SurfaceContainer)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
-                .clickable { sortMenuOpen = true }
-                .padding(start = 10.dp, end = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(currentLabel),
-                color = DeckBuilderColors.OnSurface,
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Spacer(Modifier.width(4.dp))
-            Icon(
-                Icons.Outlined.ArrowDropDown,
-                contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDim,
-                modifier = Modifier.size(20.dp),
-            )
-        }
+        GhostButton(
+            text = stringResource(currentLabel),
+            onClick = { sortMenuOpen = true },
+            trailingIcon = Icons.Outlined.ArrowDropDown,
+        )
         DropdownMenu(
             expanded = sortMenuOpen,
             onDismissRequest = { sortMenuOpen = false },
+            containerColor = DeckBuilderColors.SurfaceContainerHigh,
         ) {
             choices.forEach { choice ->
                 DropdownMenuItem(
-                    text = { Text(stringResource(choice.labelRes)) },
+                    text = {
+                        Text(
+                            text = stringResource(choice.labelRes),
+                            color = if (choice.sort == sort) {
+                                DeckBuilderColors.Primary
+                            } else {
+                                DeckBuilderColors.OnSurface
+                            },
+                        )
+                    },
                     onClick = {
                         onSortChange(choice.sort)
                         sortMenuOpen = false
@@ -179,56 +180,61 @@ fun CardSearchRow(
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        TextField(
-            value = query,
-            onValueChange = onQueryChange,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
-            placeholder = {
-                Text(
-                    stringResource(Res.string.library_search_hint),
-                    color = DeckBuilderColors.OnSurfaceDimmer,
-                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
-                )
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            leadingIcon = {
-                Icon(
-                    Icons.Outlined.Search,
-                    contentDescription = null,
-                    tint = DeckBuilderColors.OnSurface,
-                )
-            },
-            trailingIcon = {
-                if (query.isNotEmpty()) {
-                    Icon(
-                        Icons.Outlined.Close,
-                        contentDescription = stringResource(Res.string.action_clear),
-                        tint = DeckBuilderColors.OnSurfaceDim,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .clickable { onQueryChange("") }
-                            .padding(4.dp),
-                    )
-                }
-            },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = DeckBuilderColors.SurfaceContainer,
-                unfocusedContainerColor = DeckBuilderColors.SurfaceContainer,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedTextColor = DeckBuilderColors.OnSurface,
-                unfocusedTextColor = DeckBuilderColors.OnSurface,
-                cursorColor = DeckBuilderColors.Primary,
-            ),
-            shape = RoundedCornerShape(14.dp),
+        // A plain field: Material's own has a 56dp floor that clips at this height.
+        Row(
             modifier = Modifier
                 .weight(1f)
-                .height(52.dp)
-                .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp)),
-        )
+                .height(38.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(DeckBuilderColors.SurfaceContainerHigh)
+                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(4.dp))
+                .padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                Icons.Outlined.Search,
+                contentDescription = null,
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(17.dp),
+            )
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                if (query.isEmpty()) {
+                    Text(
+                        text = stringResource(Res.string.library_search_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = DeckBuilderColors.OnSurfaceDimmer,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = DeckBuilderColors.OnSurface,
+                    ),
+                    cursorBrush = SolidColor(DeckBuilderColors.Primary),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (query.isNotEmpty()) {
+                Icon(
+                    Icons.Outlined.Close,
+                    contentDescription = stringResource(Res.string.action_clear),
+                    tint = DeckBuilderColors.OnSurfaceDim,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .clickable { onQueryChange("") }
+                        .padding(4.dp),
+                )
+            }
+        }
         HeaderIconButton(
             onClick = onOpenFilters,
             badge = activeFilterCount.takeIf { it > 0 }?.toString(),
@@ -236,8 +242,8 @@ fun CardSearchRow(
             Icon(
                 Icons.Outlined.FilterList,
                 contentDescription = stringResource(Res.string.filters_title),
-                tint = DeckBuilderColors.OnSurface,
-                modifier = Modifier.size(21.dp),
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(18.dp),
             )
         }
     }

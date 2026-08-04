@@ -221,7 +221,7 @@ fun CardPreviewDialog(
                             .align(Alignment.TopEnd)
                             .offset(y = (-8).dp)
                             .padding(end = 4.dp)
-                            .size(44.dp)
+                            .size(38.dp)
                             .graphicsLayer { alpha = chromeAlpha }
                             .clip(RoundedCornerShape(99.dp))
                             .background(DeckBuilderColors.OnSurface)
@@ -241,7 +241,7 @@ fun CardPreviewDialog(
                                 .align(Alignment.TopStart)
                                 .offset(y = (-8).dp)
                                 .padding(start = 4.dp)
-                                .size(44.dp)
+                                .size(38.dp)
                                 .graphicsLayer { alpha = chromeAlpha }
                                 .clip(RoundedCornerShape(99.dp))
                                 .background(DeckBuilderColors.OnSurface)

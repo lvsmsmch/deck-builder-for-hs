@@ -351,4 +351,7 @@
     <string name="settings_last_check_label">נבדק לאחרונה %1$s</string>
     <string name="builder_hint_pool">הקישו על קלף כדי להוסיף אותו לחפיסה</string>
     <string name="builder_hint_deck">הקישו על קלף כדי להסיר אותו מהחפיסה</string>
+    <string name="deck_view_edit">עריכת החפיסה</string>
+    <string name="deck_curve_peak">שיא ב-%1$s</string>
+    <string name="library_shown_count">מוצגים %1$d</string>
 </resources>

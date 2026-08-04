@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,23 +17,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,32 +44,36 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
-import androidx.compose.foundation.border
-import androidx.compose.ui.text.style.TextOverflow
-import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckProgress
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ArtShard
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CurveSpark
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialogForCode
-import com.lvsmsmch.deckbuilder.presentation.ui.components.MiniManaCurve
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
-import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
+import com.lvsmsmch.deckbuilder.presentation.ui.components.GhostButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
-import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
+import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
+import com.lvsmsmch.deckbuilder.presentation.ui.components.QuietButton
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
+import com.lvsmsmch.deckbuilder.presentation.ui.components.TagChip
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classGradient
+import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
+import com.lvsmsmch.deckbuilder.presentation.ui.components.hairlineTop
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import com.lvsmsmch.deckbuilder.presentation.SnackbarController
 import com.lvsmsmch.deckbuilder.presentation.UiText
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-
-private val WarningYellow = Color(0xFFE0A23F)
 
 @Composable
 fun SavedDecksScreen(
@@ -102,70 +102,60 @@ fun SavedDecksScreen(
         }
     }
 
-    Scaffold(
-        containerColor = DeckBuilderColors.Surface,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showChooser = true },
-                containerColor = DeckBuilderColors.OnSurface,
-                contentColor = DeckBuilderColors.Surface,
-            ) {
-                Icon(
-                    Icons.Filled.Add,
-                    contentDescription = stringResource(Res.string.new_deck_title),
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-        ) {
-            Header(
-                sort = state.sort,
-                onSortChange = viewModel::setSort,
-            )
-            if (state.decks.isEmpty()) {
-                EmptyState()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DeckBuilderColors.Surface),
+    ) {
+        ScreenHeader(
+            title = stringResource(Res.string.saved_title),
+            subtitle = if (state.decks.isEmpty()) {
+                null
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp),
-                ) {
-                    items(state.sortedDecks, key = { it.code }) { deck ->
-                        Spacer(Modifier.height(9.dp))
-                        SavedDeckRow(
-                            deck = deck,
-                            onClick = { onOpenDeck(deck.code, deck.name) },
-                            onCopy = {
-                                clipboard.setText(AnnotatedString(deck.code))
-                                snackbar.show(UiText.of(Res.string.deck_view_copied))
-                            },
-                            onInfo = { statsCode = deck.code },
-                            onEdit = { onEditDeck(deck.code, deck.name) },
-                            onDelete = { pendingDelete = deck },
-                        )
-                    }
-                    item {
-                        Text(
-                            text = stringResource(
-                                Res.string.decks_footer_summary,
-                                state.decks.size,
-                                state.totalCards,
-                            ),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = DeckBuilderColors.OnSurfaceDimmer,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp, bottom = 88.dp),
-                        )
-                    }
+                stringResource(Res.string.decks_footer_summary, state.decks.size, state.totalCards)
+            },
+            trailing = {
+                if (state.decks.isNotEmpty()) {
+                    SortControl(sort = state.sort, onSortChange = viewModel::setSort)
+                }
+            },
+        )
+        if (state.decks.isEmpty()) {
+            EmptyState(modifier = Modifier.weight(1f))
+        } else {
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(state.sortedDecks, key = { it.code }) { deck ->
+                    SavedDeckRow(
+                        deck = deck,
+                        onClick = { onOpenDeck(deck.code, deck.name) },
+                        onCopy = {
+                            clipboard.setText(AnnotatedString(deck.code))
+                            snackbar.show(UiText.of(Res.string.deck_view_copied))
+                        },
+                        onInfo = { statsCode = deck.code },
+                        onEdit = { onEditDeck(deck.code, deck.name) },
+                        onDelete = { pendingDelete = deck },
+                    )
                 }
             }
+        }
+        ActionBar(applyNavigationInset = false) {
+            if (state.decks.isEmpty()) {
+                QuietButton(
+                    text = stringResource(Res.string.action_paste),
+                    onClick = {
+                        val clipboardCode = clipboard.getText()?.text.orEmpty().trim()
+                            .takeIf(::looksLikeDeckCode)
+                        if (clipboardCode != null) viewModel.import(clipboardCode) else showImportSheet = true
+                    },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            PrimaryButton(
+                text = stringResource(Res.string.new_deck_title),
+                onClick = { showChooser = true },
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 
@@ -228,57 +218,38 @@ fun SavedDecksScreen(
     }
 }
 
+/** Sort control. Quiet by design: it changes the view, it does not act on a deck. */
 @Composable
-private fun Header(
-    sort: DeckSort,
-    onSortChange: (DeckSort) -> Unit,
-) {
+private fun SortControl(sort: DeckSort, onSortChange: (DeckSort) -> Unit) {
     var menuOpen by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = stringResource(Res.string.saved_title),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.weight(1f),
+    Box {
+        GhostButton(
+            text = stringResource(sort.labelRes()),
+            onClick = { menuOpen = true },
+            trailingIcon = Icons.Outlined.ArrowDropDown,
         )
-        Box {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DeckBuilderColors.SurfaceContainer)
-                    .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
-                    .clickable { menuOpen = true }
-                    .padding(start = 10.dp, end = 5.dp)
-                    .height(30.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(sort.labelRes()),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = DeckBuilderColors.OnSurfaceDim,
+        DropdownMenu(
+            expanded = menuOpen,
+            onDismissRequest = { menuOpen = false },
+            containerColor = DeckBuilderColors.SurfaceContainerHigh,
+        ) {
+            DeckSort.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(option.labelRes()),
+                            color = if (option == sort) {
+                                DeckBuilderColors.Primary
+                            } else {
+                                DeckBuilderColors.OnSurface
+                            },
+                        )
+                    },
+                    onClick = {
+                        onSortChange(option)
+                        menuOpen = false
+                    },
                 )
-                Icon(
-                    Icons.Outlined.ArrowDropDown,
-                    contentDescription = null,
-                    tint = DeckBuilderColors.OnSurfaceDimmer,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                DeckSort.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(stringResource(option.labelRes())) },
-                        onClick = {
-                            onSortChange(option)
-                            menuOpen = false
-                        },
-                    )
-                }
             }
         }
     }
@@ -291,9 +262,9 @@ private fun DeckSort.labelRes(): org.jetbrains.compose.resources.StringResource 
 }
 
 /**
- * Deck tile. The class colour runs down the edge and tints the portrait, the
- * mini curve shows the deck's shape, and the fill bar answers the question the
- * list is really for: is this deck finished?
+ * Deck row. The class is the art, cut on an angle and faded into the slab; the
+ * curve shows the deck's shape before you open it, and the count says whether
+ * it is finished. 78dp, hairline-separated — never a floating tile.
  */
 @Composable
 private fun SavedDeckRow(
@@ -304,29 +275,20 @@ private fun SavedDeckRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val classColor = colorForClassSlug(deck.classSlug)
     var menuOpen by remember { mutableStateOf(false) }
+    val gradient = classGradient(deck.classSlug)
 
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(DeckBuilderColors.SurfaceContainer)
-            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+            .height(78.dp)
+            .background(DeckBuilderColors.Surface)
+            .hairlineTop()
             .clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .width(3.dp)
-                .height(66.dp)
-                .background(classColor),
-        )
-        Box(
-            modifier = Modifier
-                .padding(start = 10.dp)
-                .size(46.dp)
-                .clip(RoundedCornerShape(11.dp)),
+        ArtShard(
+            gradient = gradient,
+            modifier = Modifier.width(168.dp).fillMaxHeight(),
         ) {
             HeroTile(
                 cardId = DefaultHeroes.cardIdFor(deck.classSlug) ?: deck.heroSlug,
@@ -334,65 +296,73 @@ private fun SavedDeckRow(
                 modifier = Modifier.fillMaxSize(),
                 verticalFocus = 0.26f,
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(classColor.copy(alpha = 0.18f)),
-            )
         }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 11.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+        Row(
+            modifier = Modifier.fillMaxSize().padding(start = 14.dp, end = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                text = deck.name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = DeckBuilderColors.OnSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                FormatChip(deck.format)
-                Spacer(Modifier.width(8.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
                 Text(
-                    text = "${deck.cardCount}/${deck.maxCardCount}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = DeckBuilderColors.OnSurfaceDim,
+                    text = deck.name.uppercase(),
+                    style = AppType.deckName,
+                    color = DeckBuilderColors.OnSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                if (deck.manaCurve.isNotEmpty()) {
-                    Spacer(Modifier.width(10.dp))
-                    MiniManaCurve(
-                        counts = deck.manaCurve,
-                        modifier = Modifier.width(62.dp),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    FormatChip(deck.format)
+                    Text(
+                        text = deck.classSlug?.let { classLabel(it) } ?: deck.className.orEmpty(),
+                        style = AppType.rowSub,
+                        color = DeckBuilderColors.OnSurfaceDim,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    Text(
+                        text = "${deck.cardCount}/${deck.maxCardCount}",
+                        style = AppType.mono,
+                        color = if (deck.cardCount >= deck.maxCardCount) {
+                            DeckBuilderColors.OnSurfaceDim
+                        } else {
+                            DeckBuilderColors.Primary
+                        },
                     )
                 }
             }
-            DeckProgress(cardCount = deck.cardCount, maxCardCount = deck.maxCardCount)
-        }
-        Box {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { menuOpen = true }
-                    .padding(8.dp),
-            ) {
-                Icon(
-                    Icons.Outlined.MoreVert,
-                    contentDescription = stringResource(Res.string.action_more),
-                    tint = DeckBuilderColors.OnSurfaceDimmer,
+            if (deck.manaCurve.isNotEmpty()) {
+                CurveSpark(counts = deck.manaCurve, barWidth = 4.dp, height = 24.dp)
+            }
+            Box {
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable { menuOpen = true }
+                        .padding(8.dp),
+                ) {
+                    Icon(
+                        Icons.Outlined.MoreVert,
+                        contentDescription = stringResource(Res.string.action_more),
+                        tint = DeckBuilderColors.OnSurfaceDimmer,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                DeckActionsMenu(
+                    expanded = menuOpen,
+                    onDismiss = { menuOpen = false },
+                    onCopy = onCopy,
+                    onInfo = onInfo,
+                    onEdit = onEdit,
+                    onDelete = onDelete,
                 )
             }
-            DeckActionsMenu(
-                expanded = menuOpen,
-                onDismiss = { menuOpen = false },
-                onCopy = onCopy,
-                onInfo = onInfo,
-                onEdit = onEdit,
-                onDelete = onDelete,
-            )
         }
     }
 }
@@ -450,64 +420,35 @@ private fun looksLikeDeckCode(input: String): Boolean {
 }
 
 @Composable
-fun DeckWarning(text: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(18.dp)
-                .clip(CircleShape)
-                .background(WarningYellow),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                Icons.Outlined.WarningAmber,
-                contentDescription = null,
-                tint = Color.Black,
-                modifier = Modifier.size(12.dp),
-            )
-        }
-        Spacer(Modifier.width(6.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = WarningYellow,
-        )
-    }
-}
-
-@Composable
 private fun FormatChip(format: GameFormat) {
-    val color = formatColor(format)
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(color.copy(alpha = 0.16f))
-            .padding(horizontal = 8.dp, vertical = 2.dp),
-    ) {
-        Text(
-            text = formatLabel(format),
-            style = MaterialTheme.typography.labelSmall,
-            color = color,
-        )
-    }
+    val wild = format == GameFormat.WILD
+    TagChip(
+        text = formatLabel(format),
+        color = if (wild) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
+        borderColor = if (wild) DeckBuilderColors.Secondary else DeckBuilderColors.Outline,
+    )
 }
 
-
+/** Even with nothing to show, the motif shows up: an empty curve stands in
+ *  for the deck you have not built. */
 @Composable
-private fun EmptyState() {
+private fun EmptyState(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 40.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        CurveSpark(
+            counts = listOf(1, 3, 5, 7, 5, 3, 2, 1),
+            barWidth = 7.dp,
+            height = 34.dp,
+        )
+        Spacer(Modifier.height(16.dp))
         Text(
-            text = stringResource(Res.string.saved_empty_title),
-            style = MaterialTheme.typography.titleMedium,
+            text = stringResource(Res.string.saved_empty_title).uppercase(),
+            style = AppType.deckName,
             color = DeckBuilderColors.OnSurface,
             textAlign = TextAlign.Center,
         )
@@ -517,6 +458,28 @@ private fun EmptyState() {
             style = MaterialTheme.typography.bodyMedium,
             color = DeckBuilderColors.OnSurfaceDim,
             textAlign = TextAlign.Center,
+        )
+    }
+}
+
+/** Deck warning rail, reused by the deck screen. */
+@Composable
+fun DeckWarning(text: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .height(14.dp)
+                .background(DeckBuilderColors.Primary),
+        )
+        Text(
+            text = text,
+            style = AppType.rowSub.copy(fontSize = MaterialTheme.typography.bodySmall.fontSize),
+            color = DeckBuilderColors.Primary,
         )
     }
 }

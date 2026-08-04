@@ -73,6 +73,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.entities.Card
@@ -98,9 +99,12 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.AddChip
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardListRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CopyCount
 import com.lvsmsmch.deckbuilder.presentation.ui.components.EmptyState
-import com.lvsmsmch.deckbuilder.presentation.ui.components.MiniManaCurve
+import com.lvsmsmch.deckbuilder.presentation.ui.components.CurveSpark
 import com.lvsmsmch.deckbuilder.presentation.ui.components.manaCurveOf
-import com.lvsmsmch.deckbuilder.presentation.ui.components.primaryClassColor
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ArtShard
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
+import com.lvsmsmch.deckbuilder.presentation.ui.components.cardGradient
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classGradient
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardSearchRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.SortChoices
@@ -113,6 +117,12 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.screen.library.FilterSheet
+import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckProgress
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
+import com.lvsmsmch.deckbuilder.presentation.ui.components.MicroLabel
+import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
+import com.lvsmsmch.deckbuilder.presentation.ui.components.TagChip
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.koinInject
@@ -341,25 +351,16 @@ private fun ClassPickerView(
     slugs: List<String>,
     onPick: (String) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = stringResource(Res.string.builder_new_deck),
-            style = MaterialTheme.typography.titleLarge,
-            color = DeckBuilderColors.OnSurface,
-            modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 16.dp),
+    Column(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+        ScreenHeader(
+            title = stringResource(Res.string.builder_new_deck),
+            subtitle = stringResource(Res.string.builder_pick_class),
         )
-        Text(
-            text = stringResource(Res.string.builder_pick_class),
-            style = MaterialTheme.typography.bodyMedium,
-            color = DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.padding(start = 20.dp, top = 4.dp, bottom = 12.dp),
-        )
-
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            contentPadding = PaddingValues(horizontal = 26.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            columns = GridCells.Fixed(2),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
+            horizontalArrangement = Arrangement.spacedBy(1.dp),
+            modifier = Modifier.fillMaxSize().background(DeckBuilderColors.OutlineSoft),
         ) {
             items(slugs, key = { it }) { slug ->
                 ClassTile(slug = slug, onClick = { onPick(slug) })
@@ -368,38 +369,39 @@ private fun ClassPickerView(
     }
 }
 
+/**
+ * The same angled cut used in the deck list, so the class you pick here is
+ * visibly the thing you will see there.
+ */
 @Composable
 private fun ClassTile(slug: String, onClick: () -> Unit) {
-    val color = colorForClassSlug(slug)
     Box(
         modifier = Modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(14.dp))
+            .fillMaxWidth()
+            .height(92.dp)
+            .background(DeckBuilderColors.Surface)
             .clickable(onClick = onClick),
     ) {
-        HeroPortrait(
-            cardId = DefaultHeroes.cardIdFor(slug),
-            fallbackTint = Brush.linearGradient(listOf(color, DeckBuilderColors.SurfaceContainer)),
-            contentDescription = classLabel(slug),
-            modifier = Modifier.matchParentSize(),
-            zoomed = true,
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.5f to androidx.compose.ui.graphics.Color.Transparent,
-                        1f to androidx.compose.ui.graphics.Color(0xCC000000),
-                    ),
-                ),
-        )
+        ArtShard(
+            gradient = classGradient(slug),
+            modifier = Modifier.fillMaxSize(),
+            skew = 0.dp,
+            fadeFrom = 0.45f,
+        ) {
+            HeroPortrait(
+                cardId = DefaultHeroes.cardIdFor(slug),
+                fallbackTint = Brush.linearGradient(classGradient(slug).toList()),
+                contentDescription = classLabel(slug),
+                modifier = Modifier.matchParentSize(),
+                zoomed = true,
+            )
+        }
         Text(
-            text = classLabel(slug),
-            style = MaterialTheme.typography.titleSmall,
-            color = androidx.compose.ui.graphics.Color.White,
-            fontWeight = FontWeight.SemiBold,
+            text = classLabel(slug).uppercase(),
+            style = AppType.deckName.copy(fontSize = 15.sp),
+            color = DeckBuilderColors.OnSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(10.dp),
@@ -453,7 +455,7 @@ private fun EditingView(
             .collect { scrolling -> if (scrolling) focusManager.clearFocus() }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
         Header(
             chosenClass = state.chosenClass,
             deckName = state.deckName,
@@ -467,6 +469,9 @@ private fun EditingView(
             onSetSort = onSetPoolSort,
             onRenameDeck = { showRenameDialog = true },
         )
+        // The rule fills as the deck does — progress without a widget.
+        DeckProgress(cardCount = state.cardCount, maxCardCount = state.maxDeckSize)
+        Spacer(Modifier.height(12.dp))
 
         CardSearchRow(
             query = state.pool.filters.textQuery,
@@ -495,7 +500,7 @@ private fun EditingView(
 
                 else -> LazyColumn(
                     state = poolListState,
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    contentPadding = PaddingValues(bottom = 12.dp),
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(Unit) {
@@ -510,14 +515,13 @@ private fun EditingView(
                             name = card.name,
                             raritySlug = card.rarity?.slug,
                             artUrl = card.cropImage ?: card.image,
-                            accent = primaryClassColor(card),
+                            gradient = cardGradient(card),
                             dimmed = maxed,
                             onClick = { if (!maxed) onAdd(card) },
                             onLongClick = { previewCard = card },
                             trailing = {
                                 if (inDeck > 0) CopyCount(inDeck, dimmed = maxed) else AddChip()
                             },
-                            modifier = Modifier.padding(bottom = 6.dp),
                         )
                     }
                     if (state.pool.isLoadingMore || state.pool.hasMore) {
@@ -615,79 +619,63 @@ private fun DeckStrip(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(DeckBuilderColors.SurfaceContainer)
-            .navigationBarsPadding()
-            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 12.dp),
+            .background(DeckBuilderColors.SurfaceContainer),
     ) {
-        Row(
+        Hairline()
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .clickable(onClick = onOpenDeck)
-                .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .navigationBarsPadding()
+                .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 12.dp),
         ) {
-            Text(
-                text = stringResource(Res.string.builder_deck_strip_label).uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                color = DeckBuilderColors.OnSurfaceDimmer,
-            )
-            Spacer(Modifier.width(10.dp))
-            Text(
-                text = state.cardCount.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = DeckBuilderColors.OnSurface,
-            )
-            Text(
-                text = "/${state.maxDeckSize}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = DeckBuilderColors.OnSurfaceDimmer,
-            )
-            Spacer(Modifier.width(12.dp))
-            // Fixed width: stretched across the bar a single populated bucket
-            // reads as a stray rectangle rather than a curve.
-            MiniManaCurve(counts = curve, modifier = Modifier.width(96.dp).height(20.dp))
-            Spacer(Modifier.weight(1f))
-            Icon(
-                Icons.Outlined.KeyboardArrowUp,
-                contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDimmer,
-                modifier = Modifier.size(18.dp),
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        if (state.saveError != null) {
-            Text(
-                text = state.saveError.resolve(),
-                style = MaterialTheme.typography.bodySmall,
-                color = DeckBuilderColors.Error,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
-        }
-        Button(
-            onClick = onSave,
-            enabled = state.canSave,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = DeckBuilderColors.OnSurface,
-                contentColor = DeckBuilderColors.Surface,
-            ),
-            shape = RoundedCornerShape(13.dp),
-            modifier = Modifier.fillMaxWidth().height(46.dp),
-        ) {
-            if (state.isSaving) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = DeckBuilderColors.Surface,
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text(
-                    text = stringResource(Res.string.action_save_deck),
-                    fontWeight = FontWeight.Bold,
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenDeck)
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                MicroLabel(stringResource(Res.string.builder_deck_strip_label))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = state.cardCount.toString(),
+                        style = AppType.figure.copy(fontSize = 22.sp),
+                        color = DeckBuilderColors.Primary,
+                    )
+                    Text(
+                        text = "/${state.maxDeckSize}",
+                        style = AppType.figure.copy(fontSize = 22.sp),
+                        color = DeckBuilderColors.OnSurfaceDimmer,
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                // Fixed bar width: stretched to fill, a single populated bucket
+                // reads as a stray rectangle rather than a curve.
+                CurveSpark(counts = curve, barWidth = 4.dp, height = 22.dp)
+                Icon(
+                    Icons.Outlined.KeyboardArrowUp,
+                    contentDescription = null,
+                    tint = DeckBuilderColors.OnSurfaceDimmer,
+                    modifier = Modifier.size(18.dp),
                 )
             }
+            if (state.saveError != null) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = state.saveError.resolve(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = DeckBuilderColors.Error,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            PrimaryButton(
+                text = stringResource(Res.string.action_save_deck),
+                onClick = onSave,
+                enabled = state.canSave,
+                loading = state.isSaving,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
@@ -756,7 +744,7 @@ private fun DeckSheet(
                             name = entry.card.name,
                             raritySlug = entry.card.rarity?.slug,
                             artUrl = entry.card.cropImage ?: entry.card.image,
-                            accent = primaryClassColor(entry.card),
+                            gradient = cardGradient(entry.card),
                             onClick = { onRemove(entry.card) },
                             onLongClick = { onOpenCard(entry.card) },
                             trailing = { CopyCount(entry.count) },
@@ -791,16 +779,14 @@ private fun Header(
     onSetSort: (SortKey, SortDir) -> Unit,
     onRenameDeck: () -> Unit,
 ) {
-    val color = colorForClassSlug(chosenClass?.slug)
-    val selectedFormatColor = formatColor(format)
     val classText = chosenClass?.slug?.let { classLabel(it) }.orEmpty()
     var formatMenuOpen by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(start = 4.dp, end = 14.dp, top = 6.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.Bottom,
     ) {
         IconButton(onClick = onBack) {
             Icon(
@@ -809,57 +795,50 @@ private fun Header(
                 tint = DeckBuilderColors.OnSurface,
             )
         }
-        HeroPortrait(
-            cardId = DefaultHeroes.cardIdFor(chosenClass?.slug),
-            fallbackTint = Brush.linearGradient(listOf(color, DeckBuilderColors.SurfaceContainer)),
-            contentDescription = chosenClass?.let { classLabel(it.slug) },
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(10.dp)),
-        )
-        Spacer(Modifier.width(10.dp))
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.Center,
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = deckName ?: chosenClass?.let { classLabel(it.slug) } ?: "Deck",
-                style = MaterialTheme.typography.titleMedium,
+                text = (deckName ?: classText).uppercase(),
+                style = AppType.screenTitle.copy(fontSize = 26.sp),
                 color = DeckBuilderColors.OnSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
                     .clickable(onClick = onRenameDeck)
                     .padding(end = 8.dp),
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
             Box {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(selectedFormatColor.copy(alpha = 0.16f))
-                            .clickable { formatMenuOpen = true }
-                            .padding(horizontal = 8.dp, vertical = 2.dp),
-                    ) {
-                        Text(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(modifier = Modifier.clickable { formatMenuOpen = true }) {
+                        TagChip(
                             text = formatLabel(format),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = selectedFormatColor,
+                            color = if (format == GameFormat.WILD) {
+                                DeckBuilderColors.Primary
+                            } else {
+                                DeckBuilderColors.OnSurfaceDim
+                            },
+                            borderColor = if (format == GameFormat.WILD) {
+                                DeckBuilderColors.Secondary
+                            } else {
+                                DeckBuilderColors.Outline
+                            },
                         )
                     }
-                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "$classText \u00B7 $cardCount/$maxDeckSize",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = classText,
+                        style = AppType.rowSub,
                         color = DeckBuilderColors.OnSurfaceDim,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
                 DropdownMenu(
                     expanded = formatMenuOpen,
                     onDismissRequest = { formatMenuOpen = false },
+                    containerColor = DeckBuilderColors.SurfaceContainerHigh,
                 ) {
                     listOf(
                         GameFormat.STANDARD,
@@ -868,7 +847,16 @@ private fun Header(
                         GameFormat.CLASSIC,
                     ).forEach { f ->
                         DropdownMenuItem(
-                            text = { Text(formatLabel(f)) },
+                            text = {
+                                Text(
+                                    text = formatLabel(f),
+                                    color = if (f == format) {
+                                        DeckBuilderColors.Primary
+                                    } else {
+                                        DeckBuilderColors.OnSurface
+                                    },
+                                )
+                            },
                             onClick = {
                                 onSelectFormat(f)
                                 formatMenuOpen = false
@@ -887,8 +875,6 @@ private fun Header(
         }
     }
 }
-
-
 
 @Composable
 private fun RenameDeckDialog(

@@ -79,7 +79,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardListRow
 import com.lvsmsmch.deckbuilder.presentation.ui.components.SegmentedToggle
-import com.lvsmsmch.deckbuilder.presentation.ui.components.primaryClassColor
+import com.lvsmsmch.deckbuilder.presentation.ui.components.cardGradient
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.SetReleaseDates
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.expansionLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardSearchRow
@@ -90,6 +90,10 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.SortChoices
 import com.lvsmsmch.deckbuilder.presentation.ui.components.SortMenuButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardPreviewDialog
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.IconButton
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -166,6 +170,7 @@ fun CardLibraryScreen(
     ) {
         Header(
             sort = state.filters.sort,
+            total = state.totalCount,
             onBack = onBack,
             onSortChange = {
                 focusManager.clearFocus()
@@ -215,8 +220,8 @@ fun CardLibraryScreen(
             )
             Spacer(Modifier.weight(1f))
             Text(
-                text = stringResource(Res.string.library_found_count, state.totalCount),
-                style = MaterialTheme.typography.labelSmall,
+                text = stringResource(Res.string.library_shown_count, state.cards.size),
+                style = AppType.mono,
                 color = DeckBuilderColors.OnSurfaceDimmer,
             )
         }
@@ -289,13 +294,26 @@ fun CardLibraryScreen(
 @Composable
 private fun Header(
     sort: CardSort,
+    total: Int,
     onBack: (() -> Unit)?,
     onSortChange: (CardSort) -> Unit,
 ) {
-    ScreenTopBar(
+    ScreenHeader(
         title = stringResource(Res.string.library_title),
-        onBack = onBack,
-        bottomPadding = 2.dp,
+        subtitle = stringResource(Res.string.library_count_format, total),
+        leading = if (onBack == null) {
+            null
+        } else {
+            {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = stringResource(Res.string.action_back),
+                        tint = DeckBuilderColors.OnSurface,
+                    )
+                }
+            }
+        },
     ) {
         SortMenuButton(sort = sort, choices = SortChoices.Library, onSortChange = onSortChange)
     }
@@ -318,7 +336,7 @@ private fun CardList(
 ) {
     LazyColumn(
         state = listState,
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 16.dp),
+        contentPadding = PaddingValues(bottom = 12.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
         items(state.cards, key = { it.id }) { card ->
@@ -327,11 +345,10 @@ private fun CardList(
                 name = card.name,
                 raritySlug = card.rarity?.slug,
                 artUrl = card.cropImage ?: card.image,
-                accent = primaryClassColor(card),
+                gradient = cardGradient(card),
                 subtitle = cardSubtitle(card),
                 onClick = { onCardClick(card) },
                 onLongClick = { onCardLongClick(card) },
-                modifier = Modifier.padding(bottom = 6.dp),
             )
         }
         if (state.isLoadingMore || state.hasMore) {

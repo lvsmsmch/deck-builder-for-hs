@@ -374,4 +374,7 @@
     <string name="settings_last_check_label">Verificado em %1$s</string>
     <string name="builder_hint_pool">Toque em um card para adicioná-lo ao deck</string>
     <string name="builder_hint_deck">Toque em um card para removê-lo do deck</string>
+    <string name="deck_view_edit">Editar deck</string>
+    <string name="deck_curve_peak">Pico em %1$s</string>
+    <string name="library_shown_count">%1$d mostrados</string>
 </resources>

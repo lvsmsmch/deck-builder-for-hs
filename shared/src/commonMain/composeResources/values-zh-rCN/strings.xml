@@ -64,4 +64,7 @@
     <string name="settings_last_check_label">上次检查 %1$s</string>
     <string name="builder_hint_pool">点击卡牌将其加入套牌</string>
     <string name="builder_hint_deck">点击卡牌将其移出套牌</string>
+    <string name="deck_view_edit">编辑套牌</string>
+    <string name="deck_curve_peak">峰值在%1$s</string>
+    <string name="library_shown_count">显示 %1$d</string>
 </resources>

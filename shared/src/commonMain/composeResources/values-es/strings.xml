@@ -374,4 +374,7 @@
     <string name="settings_last_check_label">Comprobado el %1$s</string>
     <string name="builder_hint_pool">Toca una carta para añadirla al mazo</string>
     <string name="builder_hint_deck">Toca una carta para quitarla del mazo</string>
+    <string name="deck_view_edit">Editar mazo</string>
+    <string name="deck_curve_peak">Pico en %1$s</string>
+    <string name="library_shown_count">%1$d mostradas</string>
 </resources>

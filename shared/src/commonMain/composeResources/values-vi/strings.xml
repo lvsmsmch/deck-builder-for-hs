@@ -351,4 +351,7 @@
     <string name="settings_last_check_label">Đã kiểm tra %1$s</string>
     <string name="builder_hint_pool">Chạm vào lá bài để thêm vào bộ bài</string>
     <string name="builder_hint_deck">Chạm vào lá bài để bỏ khỏi bộ bài</string>
+    <string name="deck_view_edit">Sửa bộ bài</string>
+    <string name="deck_curve_peak">Đỉnh ở %1$s</string>
+    <string name="library_shown_count">Hiện %1$d</string>
 </resources>

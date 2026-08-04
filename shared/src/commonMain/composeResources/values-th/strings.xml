@@ -69,4 +69,7 @@
     <string name="settings_last_check_label">ตรวจสอบเมื่อ %1$s</string>
     <string name="builder_hint_pool">แตะการ์ดเพื่อเพิ่มลงในเด็ค</string>
     <string name="builder_hint_deck">แตะการ์ดเพื่อนำออกจากเด็ค</string>
+    <string name="deck_view_edit">แก้ไขเด็ค</string>
+    <string name="deck_curve_peak">จุดสูงสุดที่ %1$s</string>
+    <string name="library_shown_count">แสดง %1$d</string>
 </resources>

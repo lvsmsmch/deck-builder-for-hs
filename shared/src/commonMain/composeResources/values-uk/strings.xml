@@ -58,4 +58,7 @@
     <string name="settings_card_data_summary">Карт: %1$d · %2$s</string>
     <string name="settings_footer_source">Дані карт — HearthstoneJSON</string>
     <string name="settings_last_check_label">Перевірено %1$s</string>
+    <string name="deck_view_edit">Редагувати</string>
+    <string name="deck_curve_peak">Пік на %1$s</string>
+    <string name="library_shown_count">Показано %1$d</string>
 </resources>

@@ -376,4 +376,7 @@
     <string name="settings_card_data_summary">%1$d cards · %2$s</string>
     <string name="settings_footer_source">Card data from HearthstoneJSON</string>
     <string name="settings_last_check_label">Last checked %1$s</string>
+    <string name="deck_view_edit">Edit deck</string>
+    <string name="deck_curve_peak">Peak at %1$s</string>
+    <string name="library_shown_count">Showing %1$d</string>
 </resources>

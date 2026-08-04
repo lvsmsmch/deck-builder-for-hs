@@ -351,4 +351,7 @@
     <string name="settings_last_check_label">Geprüft am %1$s</string>
     <string name="builder_hint_pool">Tippe auf eine Karte, um sie zum Deck hinzuzufügen</string>
     <string name="builder_hint_deck">Tippe auf eine Karte, um sie aus dem Deck zu entfernen</string>
+    <string name="deck_view_edit">Deck bearbeiten</string>
+    <string name="deck_curve_peak">Spitze bei %1$s</string>
+    <string name="library_shown_count">%1$d angezeigt</string>
 </resources>

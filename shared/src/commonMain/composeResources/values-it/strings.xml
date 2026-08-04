@@ -69,4 +69,7 @@
     <string name="settings_last_check_label">Controllato il %1$s</string>
     <string name="builder_hint_pool">Tocca una carta per aggiungerla al mazzo</string>
     <string name="builder_hint_deck">Tocca una carta per rimuoverla dal mazzo</string>
+    <string name="deck_view_edit">Modifica mazzo</string>
+    <string name="deck_curve_peak">Picco a %1$s</string>
+    <string name="library_shown_count">%1$d mostrate</string>
 </resources>

@@ -351,4 +351,7 @@
     <string name="settings_last_check_label">Vérifié le %1$s</string>
     <string name="builder_hint_pool">Touchez une carte pour l’ajouter au deck</string>
     <string name="builder_hint_deck">Touchez une carte pour la retirer du deck</string>
+    <string name="deck_view_edit">Modifier le deck</string>
+    <string name="deck_curve_peak">Pic à %1$s</string>
+    <string name="library_shown_count">%1$d affichées</string>
 </resources>

@@ -351,4 +351,7 @@
     <string name="settings_last_check_label">Diperiksa %1$s</string>
     <string name="builder_hint_pool">Ketik kad untuk menambahkannya ke dek</string>
     <string name="builder_hint_deck">Ketik kad untuk mengeluarkannya dari dek</string>
+    <string name="deck_view_edit">Ubah dek</string>
+    <string name="deck_curve_peak">Puncak pada %1$s</string>
+    <string name="library_shown_count">%1$d dipaparkan</string>
 </resources>

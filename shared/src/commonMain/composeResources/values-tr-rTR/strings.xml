@@ -69,4 +69,7 @@
     <string name="settings_last_check_label">Son kontrol: %1$s</string>
     <string name="builder_hint_pool">Desteye eklemek için karta dokun</string>
     <string name="builder_hint_deck">Desteden çıkarmak için karta dokun</string>
+    <string name="deck_view_edit">Desteyi düzenle</string>
+    <string name="deck_curve_peak">Zirve: %1$s</string>
+    <string name="library_shown_count">%1$d gösteriliyor</string>
 </resources>

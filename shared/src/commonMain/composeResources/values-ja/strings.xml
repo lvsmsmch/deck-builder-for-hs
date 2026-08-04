@@ -69,4 +69,7 @@
     <string name="settings_last_check_label">最終確認 %1$s</string>
     <string name="builder_hint_pool">カードをタップしてデッキに追加</string>
     <string name="builder_hint_deck">カードをタップしてデッキから削除</string>
+    <string name="deck_view_edit">デッキを編集</string>
+    <string name="deck_curve_peak">ピークは%1$s</string>
+    <string name="library_shown_count">%1$d件表示</string>
 </resources>

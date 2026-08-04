@@ -1,14 +1,15 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Bookmark
-import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,22 +17,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.vector.ImageVector
-import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.lvsmsmch.deckbuilder.resources.Res
-import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Cards
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.More
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Route
 import com.lvsmsmch.deckbuilder.presentation.ui.navigation.Saved
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
+import com.lvsmsmch.deckbuilder.resources.Res
+import com.lvsmsmch.deckbuilder.resources.nav_decks
+import com.lvsmsmch.deckbuilder.resources.nav_library
+import com.lvsmsmch.deckbuilder.resources.nav_more
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
+/**
+ * Three words on the receding container. The active tab is named in brass and
+ * carries a rule above it — the same hairline vocabulary as the rest of the app,
+ * so the bar reads as structure rather than as a widget.
+ */
 @Composable
 fun BottomBar(navController: NavController, destination: NavDestination?) {
     var selectedTab by rememberSaveable { mutableStateOf(BottomTab.Decks) }
@@ -39,15 +52,18 @@ fun BottomBar(navController: NavController, destination: NavDestination?) {
         destination?.toBottomTab()?.let { selectedTab = it }
     }
 
-    NavigationBar(containerColor = DeckBuilderColors.SurfaceContainer) {
-        TabItem(navController, selectedTab, BottomTab.Decks, Saved, Icons.Outlined.Bookmark, Res.string.nav_decks) {
-            selectedTab = BottomTab.Decks
-        }
-        TabItem(navController, selectedTab, BottomTab.Cards, Cards, Icons.Outlined.GridView, Res.string.nav_library) {
-            selectedTab = BottomTab.Cards
-        }
-        TabItem(navController, selectedTab, BottomTab.More, More, Icons.Outlined.MoreHoriz, Res.string.nav_more) {
-            selectedTab = BottomTab.More
+    Column(modifier = Modifier.fillMaxWidth().background(DeckBuilderColors.SurfaceContainer)) {
+        Hairline()
+        Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
+            TabItem(navController, selectedTab, BottomTab.Decks, Saved, Res.string.nav_decks) {
+                selectedTab = BottomTab.Decks
+            }
+            TabItem(navController, selectedTab, BottomTab.Cards, Cards, Res.string.nav_library) {
+                selectedTab = BottomTab.Cards
+            }
+            TabItem(navController, selectedTab, BottomTab.More, More, Res.string.nav_more) {
+                selectedTab = BottomTab.More
+            }
         }
     }
 }
@@ -58,30 +74,38 @@ private inline fun <reified T : Route> RowScope.TabItem(
     selectedTab: BottomTab,
     tab: BottomTab,
     route: T,
-    icon: ImageVector,
     labelRes: StringResource,
     crossinline onSelected: () -> Unit,
 ) {
-    NavigationBarItem(
-        selected = selectedTab == tab,
-        onClick = {
-            onSelected()
-            navController.navigate(route) {
-                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                launchSingleTop = true
-                restoreState = true
-            }
-        },
-        icon = { Icon(icon, contentDescription = null) },
-        label = { Text(stringResource(labelRes)) },
-        colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = DeckBuilderColors.Primary,
-            selectedTextColor = DeckBuilderColors.Primary,
-            indicatorColor = DeckBuilderColors.PrimarySoft,
-            unselectedIconColor = DeckBuilderColors.OnSurfaceDimmer,
-            unselectedTextColor = DeckBuilderColors.OnSurfaceDimmer,
-        ),
-    )
+    val selected = selectedTab == tab
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .clickable {
+                onSelected()
+                navController.navigate(route) {
+                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(if (selected) DeckBuilderColors.Primary else Color.Transparent),
+        )
+        Text(
+            text = stringResource(labelRes).uppercase(),
+            style = AppType.micro,
+            color = if (selected) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDimmer,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            modifier = Modifier.padding(top = 15.dp, bottom = 17.dp),
+        )
+    }
 }
 
 private enum class BottomTab { Decks, Cards, More }

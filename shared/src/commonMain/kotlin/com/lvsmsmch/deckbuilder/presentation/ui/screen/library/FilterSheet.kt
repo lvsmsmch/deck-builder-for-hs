@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.entities.CardClassScope
@@ -46,6 +47,9 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.spellSchoolLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
 import androidx.compose.ui.text.font.FontWeight
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
+import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
+import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
 /**
@@ -116,21 +120,11 @@ fun FilterSheet(
             }
 
             if (resultCount != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp)
-                        .height(46.dp)
-                        .clip(RoundedCornerShape(13.dp))
-                        .background(DeckBuilderColors.OnSurface)
-                        .clickable(onClick = onDismiss),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
+                ActionBar(applyNavigationInset = false) {
+                    PrimaryButton(
                         text = stringResource(Res.string.filters_show_results, resultCount),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = DeckBuilderColors.Surface,
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
                     )
                 }
             } else {
@@ -214,20 +208,20 @@ private fun Header(hasFilters: Boolean, onReset: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(Res.string.filters_title),
-            style = MaterialTheme.typography.titleMedium,
+            text = stringResource(Res.string.filters_title).uppercase(),
+            style = AppType.screenTitle.copy(fontSize = 22.sp),
             color = DeckBuilderColors.OnSurface,
             modifier = Modifier.weight(1f),
         )
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(99.dp))
+                .clip(RoundedCornerShape(4.dp))
                 .clickable(enabled = hasFilters, onClick = onReset)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 10.dp, vertical = 7.dp),
         ) {
             Text(
-                text = stringResource(Res.string.action_reset_all),
-                style = MaterialTheme.typography.labelMedium,
+                text = stringResource(Res.string.action_reset_all).uppercase(),
+                style = AppType.micro,
                 color = if (hasFilters) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDimmer,
             )
         }
@@ -245,24 +239,16 @@ private fun SectionHeader(title: String, selected: Int = 0) {
     ) {
         Text(
             text = title.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = DeckBuilderColors.OnSurfaceDim,
+            style = AppType.micro,
+            color = DeckBuilderColors.OnSurfaceDimmer,
         )
         if (selected > 0) {
-            Spacer(Modifier.width(6.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(DeckBuilderColors.PrimarySoft)
-                    .padding(horizontal = 5.dp, vertical = 1.dp),
-            ) {
-                Text(
-                    text = selected.toString(),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = DeckBuilderColors.Primary,
-                )
-            }
+            Spacer(Modifier.width(7.dp))
+            Text(
+                text = selected.toString(),
+                style = AppType.monoSmall,
+                color = DeckBuilderColors.Primary,
+            )
         }
     }
 }
@@ -276,18 +262,18 @@ private fun Chip(
 ) {
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(99.dp))
+            .clip(RoundedCornerShape(2.dp))
             .background(
-                if (active) DeckBuilderColors.PrimarySoft else DeckBuilderColors.SurfaceContainer,
+                if (active) DeckBuilderColors.PrimarySoft else androidx.compose.ui.graphics.Color.Transparent,
             )
             .border(
                 width = 1.dp,
-                color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OutlineSoft,
-                shape = RoundedCornerShape(99.dp),
+                color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.Outline,
+                shape = RoundedCornerShape(2.dp),
             )
             .clickable(onClick = onClick)
-            .height(44.dp)
-            .padding(horizontal = 14.dp),
+            .height(38.dp)
+            .padding(horizontal = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
@@ -297,12 +283,12 @@ private fun Chip(
                     .clip(CircleShape)
                     .background(leading),
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(7.dp))
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurface,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (active) DeckBuilderColors.OnSurface else DeckBuilderColors.OnSurfaceDim,
         )
     }
 }
@@ -319,13 +305,19 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(if (active) DeckBuilderColors.Primary else DeckBuilderColors.SurfaceContainer)
+                    .height(36.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(
+                        if (active) {
+                            DeckBuilderColors.Mana.copy(alpha = 0.14f)
+                        } else {
+                            androidx.compose.ui.graphics.Color.Transparent
+                        },
+                    )
                     .border(
                         1.dp,
-                        if (active) DeckBuilderColors.Primary else DeckBuilderColors.Outline,
-                        RoundedCornerShape(9.dp),
+                        if (active) DeckBuilderColors.Mana else DeckBuilderColors.Outline,
+                        RoundedCornerShape(2.dp),
                     )
                     .clickable {
                         val next = if (cost in draft.manaCosts) draft.manaCosts - cost else draft.manaCosts + cost
@@ -335,9 +327,8 @@ private fun ManaSection(draft: CardFilters, onChange: (CardFilters) -> Unit) {
             ) {
                 Text(
                     text = if (cost == 7) "7+" else cost.toString(),
-                    color = if (active) DeckBuilderColors.OnPrimary else DeckBuilderColors.OnSurfaceDim,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
+                    color = if (active) DeckBuilderColors.Mana else DeckBuilderColors.OnSurfaceDim,
+                    style = AppType.mono,
                 )
             }
         }
