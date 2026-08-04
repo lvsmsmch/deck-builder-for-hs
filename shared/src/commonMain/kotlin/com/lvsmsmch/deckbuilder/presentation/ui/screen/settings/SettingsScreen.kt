@@ -67,10 +67,12 @@ import com.lvsmsmch.deckbuilder.domain.entities.ThemeMode
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import com.lvsmsmch.deckbuilder.presentation.ui.components.Plate
+import com.lvsmsmch.deckbuilder.presentation.ui.components.GlassPane
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
 import com.lvsmsmch.deckbuilder.presentation.ui.components.StatusPill
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.compose.koinInject
@@ -113,7 +115,8 @@ fun SettingsScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
+    Backdrop(atmosphere = classAtmosphere("priest")) {
+      Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopBar(onBack)
 
@@ -307,6 +310,7 @@ fun SettingsScreen(
             },
         )
     }
+  }
 }
 
 @Composable
@@ -337,7 +341,7 @@ private fun SectionHeader(label: String) {
 
 @Composable
 private fun GroupCard(content: @Composable () -> Unit) {
-    Plate(modifier = Modifier.fillMaxWidth()) {
+    GlassPane(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth()) { content() }
     }
 }

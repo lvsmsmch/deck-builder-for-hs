@@ -106,7 +106,9 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
 import com.lvsmsmch.deckbuilder.presentation.ui.components.MicroLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.NoticeRow
-import com.lvsmsmch.deckbuilder.presentation.ui.components.Plate
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
+import com.lvsmsmch.deckbuilder.presentation.ui.components.GlassPane
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.QuietButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.SectionLabel
@@ -134,11 +136,11 @@ fun DeckViewScreen(
     val snackbar: SnackbarController = koinInject()
     val focusManager = LocalFocusManager.current
 
+    // No background and no inset here: the backdrop inside runs edge to edge and
+    // the screens below it take the status bar themselves.
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeckBuilderColors.Surface)
-            .statusBarsPadding()
             .pointerInput(Unit) {
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)
@@ -183,6 +185,7 @@ private fun DeckLoadingShell() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         Box(
@@ -237,7 +240,20 @@ private fun Body(
     var showStatsDialog by remember { mutableStateOf(false) }
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
 
-    Column(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+    Backdrop(
+        atmosphere = classAtmosphere(deck.heroClass?.slug),
+        blurRadius = 26.dp,
+        scrimFrom = 0.26f,
+        art = {
+            HeroTile(
+                cardId = DefaultHeroes.cardIdFor(deck.heroClass?.slug),
+                contentDescription = deck.heroClass?.name,
+                modifier = Modifier.fillMaxSize(),
+                verticalFocus = 0.22f,
+            )
+        },
+    ) {
+      Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.weight(1f)) {
             item {
                 DeckHero(
@@ -262,10 +278,10 @@ private fun Body(
             item {
                 val counts = remember(deck.cards) { manaCurveOf(deck.cards) }
                 val peak = remember(counts) { counts.indexOf(counts.maxOrNull() ?: 0) }
-                Plate(
+                GlassPane(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 14.dp, end = 14.dp, top = 10.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 10.dp),
                 ) {
                   Column(modifier = Modifier.padding(14.dp)) {
                     Row(
@@ -312,7 +328,7 @@ private fun Body(
 
             items(deck.cards, key = { it.card.id }) { entry ->
                 CardListRow(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 3.5.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     manaCost = entry.card.manaCost,
                     name = entry.card.name,
                     raritySlug = entry.card.rarity?.slug,
@@ -348,6 +364,7 @@ private fun Body(
                 modifier = Modifier.weight(1f),
             )
         }
+      }
     }
 
     previewCard?.let { card ->
@@ -387,6 +404,10 @@ private fun Body(
  * the slab, so the screen opens with the thing you recognise rather than with
  * a toolbar. Back and the overflow ride on top of it.
  */
+/**
+ * The deck's own name over its own art — the art is the screen's backdrop, so
+ * this is only the words and the two controls that ride on top of them.
+ */
 @Composable
 private fun DeckHero(
     deck: Deck,
@@ -400,44 +421,19 @@ private fun DeckHero(
     onCopyCode: () -> Unit,
     onInfo: () -> Unit,
 ) {
-    val gradient = classGradient(deck.heroClass?.slug)
-    val slab = DeckBuilderColors.Surface
-    Box(modifier = Modifier.fillMaxWidth().height(168.dp)) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Brush.linearGradient(listOf(gradient.first, gradient.second))),
-        ) {
-            HeroTile(
-                cardId = DefaultHeroes.cardIdFor(deck.heroClass?.slug),
-                contentDescription = deck.heroClass?.name,
-                modifier = Modifier.fillMaxSize(),
-                verticalFocus = 0.28f,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.06f to Color.Transparent,
-                        0.72f to slab.copy(alpha = 0.86f),
-                        1f to slab,
-                    ),
-                ),
-        )
+    Column(modifier = Modifier.fillMaxWidth().height(300.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(horizontal = 6.dp, vertical = 2.dp),
+                .padding(horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack) {
                 Icon(
                     Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = stringResource(Res.string.action_back),
-                    tint = Color.White,
+                    tint = DeckBuilderColors.OnSurface,
                 )
             }
             Spacer(Modifier.weight(1f))
@@ -446,7 +442,7 @@ private fun DeckHero(
                     Icon(
                         Icons.Outlined.MoreVert,
                         contentDescription = stringResource(Res.string.action_more),
-                        tint = Color.White,
+                        tint = DeckBuilderColors.OnSurface,
                     )
                 }
                 DeckActionsMenu(
@@ -459,29 +455,21 @@ private fun DeckHero(
                 )
             }
         }
+        Spacer(Modifier.weight(1f))
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 14.dp, end = 14.dp, bottom = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(7.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = displayName.uppercase(),
+                text = displayName,
                 style = AppType.heroTitle,
                 color = DeckBuilderColors.OnSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(9.dp),
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
                 FormatChip(deck.format)
-                Text(
-                    text = deck.heroClass?.slug?.let { classLabel(it) } ?: displayName,
-                    style = AppType.rowSub,
-                    color = DeckBuilderColors.OnSurfaceDim,
-                )
+                TagChip(text = deck.heroClass?.slug?.let { classLabel(it) } ?: displayName)
             }
         }
     }
@@ -490,7 +478,7 @@ private fun DeckHero(
 /** The three figures a player checks first, in a hairline-divided band. */
 @Composable
 private fun StatBand(deck: Deck) {
-    Plate(modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp)) {
+    GlassPane(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             StatValue(
                 value = "${deck.cardCount}/${deck.maxCardCount}",
@@ -530,6 +518,6 @@ private fun DeckWarnings(deck: Deck) {
     val incomplete = (deck.maxCardCount - deck.cardCount).takeIf { it > 0 } ?: return
     NoticeRow(
         text = stringResource(Res.string.deck_warning_incomplete, deck.cardCount, deck.maxCardCount),
-        modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
     )
 }

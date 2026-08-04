@@ -94,6 +94,8 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.IconButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -159,10 +161,10 @@ fun CardLibraryScreen(
             .collect { scrolling -> if (scrolling) focusManager.clearFocus() }
     }
 
-    Column(
+    Backdrop(atmosphere = classAtmosphere(null)) {
+      Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeckBuilderColors.Surface)
             .statusBarsPadding()
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { focusManager.clearFocus() })
@@ -280,6 +282,8 @@ fun CardLibraryScreen(
             onDismiss = { showFilterSheet = false },
             resultCount = state.totalCount,
         )
+    }
+
     }
 
     previewCard?.let { card ->

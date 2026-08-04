@@ -1,13 +1,13 @@
 package com.lvsmsmch.deckbuilder.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,9 +42,9 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Three words on the receding container. The active tab is named in brass and
- * carries a rule above it — the same hairline vocabulary as the rest of the app,
- * so the bar reads as structure rather than as a widget.
+ * Three words on a floating pane of glass, clear of the screen edge. The
+ * selected tab is a brighter pane inside it rather than an underline — this
+ * design says yes with light, not with rules.
  */
 @Composable
 fun BottomBar(navController: NavController, destination: NavDestination?) {
@@ -52,18 +53,24 @@ fun BottomBar(navController: NavController, destination: NavDestination?) {
         destination?.toBottomTab()?.let { selectedTab = it }
     }
 
-    Column(modifier = Modifier.fillMaxWidth().background(DeckBuilderColors.SurfaceContainer)) {
-        Hairline()
-        Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
-            TabItem(navController, selectedTab, BottomTab.Decks, Saved, Res.string.nav_decks) {
-                selectedTab = BottomTab.Decks
-            }
-            TabItem(navController, selectedTab, BottomTab.Cards, Cards, Res.string.nav_library) {
-                selectedTab = BottomTab.Cards
-            }
-            TabItem(navController, selectedTab, BottomTab.More, More, Res.string.nav_more) {
-                selectedTab = BottomTab.More
-            }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .clip(CircleShape)
+            .background(DeckBuilderColors.SurfaceContainer)
+            .border(1.dp, DeckBuilderColors.Outline, CircleShape)
+            .padding(5.dp),
+    ) {
+        TabItem(navController, selectedTab, BottomTab.Decks, Saved, Res.string.nav_decks) {
+            selectedTab = BottomTab.Decks
+        }
+        TabItem(navController, selectedTab, BottomTab.Cards, Cards, Res.string.nav_library) {
+            selectedTab = BottomTab.Cards
+        }
+        TabItem(navController, selectedTab, BottomTab.More, More, Res.string.nav_more) {
+            selectedTab = BottomTab.More
         }
     }
 }
@@ -78,9 +85,13 @@ private inline fun <reified T : Route> RowScope.TabItem(
     crossinline onSelected: () -> Unit,
 ) {
     val selected = selectedTab == tab
-    Column(
+    Box(
         modifier = Modifier
             .weight(1f)
+            .clip(CircleShape)
+            .background(
+                if (selected) DeckBuilderColors.SurfaceContainerHighest else Color.Transparent,
+            )
             .clickable {
                 onSelected()
                 navController.navigate(route) {
@@ -88,22 +99,16 @@ private inline fun <reified T : Route> RowScope.TabItem(
                     launchSingleTop = true
                     restoreState = true
                 }
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
+            }
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .background(if (selected) DeckBuilderColors.Primary else Color.Transparent),
-        )
         Text(
             text = stringResource(labelRes).uppercase(),
             style = AppType.micro,
-            color = if (selected) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDimmer,
+            color = if (selected) DeckBuilderColors.OnSurface else DeckBuilderColors.OnSurfaceDimmer,
             textAlign = TextAlign.Center,
             maxLines = 1,
-            modifier = Modifier.padding(top = 15.dp, bottom = 17.dp),
         )
     }
 }

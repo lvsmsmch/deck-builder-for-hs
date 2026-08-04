@@ -20,7 +20,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -239,13 +241,12 @@ private fun HomeScreen(
         }
     }
 
+    // The screens paint their own backdrop edge to edge, so the host stays
+    // transparent and the floating bar sits over the art rather than on a bar.
     Scaffold(
-        // Background must come BEFORE statusBarsPadding, otherwise the strip
-        // behind the status bar shows the window background (black in light theme).
-        modifier = Modifier
-            .background(DeckBuilderColors.Surface)
-            .statusBarsPadding(),
-        containerColor = DeckBuilderColors.Surface,
+        modifier = Modifier.background(DeckBuilderColors.Surface),
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0),
         bottomBar = {
             BottomBar(navController = navController, destination = backStackEntry?.destination)
         },
@@ -253,7 +254,7 @@ private fun HomeScreen(
         NavHost(
             navController = navController,
             startDestination = Saved,
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
             enterTransition = { fadeIn(tween(SCREEN_FADE_IN_MS)) },
             exitTransition = { fadeOut(tween(SCREEN_FADE_OUT_MS)) },
             popEnterTransition = { fadeIn(tween(SCREEN_FADE_IN_MS)) },

@@ -12,8 +12,15 @@ import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 /** The lighter stop of a class gradient, for the rare spot that needs one colour. */
 fun colorForClassSlug(slug: String?): Color = DeckBuilderColors.Class.accent(slug)
 
-/** Both stops, for art shards and hero bands. */
-fun classGradient(slug: String?): Pair<Color, Color> = DeckBuilderColors.Class.of(slug)
+/** The full four-stop atmosphere behind a screen. */
+fun classAtmosphere(slug: String?): DeckBuilderColors.Atmosphere = DeckBuilderColors.Class.of(slug)
+
+fun cardAtmosphere(card: Card): DeckBuilderColors.Atmosphere =
+    classAtmosphere(card.classes.firstOrNull()?.slug)
+
+/** Two stops, for the small places a thumbnail needs a wash. */
+fun classGradient(slug: String?): Pair<Color, Color> =
+    DeckBuilderColors.Class.of(slug).let { it.ground to it.light }
 
 fun primaryClassColor(card: Card): Color = colorForClassSlug(card.classes.firstOrNull()?.slug)
 

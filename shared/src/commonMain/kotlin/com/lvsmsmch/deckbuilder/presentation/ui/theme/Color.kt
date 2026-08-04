@@ -39,54 +39,58 @@ data class AppTokens(
 )
 
 /**
- * Nightforge. Neutrals are pulled toward blue rather than left grey, so the
- * card art — the only saturated thing in the app — reads as the warm element.
- * Two colours carry meaning and never drift: brass is action, blue is mana.
+ * Parallax. The interface owns no ground of its own: card art fills the screen
+ * and these surfaces are light laid over it. Every "surface" here is an alpha,
+ * so a pane borrows whatever colour is behind it.
  */
 internal val DarkAppTokens = AppTokens(
     isDark = true,
-    surface = Color(0xFF0B0F17),
-    surfaceContainer = Color(0xFF080B12),
-    surfaceContainerHigh = Color(0xFF161C29),
-    surfaceContainerHighest = Color(0xFF1F2736),
-    outline = Color(0xFF2B3446),
-    outlineSoft = Color(0xFF1E2534),
-    onSurface = Color(0xFFE8EBF3),
-    onSurfaceDim = Color(0xFF8A93A9),
-    onSurfaceDimmer = Color(0xFF5A6379),
-    primary = Color(0xFFE0A63C),
-    onPrimary = Color(0xFF14100A),
-    primarySoft = Color(0x1FE0A63C),
-    mana = Color(0xFF59B8FF),
-    manaDim = Color(0xFF1E3A57),
-    secondary = Color(0xFF8A6620),
-    error = Color(0xFFE4585B),
-    success = Color(0xFF4FBF8B),
+    // Only ever seen before the art paints, or behind a heavy blur.
+    surface = Color(0xFF0A0C12),
+    // The bar glass — nav and sheets, the heaviest panes in the app.
+    surfaceContainer = Color(0x1FFFFFFF),
+    // The pane glass everything else is made of.
+    surfaceContainerHigh = Color(0x12FFFFFF),
+    surfaceContainerHighest = Color(0x2EFFFFFF),
+    // Edges are light, never a colour.
+    outline = Color(0x29FFFFFF),
+    outlineSoft = Color(0x17FFFFFF),
+    onSurface = Color(0xFFFFFFFF),
+    onSurfaceDim = Color(0xB3FFFFFF),
+    onSurfaceDimmer = Color(0x70FFFFFF),
+    // Amber: the one thing you can act on.
+    primary = Color(0xFFFFB65C),
+    onPrimary = Color(0xFF241503),
+    primarySoft = Color(0x24FFB65C),
+    // Blue: mana, and nothing else.
+    mana = Color(0xFF7FD0FF),
+    manaDim = Color(0x4D7FD0FF),
+    secondary = Color(0xFFCE9450),
+    error = Color(0xFFFF8A8A),
+    success = Color(0xFF6EE7A8),
 )
 
-/**
- * Daylight: a slate-blue ground with pale cards laid on it. Deliberately not a
- * white page — the cards have to be the light thing in the room.
- */
+/** Daylight does not change the idea, only the light: the art is veiled in
+ *  white instead of black and the glass frosts pale. */
 internal val LightAppTokens = AppTokens(
     isDark = false,
-    surface = Color(0xFFD5DBE6),
-    surfaceContainer = Color(0xFFC7CEDC),
-    surfaceContainerHigh = Color(0xFFF1F4FA),
-    surfaceContainerHighest = Color(0xFFE3E8F1),
-    outline = Color(0xFFB3BCCC),
-    outlineSoft = Color(0xFFCFD6E2),
-    onSurface = Color(0xFF10151F),
-    onSurfaceDim = Color(0xFF4E586B),
-    onSurfaceDimmer = Color(0xFF7C8698),
-    primary = Color(0xFF96660F),
-    onPrimary = Color(0xFFFFF8EC),
-    primarySoft = Color(0x1A96660F),
-    mana = Color(0xFF0F6FCC),
-    manaDim = Color(0xFFC5DCF3),
-    secondary = Color(0xFFC9A55E),
-    error = Color(0xFFB8383B),
-    success = Color(0xFF1B7F55),
+    surface = Color(0xFFE9EDF3),
+    surfaceContainer = Color(0xC2FFFFFF),
+    surfaceContainerHigh = Color(0x9EFFFFFF),
+    surfaceContainerHighest = Color(0xE0FFFFFF),
+    outline = Color(0x1F181C2C),
+    outlineSoft = Color(0x12181C2C),
+    onSurface = Color(0xFF13161F),
+    onSurfaceDim = Color(0xAD13161F),
+    onSurfaceDimmer = Color(0x6B13161F),
+    primary = Color(0xFF8A5312),
+    onPrimary = Color(0xFFFFF4E4),
+    primarySoft = Color(0x1F8A5312),
+    mana = Color(0xFF0E63AE),
+    manaDim = Color(0x520E63AE),
+    secondary = Color(0xFF9A6A22),
+    error = Color(0xFFA33338),
+    success = Color(0xFF14764C),
 )
 
 /** Default to dark — Theme.kt overrides at the Composable boundary. */
@@ -141,21 +145,33 @@ object DeckBuilderColors {
      * rather than a flat chip colour. [Class.of] returns the pair; [Class.accent]
      * is the lighter stop, for the rare place that needs a single colour.
      */
-    object Class {
-        val DeathKnight = Color(0xFF1D4F5E) to Color(0xFF4FB0C8)
-        val DemonHunter = Color(0xFF2A4A16) to Color(0xFF6FBF3A)
-        val Druid = Color(0xFF4A3517) to Color(0xFFB98C4A)
-        val Hunter = Color(0xFF1F3D1C) to Color(0xFF4E8C4A)
-        val Mage = Color(0xFF173A5A) to Color(0xFF4FA3E3)
-        val Paladin = Color(0xFF6B4E12) to Color(0xFFF2C94C)
-        val Priest = Color(0xFF4A5566) to Color(0xFFDCE4EE)
-        val Rogue = Color(0xFF22262E) to Color(0xFF79839A)
-        val Shaman = Color(0xFF12325E) to Color(0xFF2A6FD6)
-        val Warlock = Color(0xFF3B2160) to Color(0xFF8B5CF6)
-        val Warrior = Color(0xFF5A1E17) to Color(0xFFC0392B)
-        val Neutral = Color(0xFF232A3A) to Color(0xFF5D6678)
+    /**
+     * Class art. Four stops each: ground, two lights and a floor, layered as
+     * radial gradients into something that reads as an illustration behind
+     * glass. Real card art replaces this wherever we have it.
+     */
+    data class Atmosphere(
+        val ground: Color,
+        val light: Color,
+        val highlight: Color,
+        val floor: Color,
+    )
 
-        fun of(slug: String?): Pair<Color, Color> = when (slug?.lowercase()) {
+    object Class {
+        val DeathKnight = Atmosphere(Color(0xFF0B2733), Color(0xFF2F8FA8), Color(0xFF7FE3F5), Color(0xFF06202C))
+        val DemonHunter = Atmosphere(Color(0xFF152608), Color(0xFF5FA82E), Color(0xFFC4F49A), Color(0xFF0B1704))
+        val Druid = Atmosphere(Color(0xFF2A1F0B), Color(0xFF9A7434), Color(0xFFE6C88A), Color(0xFF171003))
+        val Hunter = Atmosphere(Color(0xFF12220E), Color(0xFF4E8C4A), Color(0xFFB6E39C), Color(0xFF0A1607))
+        val Mage = Atmosphere(Color(0xFF0C2036), Color(0xFF2F74B8), Color(0xFF9FD6FF), Color(0xFF061524))
+        val Paladin = Atmosphere(Color(0xFF3A2A08), Color(0xFFC99A2A), Color(0xFFFFE9A8), Color(0xFF231903))
+        val Priest = Atmosphere(Color(0xFF232935), Color(0xFF7E8CA6), Color(0xFFEAF1FA), Color(0xFF161A22))
+        val Rogue = Atmosphere(Color(0xFF14161C), Color(0xFF4A5162), Color(0xFFA8B0C4), Color(0xFF0A0B0F))
+        val Shaman = Atmosphere(Color(0xFF0B1B36), Color(0xFF2A5FBF), Color(0xFF8FB6FF), Color(0xFF061024))
+        val Warlock = Atmosphere(Color(0xFF1F1034), Color(0xFF6B3FBF), Color(0xFFC4A0FF), Color(0xFF130A20))
+        val Warrior = Atmosphere(Color(0xFF320F0C), Color(0xFFB23A2A), Color(0xFFFF9A78), Color(0xFF1D0705))
+        val Neutral = Atmosphere(Color(0xFF171A22), Color(0xFF4C5464), Color(0xFF9AA3B5), Color(0xFF0D0F14))
+
+        fun of(slug: String?): Atmosphere = when (slug?.lowercase()) {
             "deathknight", "death-knight" -> DeathKnight
             "demonhunter", "demon-hunter" -> DemonHunter
             "druid" -> Druid
@@ -170,14 +186,15 @@ object DeckBuilderColors {
             else -> Neutral
         }
 
-        fun accent(slug: String?): Color = of(slug).second
+        fun accent(slug: String?): Color = of(slug).highlight
     }
 
-    /** Rarity dots — constant across themes; the gem colours are universal. */
+    /** Rarity dots. Legendary borrows the action colour — it is the one card
+     *  rarity people actually hunt for. */
     object Rarity {
-        val Common = Color(0xFF7E8798)
-        val Rare = Color(0xFF3B82F6)
-        val Epic = Color(0xFFA855F7)
-        val Legendary = Color(0xFFF0A020)
+        val Common = Color(0xFF9AA3B5)
+        val Rare = Color(0xFF6AA8FF)
+        val Epic = Color(0xFFC79BFF)
+        val Legendary = Color(0xFFFFB65C)
     }
 }

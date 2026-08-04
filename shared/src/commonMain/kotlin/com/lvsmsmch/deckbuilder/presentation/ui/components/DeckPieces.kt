@@ -33,56 +33,50 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.lvsmsmch.deckbuilder.domain.entities.DeckCardEntry
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 
-/** Hexagonal mana crystal, the shape used on every real Hearthstone card. */
-private val GemShape = GenericShape { size, _ ->
-    val w = size.width
-    val h = size.height
-    moveTo(w * 0.5f, 0f)
-    lineTo(w, h * 0.26f)
-    lineTo(w, h * 0.74f)
-    lineTo(w * 0.5f, h)
-    lineTo(0f, h * 0.74f)
-    lineTo(0f, h * 0.26f)
-    close()
-}
-
 /**
- * Mana cost. Blue lives here and in the curve, nowhere else, so a glance at a
- * screen tells you which numbers are costs. [size] is the crystal height.
+ * Mana. A lit bead rather than a cut hexagon — on this design everything the
+ * finger meets is round, and blue appears here and in the curve, nowhere else.
  */
 @Composable
 fun ManaGem(
     cost: Int,
     modifier: Modifier = Modifier,
-    size: Dp = 29.dp,
+    size: Dp = 30.dp,
 ) {
     val mana = DeckBuilderColors.Mana
     Box(
         modifier = modifier
-            .width(size * (26f / 29f))
-            .height(size)
-            .clip(GemShape)
+            .size(size)
+            .clip(CircleShape)
             .background(
-                Brush.linearGradient(
-                    listOf(mana, mana.copy(alpha = 1f).darken(0.45f)),
+                Brush.linearGradient(listOf(mana, mana.darken(0.45f))),
+            )
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(Color.White.copy(alpha = 0.45f), Color.Transparent),
+                    radius = with(LocalDensity.current) { size.toPx() } * 0.7f,
                 ),
             ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = cost.toString(),
-            color = if (DeckBuilderColors.IsDark) Color(0xFF04101B) else Color.White,
+            color = if (DeckBuilderColors.IsDark) Color(0xFF06121F) else Color.White,
             textAlign = TextAlign.Center,
-            style = AppType.gem.copy(fontSize = AppType.gem.fontSize * (size / 29.dp)),
+            style = AppType.gem.copy(fontSize = AppType.gem.fontSize * (size / 30.dp)),
         )
     }
 }
@@ -125,9 +119,9 @@ fun MicroLabel(
 }
 
 /**
- * The core list row. Art enters as a shard, the crystal sits over it, and the
- * trailing slot carries whatever the screen needs — a copy count, an add
- * affordance, nothing at all. 54dp, hairline-separated, never a floating card.
+ * The core row: a pane of glass carrying the card's own picture. The thumbnail
+ * is the point — a list should look like a shelf of cards, not a column of
+ * names with a tint behind them.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -146,43 +140,35 @@ fun CardListRow(
     trailing: @Composable (() -> Unit)? = null,
 ) {
     val alpha = if (dimmed) 0.4f else 1f
-    val shape = RoundedCornerShape(2.dp)
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .clip(shape)
-            .background(DeckBuilderColors.SurfaceContainerHigh)
-            .border(1.dp, DeckBuilderColors.Outline, shape)
-            .then(
-                if (onClick != null) {
-                    Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
-                } else {
-                    Modifier
-                }
-            ),
-    ) {
-        ArtShard(
-            artUrl = artUrl,
-            gradient = gradient,
-            modifier = Modifier.width(152.dp).fillMaxHeight(),
-            alpha = alpha * 0.85f,
-            // The subtitle runs across this art, so it steps back further than
-            // the deck row's, where the name is large enough to hold its own.
-            fadeFrom = 0.08f,
-            veil = 0.58f,
-        )
+    GlassPane(modifier = modifier.fillMaxWidth().alpha(alpha)) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (onClick != null) {
+                        Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+                    } else {
+                        Modifier
+                    },
+                )
+                .padding(horizontal = 13.dp, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ManaGem(cost = manaCost, size = 29.dp, modifier = Modifier.alpha(alpha))
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(13.dp)),
+            ) {
+                CardThumb(artUrl = artUrl, gradient = gradient)
+            }
+            ManaGem(cost = manaCost, size = 30.dp)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
                     text = name,
                     style = AppType.rowName,
-                    color = DeckBuilderColors.OnSurface.copy(alpha = alpha),
+                    color = DeckBuilderColors.OnSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -190,14 +176,34 @@ fun CardListRow(
                     Text(
                         text = subtitle,
                         style = AppType.rowSub,
-                        color = DeckBuilderColors.OnSurfaceDimmer.copy(alpha = alpha),
+                        color = DeckBuilderColors.OnSurfaceDimmer,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
-            if (showRarityDot) RarityDot(raritySlug, modifier = Modifier.alpha(alpha))
+            if (showRarityDot) RarityDot(raritySlug)
             trailing?.invoke()
+        }
+    }
+}
+
+/** The card's own art, cropped square for a row or a grid cell. */
+@Composable
+fun CardThumb(
+    artUrl: String?,
+    gradient: Pair<Color, Color>,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier.fillMaxSize().background(Brush.linearGradient(gradient.toList()))) {
+        if (!artUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = artUrl,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.2f),
+            )
         }
     }
 }
@@ -217,15 +223,15 @@ fun CopyCount(count: Int, dimmed: Boolean = false) {
 fun AddChip() {
     Box(
         modifier = Modifier
-            .size(26.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, DeckBuilderColors.Secondary, RoundedCornerShape(4.dp)),
+            .size(30.dp)
+            .clip(CircleShape)
+            .background(DeckBuilderColors.Primary),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = "+",
-            style = AppType.button.copy(fontSize = 17.sp, letterSpacing = 0.sp),
-            color = DeckBuilderColors.Primary,
+            style = AppType.button.copy(fontSize = 18.sp, letterSpacing = 0.sp),
+            color = DeckBuilderColors.OnPrimary,
         )
     }
 }
@@ -271,8 +277,9 @@ fun ManaCurve(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(
-                                    if (value == 0) 2.dp else barHeight * (value.toFloat() / max),
+                                    if (value == 0) 3.dp else barHeight * (value.toFloat() / max),
                                 )
+                                .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 3.dp, bottomEnd = 3.dp))
                                 .background(
                                     if (value == 0) {
                                         Brush.verticalGradient(
@@ -359,7 +366,8 @@ fun CurveSpark(
             Box(
                 modifier = Modifier
                     .width(barWidth)
-                    .height(if (value == 0) 1.dp else height * (value.toFloat() / max))
+                    .height(if (value == 0) 2.dp else height * (value.toFloat() / max))
+                    .clip(RoundedCornerShape(2.dp))
                     .background(
                         when {
                             value == 0 -> DeckBuilderColors.OutlineSoft
@@ -379,13 +387,15 @@ fun DeckProgress(cardCount: Int, maxCardCount: Int, modifier: Modifier = Modifie
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(2.dp)
-            .background(DeckBuilderColors.Outline),
+            .height(4.dp)
+            .clip(RoundedCornerShape(3.dp))
+            .background(DeckBuilderColors.OutlineSoft),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(fraction)
                 .fillMaxHeight()
+                .clip(RoundedCornerShape(3.dp))
                 .background(DeckBuilderColors.Primary),
         )
     }

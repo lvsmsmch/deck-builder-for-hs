@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -24,9 +25,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
@@ -46,7 +49,7 @@ fun ScreenHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 12.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 14.dp),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -55,7 +58,7 @@ fun ScreenHeader(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = title.uppercase(),
+                text = title,
                 style = AppType.screenTitle,
                 color = DeckBuilderColors.OnSurface,
                 maxLines = 1,
@@ -76,44 +79,49 @@ fun ScreenHeader(
     }
 }
 
-/** Bordered, tracked capitals. Quiet by design — it is not the screen's action. */
+/** A pill of glass. Quiet by design — it is not the screen's action. */
 @Composable
 fun GhostButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     trailingIcon: ImageVector? = null,
+    active: Boolean = false,
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(2.dp))
-            .background(DeckBuilderColors.SurfaceContainerHigh)
-            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(2.dp))
+            .clip(CircleShape)
+            .background(DeckBuilderColors.SurfaceContainer)
+            .border(
+                1.dp,
+                if (active) DeckBuilderColors.Primary.copy(alpha = 0.6f) else DeckBuilderColors.Outline,
+                CircleShape,
+            )
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 7.dp),
+            .padding(start = 13.dp, end = if (trailingIcon != null) 9.dp else 13.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         Text(
             text = text.uppercase(),
-            style = AppType.microSmall,
-            color = DeckBuilderColors.OnSurfaceDim,
+            style = AppType.micro,
+            color = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.widthIn(max = 132.dp),
+            modifier = Modifier.widthIn(max = 104.dp),
         )
         if (trailingIcon != null) {
             Icon(
                 imageVector = trailingIcon,
                 contentDescription = null,
-                tint = DeckBuilderColors.OnSurfaceDim,
+                tint = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
                 modifier = Modifier.size(14.dp),
             )
         }
     }
 }
 
-/** Square bordered icon control; [active] turns it brass. */
+/** Round glass control; [active] turns it amber. */
 @Composable
 fun BorderedIconButton(
     icon: ImageVector,
@@ -124,13 +132,13 @@ fun BorderedIconButton(
 ) {
     Box(
         modifier = modifier
-            .size(38.dp)
-            .clip(RoundedCornerShape(2.dp))
-            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .size(42.dp)
+            .clip(CircleShape)
+            .background(DeckBuilderColors.SurfaceContainer)
             .border(
                 1.dp,
-                if (active) DeckBuilderColors.Primary else DeckBuilderColors.Outline,
-                RoundedCornerShape(2.dp),
+                if (active) DeckBuilderColors.Primary.copy(alpha = 0.6f) else DeckBuilderColors.Outline,
+                CircleShape,
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -139,7 +147,7 @@ fun BorderedIconButton(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = if (active) DeckBuilderColors.Primary else DeckBuilderColors.OnSurfaceDim,
-            modifier = Modifier.size(18.dp),
+            modifier = Modifier.size(19.dp),
         )
     }
 }
@@ -156,8 +164,8 @@ fun PrimaryButton(
     val alpha = if (enabled) 1f else 0.4f
     Box(
         modifier = modifier
-            .height(44.dp)
-            .clip(RoundedCornerShape(2.dp))
+            .height(50.dp)
+            .clip(CircleShape)
             .background(DeckBuilderColors.Primary.copy(alpha = alpha))
             .clickable(enabled = enabled && !loading, onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -189,16 +197,17 @@ fun QuietButton(
 ) {
     Box(
         modifier = modifier
-            .height(44.dp)
-            .clip(RoundedCornerShape(2.dp))
-            .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(2.dp))
+            .height(50.dp)
+            .clip(CircleShape)
+            .background(DeckBuilderColors.SurfaceContainer)
+            .border(1.dp, DeckBuilderColors.Outline, CircleShape)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text.uppercase(),
             style = AppType.button,
-            color = DeckBuilderColors.OnSurfaceDim.copy(alpha = if (enabled) 1f else 0.4f),
+            color = DeckBuilderColors.OnSurface.copy(alpha = if (enabled) 1f else 0.4f),
             maxLines = 1,
         )
     }
@@ -212,35 +221,42 @@ fun ActionBar(
     applyNavigationInset: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxWidth().background(DeckBuilderColors.SurfaceContainer)) {
-        Hairline()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(if (applyNavigationInset) Modifier.navigationBarsPadding() else Modifier)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            content = content,
-        )
-    }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (applyNavigationInset) Modifier.navigationBarsPadding() else Modifier)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        content = content,
+    )
 }
 
 /**
- * The card. Everything the eye should treat as one object gets one of these:
- * a row, a panel, a settings group. Pale plate, hairline edge, corners all but
- * square — laid on the ground rather than carved out of it.
+ * Glass. Panes carry no fill of their own — they are a light laid over the art,
+ * with a brighter edge along the top where the light would catch. This is the
+ * only container in the app.
  */
 @Composable
-fun Plate(
+fun GlassPane(
     modifier: Modifier = Modifier,
+    radius: Dp = 20.dp,
+    heavy: Boolean = false,
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(2.dp)
+    val shape = RoundedCornerShape(radius)
     Box(
         modifier = modifier
             .clip(shape)
-            .background(DeckBuilderColors.SurfaceContainerHigh)
+            .background(
+                if (heavy) DeckBuilderColors.SurfaceContainer else DeckBuilderColors.SurfaceContainerHigh,
+            )
+            .background(
+                Brush.verticalGradient(
+                    0f to DeckBuilderColors.OnSurface.copy(alpha = 0.07f),
+                    0.35f to Color.Transparent,
+                ),
+            )
             .border(1.dp, DeckBuilderColors.Outline, shape)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
@@ -262,9 +278,10 @@ fun TagChip(
         color = color,
         maxLines = 1,
         modifier = modifier
-            .clip(RoundedCornerShape(2.dp))
-            .border(1.dp, borderColor, RoundedCornerShape(2.dp))
-            .padding(horizontal = 6.dp, vertical = 3.dp),
+            .clip(CircleShape)
+            .background(DeckBuilderColors.SurfaceContainer)
+            .border(1.dp, borderColor, CircleShape)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
     )
 }
 
@@ -277,10 +294,10 @@ fun StatusPill(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(2.dp))
-            .background(color.copy(alpha = 0.10f))
-            .border(1.dp, color.copy(alpha = 0.45f), RoundedCornerShape(2.dp))
-            .padding(horizontal = 7.dp, vertical = 4.dp),
+            .clip(CircleShape)
+            .background(color.copy(alpha = 0.12f))
+            .border(1.dp, color.copy(alpha = 0.45f), CircleShape)
+            .padding(horizontal = 11.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -322,9 +339,10 @@ fun NoticeRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(color.copy(alpha = 0.08f))
-            .border(1.dp, color.copy(alpha = 0.5f))
-            .padding(horizontal = 11.dp, vertical = 9.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .background(color.copy(alpha = 0.13f))
+            .border(1.dp, color.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(9.dp),
     ) {

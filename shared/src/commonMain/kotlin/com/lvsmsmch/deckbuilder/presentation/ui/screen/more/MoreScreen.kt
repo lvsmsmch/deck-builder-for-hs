@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GridView
@@ -22,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.presentation.ui.components.Hairline
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
@@ -32,11 +35,8 @@ fun MoreScreen(
     onOpenSettings: () -> Unit,
     onOpenCardLibrary: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DeckBuilderColors.Surface),
-    ) {
+    Backdrop(atmosphere = classAtmosphere("rogue")) {
+      Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         ScreenHeader(title = stringResource(Res.string.more_title))
         Hairline()
         HubRow(
@@ -52,6 +52,7 @@ fun MoreScreen(
             onClick = onOpenSettings,
         )
         Hairline()
+      }
     }
 }
 

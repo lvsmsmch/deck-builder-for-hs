@@ -101,7 +101,10 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.CopyCount
 import com.lvsmsmch.deckbuilder.presentation.ui.components.EmptyState
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CurveSpark
 import com.lvsmsmch.deckbuilder.presentation.ui.components.manaCurveOf
-import com.lvsmsmch.deckbuilder.presentation.ui.components.ArtShard
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ArtPatch
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
+import com.lvsmsmch.deckbuilder.presentation.ui.components.GlassPane
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
 import com.lvsmsmch.deckbuilder.presentation.ui.components.cardGradient
 import com.lvsmsmch.deckbuilder.presentation.ui.components.classGradient
@@ -112,6 +115,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.SortMenuButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
 import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroPortrait
+import com.lvsmsmch.deckbuilder.presentation.ui.components.HeroTile
 import com.lvsmsmch.deckbuilder.presentation.ui.components.colorForClassSlug
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.CardLabels
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
@@ -179,7 +183,20 @@ fun DeckBuilderScreen(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
+    Backdrop(
+        atmosphere = classAtmosphere(state.chosenClass?.slug),
+        art = state.chosenClass?.slug?.let { slug ->
+            {
+                HeroTile(
+                    cardId = DefaultHeroes.cardIdFor(slug),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    verticalFocus = 0.2f,
+                )
+            }
+        },
+    ) {
+      Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         when (state.phase) {
             Phase.Loading -> BuilderLoadingView(onBack = requestExit)
             Phase.ClassPicker -> ClassPickerView(
@@ -201,7 +218,7 @@ fun DeckBuilderScreen(
                 onOpenCard = onOpenCard,
             )
         }
-
+      }
     }
 
     PlatformBackHandler { requestExit() }
@@ -351,16 +368,17 @@ private fun ClassPickerView(
     slugs: List<String>,
     onPick: (String) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+    Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(
             title = stringResource(Res.string.builder_new_deck),
             subtitle = stringResource(Res.string.builder_pick_class),
         )
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            verticalArrangement = Arrangement.spacedBy(1.dp),
-            horizontalArrangement = Arrangement.spacedBy(1.dp),
-            modifier = Modifier.fillMaxSize().background(DeckBuilderColors.OutlineSoft),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(9.dp),
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
+            modifier = Modifier.fillMaxSize(),
         ) {
             items(slugs, key = { it }) { slug ->
                 ClassTile(slug = slug, onClick = { onPick(slug) })
@@ -369,42 +387,48 @@ private fun ClassPickerView(
     }
 }
 
-/**
- * The same angled cut used in the deck list, so the class you pick here is
- * visibly the thing you will see there.
- */
+/** A window onto the class — the same object the deck list shows. */
 @Composable
 private fun ClassTile(slug: String, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(18.dp)
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(92.dp)
-            .background(DeckBuilderColors.Surface)
+            .height(88.dp)
+            .clip(shape)
+            .border(1.dp, DeckBuilderColors.Outline, shape)
             .clickable(onClick = onClick),
     ) {
-        ArtShard(
-            gradient = classGradient(slug),
+        ArtPatch(
+            atmosphere = classAtmosphere(slug),
             modifier = Modifier.fillMaxSize(),
-            skew = 0.dp,
-            fadeFrom = 0.45f,
-        ) {
-            HeroPortrait(
-                cardId = DefaultHeroes.cardIdFor(slug),
-                fallbackTint = Brush.linearGradient(classGradient(slug).toList()),
-                contentDescription = classLabel(slug),
-                modifier = Modifier.matchParentSize(),
-                zoomed = true,
-            )
-        }
+            art = {
+                HeroPortrait(
+                    cardId = DefaultHeroes.cardIdFor(slug),
+                    fallbackTint = Brush.linearGradient(classGradient(slug).toList()),
+                    contentDescription = classLabel(slug),
+                    modifier = Modifier.matchParentSize(),
+                    zoomed = true,
+                )
+            },
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color.Transparent,
+                        1f to if (DeckBuilderColors.IsDark) Color(0xC706080C) else Color(0xE0F8FAFD),
+                    ),
+                ),
+        )
         Text(
-            text = classLabel(slug).uppercase(),
+            text = classLabel(slug),
             style = AppType.deckName.copy(fontSize = 15.sp),
             color = DeckBuilderColors.OnSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(10.dp),
+            modifier = Modifier.align(Alignment.BottomStart).padding(11.dp),
         )
     }
 }
@@ -455,7 +479,7 @@ private fun EditingView(
             .collect { scrolling -> if (scrolling) focusManager.clearFocus() }
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface)) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Header(
             chosenClass = state.chosenClass,
             deckName = state.deckName,
@@ -500,8 +524,8 @@ private fun EditingView(
 
                 else -> LazyColumn(
                     state = poolListState,
-                    contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 14.dp),
-                    verticalArrangement = Arrangement.spacedBy(7.dp),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(Unit) {
@@ -620,64 +644,58 @@ private fun DeckStrip(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(DeckBuilderColors.SurfaceContainer),
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Hairline()
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 12.dp),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onOpenDeck)
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+        GlassPane(modifier = Modifier.fillMaxWidth(), onClick = onOpenDeck) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(11.dp),
             ) {
-                MicroLabel(stringResource(Res.string.builder_deck_strip_label))
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = state.cardCount.toString(),
-                        style = AppType.figure.copy(fontSize = 22.sp),
-                        color = DeckBuilderColors.Primary,
-                    )
-                    Text(
-                        text = "/${state.maxDeckSize}",
-                        style = AppType.figure.copy(fontSize = 22.sp),
-                        color = DeckBuilderColors.OnSurfaceDimmer,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    MicroLabel(stringResource(Res.string.builder_deck_strip_label))
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = state.cardCount.toString(),
+                            style = AppType.figure.copy(fontSize = 20.sp),
+                            color = DeckBuilderColors.Primary,
+                        )
+                        Text(
+                            text = " / ${state.maxDeckSize}",
+                            style = AppType.figure.copy(fontSize = 20.sp),
+                            color = DeckBuilderColors.OnSurfaceDimmer,
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    CurveSpark(counts = curve, barWidth = 4.dp, height = 24.dp)
+                    Icon(
+                        Icons.Outlined.KeyboardArrowUp,
+                        contentDescription = null,
+                        tint = DeckBuilderColors.OnSurfaceDimmer,
+                        modifier = Modifier.size(18.dp),
                     )
                 }
-                Spacer(Modifier.weight(1f))
-                // Fixed bar width: stretched to fill, a single populated bucket
-                // reads as a stray rectangle rather than a curve.
-                CurveSpark(counts = curve, barWidth = 4.dp, height = 22.dp)
-                Icon(
-                    Icons.Outlined.KeyboardArrowUp,
-                    contentDescription = null,
-                    tint = DeckBuilderColors.OnSurfaceDimmer,
-                    modifier = Modifier.size(18.dp),
-                )
+                DeckProgress(cardCount = state.cardCount, maxCardCount = state.maxDeckSize)
+                if (state.saveError != null) {
+                    Text(
+                        text = state.saveError.resolve(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = DeckBuilderColors.Error,
+                    )
+                }
             }
-            if (state.saveError != null) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = state.saveError.resolve(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = DeckBuilderColors.Error,
-                )
-            }
-            Spacer(Modifier.height(10.dp))
-            PrimaryButton(
-                text = stringResource(Res.string.action_save_deck),
-                onClick = onSave,
-                enabled = state.canSave,
-                loading = state.isSaving,
-                modifier = Modifier.fillMaxWidth(),
-            )
         }
+        PrimaryButton(
+            text = stringResource(Res.string.action_save_deck),
+            onClick = onSave,
+            enabled = state.canSave,
+            loading = state.isSaving,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -798,8 +816,8 @@ private fun Header(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = (deckName ?: classText).uppercase(),
-                style = AppType.screenTitle,
+                text = deckName ?: classText,
+                style = AppType.screenTitle.copy(fontSize = 23.sp),
                 color = DeckBuilderColors.OnSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

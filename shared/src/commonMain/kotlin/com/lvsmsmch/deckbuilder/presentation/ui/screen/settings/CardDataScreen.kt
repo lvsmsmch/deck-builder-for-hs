@@ -48,6 +48,8 @@ import com.lvsmsmch.deckbuilder.presentation.UiText
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CardDataUpdateDialog
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenTopBar
 import com.lvsmsmch.deckbuilder.presentation.ui.components.showAppSnackbar
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.DeckBuilderColors
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -72,7 +74,8 @@ fun CardDataScreen(
         viewModel.refreshCardDataMetadata()
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(DeckBuilderColors.Surface).statusBarsPadding()) {
+    Backdrop(atmosphere = classAtmosphere("priest")) {
+      Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         Column(modifier = Modifier.fillMaxSize()) {
             ScreenTopBar(
                 title = stringResource(Res.string.more_card_data),
@@ -137,6 +140,7 @@ fun CardDataScreen(
             },
         )
     }
+  }
 }
 
 @Composable

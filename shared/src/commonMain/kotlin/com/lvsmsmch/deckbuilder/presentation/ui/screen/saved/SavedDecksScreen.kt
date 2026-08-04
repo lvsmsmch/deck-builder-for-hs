@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -56,7 +58,8 @@ import com.lvsmsmch.deckbuilder.resources.*
 import com.lvsmsmch.deckbuilder.domain.entities.DeckPreview
 import com.lvsmsmch.deckbuilder.domain.entities.GameFormat
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
-import com.lvsmsmch.deckbuilder.presentation.ui.components.ArtShard
+import com.lvsmsmch.deckbuilder.presentation.ui.components.ArtPatch
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
 import com.lvsmsmch.deckbuilder.presentation.ui.components.CurveSpark
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DeckStatsDialogForCode
 import com.lvsmsmch.deckbuilder.presentation.ui.components.DefaultHeroes
@@ -66,7 +69,7 @@ import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.QuietButton
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ScreenHeader
 import com.lvsmsmch.deckbuilder.presentation.ui.components.TagChip
-import com.lvsmsmch.deckbuilder.presentation.ui.components.classGradient
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.components.formatColor
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.classLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.formatLabel
@@ -104,11 +107,20 @@ fun SavedDecksScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DeckBuilderColors.Surface),
+    Backdrop(
+        atmosphere = classAtmosphere(state.sortedDecks.firstOrNull()?.classSlug),
+        art = state.sortedDecks.firstOrNull()?.let { first ->
+            {
+                HeroTile(
+                    cardId = DefaultHeroes.cardIdFor(first.classSlug) ?: first.heroSlug,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    verticalFocus = 0.2f,
+                )
+            }
+        },
     ) {
+      Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         ScreenHeader(
             title = stringResource(Res.string.saved_title),
             subtitle = if (state.decks.isEmpty()) {
@@ -163,6 +175,7 @@ fun SavedDecksScreen(
                 modifier = Modifier.weight(1f),
             )
         }
+      }
     }
 
     if (showChooser) {
@@ -268,9 +281,9 @@ private fun DeckSort.labelRes(): org.jetbrains.compose.resources.StringResource 
 }
 
 /**
- * Deck row. The class is the art, cut on an angle and faded into the slab; the
- * curve shows the deck's shape before you open it, and the count says whether
- * it is finished. 78dp, hairline-separated — never a floating tile.
+ * A deck is a window onto its own class art, with the name set large in the
+ * serif straight onto the picture. The curve and the overflow ride in the top
+ * corner, where the illustration is emptiest.
  */
 @Composable
 private fun SavedDeckRow(
@@ -282,74 +295,51 @@ private fun SavedDeckRow(
     onDelete: () -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
-    val gradient = classGradient(deck.classSlug)
+    val atmosphere = classAtmosphere(deck.classSlug)
+    val shape = RoundedCornerShape(20.dp)
+    val isDark = DeckBuilderColors.IsDark
 
-    val shape = RoundedCornerShape(2.dp)
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(78.dp)
+            .height(138.dp)
             .clip(shape)
-            .background(DeckBuilderColors.SurfaceContainerHigh)
             .border(1.dp, DeckBuilderColors.Outline, shape)
             .clickable(onClick = onClick),
     ) {
-        ArtShard(
-            gradient = gradient,
-            modifier = Modifier.width(168.dp).fillMaxHeight(),
-            // The format chip and class name run across this art, and they are
-            // small — the hero steps back further here than in a card row.
-            veil = 0.62f,
-        ) {
-            HeroTile(
-                cardId = DefaultHeroes.cardIdFor(deck.classSlug) ?: deck.heroSlug,
-                contentDescription = deck.className,
-                modifier = Modifier.fillMaxSize(),
-                verticalFocus = 0.26f,
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxSize().padding(start = 14.dp, end = 2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-            ) {
-                Text(
-                    text = deck.name.uppercase(),
-                    style = AppType.deckName,
-                    color = DeckBuilderColors.OnSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+        ArtPatch(
+            atmosphere = atmosphere,
+            modifier = Modifier.fillMaxSize(),
+            art = {
+                HeroTile(
+                    cardId = DefaultHeroes.cardIdFor(deck.classSlug) ?: deck.heroSlug,
+                    contentDescription = deck.className,
+                    modifier = Modifier.fillMaxSize(),
+                    verticalFocus = 0.24f,
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    FormatChip(deck.format)
-                    Text(
-                        text = deck.classSlug?.let { classLabel(it) } ?: deck.className.orEmpty(),
-                        style = AppType.rowSub,
-                        color = DeckBuilderColors.OnSurfaceDim,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
-                    Text(
-                        text = "${deck.cardCount}/${deck.maxCardCount}",
-                        style = AppType.mono,
-                        color = if (deck.cardCount >= deck.maxCardCount) {
-                            DeckBuilderColors.OnSurfaceDim
-                        } else {
-                            DeckBuilderColors.Primary
-                        },
-                    )
-                }
-            }
+            },
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        0f to if (isDark) Color(0x0D06080C) else Color(0x1AFFFFFF),
+                        0.78f to if (isDark) Color(0xB806080C) else Color(0xDBF8FAFD),
+                        1f to if (isDark) Color(0xD606080C) else Color(0xEDF8FAFD),
+                    ),
+                ),
+        )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 11.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
             if (deck.manaCurve.isNotEmpty()) {
-                CurveSpark(counts = deck.manaCurve, barWidth = 4.dp, height = 24.dp)
+                CurveSpark(counts = deck.manaCurve, barWidth = 4.dp, height = 26.dp)
             }
             Box {
                 Box(
@@ -361,7 +351,7 @@ private fun SavedDeckRow(
                     Icon(
                         Icons.Outlined.MoreVert,
                         contentDescription = stringResource(Res.string.action_more),
-                        tint = DeckBuilderColors.OnSurfaceDimmer,
+                        tint = DeckBuilderColors.OnSurfaceDim,
                         modifier = Modifier.size(18.dp),
                     )
                 }
@@ -372,6 +362,43 @@ private fun SavedDeckRow(
                     onInfo = onInfo,
                     onEdit = onEdit,
                     onDelete = onDelete,
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(15.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
+            Text(
+                text = deck.name,
+                style = AppType.deckName,
+                color = DeckBuilderColors.OnSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
+                FormatChip(deck.format)
+                Text(
+                    text = deck.classSlug?.let { classLabel(it) } ?: deck.className.orEmpty(),
+                    style = AppType.rowSub,
+                    color = DeckBuilderColors.OnSurfaceDim,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = "${deck.cardCount}/${deck.maxCardCount}",
+                    style = AppType.mono,
+                    color = if (deck.cardCount >= deck.maxCardCount) {
+                        DeckBuilderColors.OnSurfaceDim
+                    } else {
+                        DeckBuilderColors.Primary
+                    },
                 )
             }
         }

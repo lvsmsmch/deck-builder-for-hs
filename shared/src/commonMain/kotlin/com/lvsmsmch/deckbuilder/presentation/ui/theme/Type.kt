@@ -42,23 +42,23 @@ object AppType {
     val screenTitle: TextStyle
         @Composable get() = TextStyle(
             fontFamily = display,
-            fontWeight = FontWeight.Bold,
-            fontSize = 21.sp,
-            lineHeight = 26.sp,
-            letterSpacing = 1.2.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 27.sp,
+            lineHeight = 32.sp,
+            letterSpacing = (-0.2).sp,
         )
 
     val heroTitle: TextStyle
-        @Composable get() = screenTitle.copy(fontSize = 21.sp, lineHeight = 26.sp)
+        @Composable get() = screenTitle.copy(fontSize = 30.sp, lineHeight = 34.sp)
 
     /** Deck names in a list. */
     val deckName: TextStyle
         @Composable get() = TextStyle(
             fontFamily = display,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 17.sp,
-            lineHeight = 21.sp,
-            letterSpacing = 1.2.sp,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
+            letterSpacing = (-0.1).sp,
         )
 
     /** The three figures on a deck: cards, average mana, dust. */

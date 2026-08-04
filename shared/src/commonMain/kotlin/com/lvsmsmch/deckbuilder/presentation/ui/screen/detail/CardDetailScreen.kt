@@ -91,7 +91,10 @@ import com.lvsmsmch.deckbuilder.presentation.ui.labels.rarityLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.labels.typeLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.ActionBar
 import androidx.compose.ui.draw.drawBehind
-import com.lvsmsmch.deckbuilder.presentation.ui.components.Plate
+import com.lvsmsmch.deckbuilder.presentation.ui.components.Backdrop
+import com.lvsmsmch.deckbuilder.presentation.ui.components.GlassPane
+import com.lvsmsmch.deckbuilder.presentation.ui.components.cardAtmosphere
+import com.lvsmsmch.deckbuilder.presentation.ui.components.classAtmosphere
 import com.lvsmsmch.deckbuilder.presentation.ui.components.MicroLabel
 import com.lvsmsmch.deckbuilder.presentation.ui.components.PrimaryButton
 import com.lvsmsmch.deckbuilder.presentation.ui.theme.AppType
@@ -110,10 +113,16 @@ fun CardDetailScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    Column(
+    val loaded = (state.card as? UiState.Loaded)?.data
+    Backdrop(
+        atmosphere = loaded?.let { cardAtmosphere(it) } ?: classAtmosphere(null),
+        artUrl = loaded?.cropImage ?: loaded?.image,
+        blurRadius = 60.dp,
+        scrimFrom = 0.1f,
+    ) {
+      Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeckBuilderColors.Surface)
             .statusBarsPadding(),
     ) {
         TopBar(
@@ -151,6 +160,7 @@ fun CardDetailScreen(
                 }
             }
         }
+      }
     }
 }
 
@@ -191,9 +201,9 @@ private fun CardLoadingShell() {
 @Composable
 private fun TopBar(title: String, onBack: () -> Unit) {
     ScreenTopBar(
-        title = title.uppercase(),
+        title = title,
         onBack = onBack,
-        titleStyle = AppType.screenTitle.copy(fontSize = 18.sp, letterSpacing = 0.8.sp),
+        titleStyle = AppType.screenTitle.copy(fontSize = 20.sp),
     )
 }
 
@@ -221,8 +231,8 @@ private fun Body(
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = card.name.uppercase(),
-                    style = AppType.screenTitle.copy(fontSize = 22.sp),
+                    text = card.name,
+                    style = AppType.screenTitle.copy(fontSize = 24.sp),
                     color = DeckBuilderColors.OnSurface,
                     modifier = Modifier.weight(1f),
                 )
@@ -470,7 +480,7 @@ private fun CardFacts(card: Card, isStandardLegal: Boolean?) {
     val released = SetReleaseDates.label(setSlug)
     val craft = card.rarity?.craftingCost?.firstOrNull()?.takeIf { it > 0 }
 
-    Plate(modifier = Modifier.fillMaxWidth()) {
+    GlassPane(modifier = Modifier.fillMaxWidth()) {
       Column(modifier = Modifier.fillMaxWidth()) {
         FactRow(stringResource(Res.string.card_detail_class), classes, first = true)
         FactRow(stringResource(Res.string.card_detail_type), typeAndRarity, dot = card.rarity?.slug)
