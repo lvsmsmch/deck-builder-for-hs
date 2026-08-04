@@ -657,8 +657,10 @@ private fun DeckStrip(
                 color = DeckBuilderColors.OnSurfaceDimmer,
             )
             Spacer(Modifier.width(12.dp))
-            MiniManaCurve(counts = curve, modifier = Modifier.weight(1f).height(20.dp))
-            Spacer(Modifier.width(8.dp))
+            // Fixed width: stretched across the bar a single populated bucket
+            // reads as a stray rectangle rather than a curve.
+            MiniManaCurve(counts = curve, modifier = Modifier.width(96.dp).height(20.dp))
+            Spacer(Modifier.weight(1f))
             Icon(
                 Icons.Outlined.KeyboardArrowUp,
                 contentDescription = null,

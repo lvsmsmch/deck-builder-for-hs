@@ -442,6 +442,10 @@ fun FormatChip(format: GameFormat, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Slim bar: back, the deck's name and the two actions. Class, format and
+ * counts are not repeated here — the banner right below owns them.
+ */
 @Composable
 private fun DeckToolbar(
     deck: Deck,
@@ -456,65 +460,36 @@ private fun DeckToolbar(
     onCopyCode: () -> Unit,
     onInfo: () -> Unit,
 ) {
-    val classSlug = deck.heroClass?.slug
-    val heroCardId = DefaultHeroes.cardIdFor(classSlug)
     val displayName = savedName ?: deck.hero?.name ?: deck.heroClass?.name ?: "Hero"
-    val heroClassLabel = classLabel(deck.heroClass?.slug)
-    val formatColor = formatColor(deck.format)
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    ScreenTopBar(
+        title = displayName,
+        onBack = onBack,
+        titleStyle = MaterialTheme.typography.titleMedium,
+        bottomPadding = 6.dp,
     ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(Res.string.action_back),
-                tint = DeckBuilderColors.OnSurface,
-            )
-        }
-        Box(
+        Row(
             modifier = Modifier
-                .size(36.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(10.dp)),
+                .border(1.dp, DeckBuilderColors.Outline, RoundedCornerShape(10.dp))
+                .background(DeckBuilderColors.SurfaceContainer)
+                .clickable(onClick = onEditDeck)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            HeroTile(
-                cardId = heroCardId,
-                contentDescription = deck.heroClass?.name,
-                modifier = Modifier.fillMaxSize(),
+            Icon(
+                Icons.Outlined.Edit,
+                contentDescription = null,
+                tint = DeckBuilderColors.OnSurfaceDim,
+                modifier = Modifier.size(15.dp),
             )
-        }
-        Spacer(Modifier.width(10.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            EditableTitle(
-                text = displayName,
-                editable = false,
-                onCommit = onRename,
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = stringResource(Res.string.action_edit),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = DeckBuilderColors.OnSurfaceDim,
             )
-            Spacer(Modifier.height(4.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(formatColor.copy(alpha = 0.16f))
-                        .padding(horizontal = 8.dp, vertical = 2.dp),
-                ) {
-                    Text(
-                        text = formatLabel(deck.format),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = formatColor,
-                    )
-                }
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "$heroClassLabel \u00B7 ${deck.cardCount}/${deck.maxCardCount}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = DeckBuilderColors.OnSurfaceDim,
-                )
-            }
         }
         Box {
             IconButton(onClick = onOpenMenu) {
