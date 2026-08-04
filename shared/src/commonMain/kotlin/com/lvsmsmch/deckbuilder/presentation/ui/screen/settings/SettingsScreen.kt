@@ -57,7 +57,9 @@ import com.lvsmsmch.deckbuilder.presentation.SnackbarController
 import com.lvsmsmch.deckbuilder.presentation.UiText
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
+import androidx.compose.ui.text.font.FontWeight
 import com.lvsmsmch.deckbuilder.util.formatBytes
+import com.lvsmsmch.deckbuilder.util.formatDateTime
 import com.lvsmsmch.deckbuilder.data.debug.SessionLog
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
 import com.lvsmsmch.deckbuilder.domain.entities.SupportedCardLocales
@@ -162,10 +164,33 @@ fun SettingsScreen(
                 item { SectionHeader(stringResource(Res.string.settings_section_storage)) }
                 item {
                     GroupCard {
-                        DialogRow(
+                        // Card data is a state, not a menu entry: say whether it
+                        // is current, and when it was last checked.
+                        StatusRow(
                             title = stringResource(Res.string.more_card_data),
-                            subtitle = stringResource(Res.string.more_card_data_subtitle),
-                            value = "",
+                            subtitle = state.prefs.lastUpdateCheckAtMs
+                                ?.let { stringResource(Res.string.settings_last_check_label, formatDateTime(it)) }
+                                ?: stringResource(Res.string.settings_status_never_checked),
+                            statusLabel = stringResource(
+                                if (state.prefs.lastUpdateCheckAtMs != null) {
+                                    Res.string.settings_status_up_to_date
+                                } else {
+                                    Res.string.action_retry
+                                },
+                            ),
+                            statusOk = state.prefs.lastUpdateCheckAtMs != null,
+                            onClick = onOpenCardData,
+                        )
+                        Divider()
+                        DialogRow(
+                            title = stringResource(Res.string.settings_cards_build),
+                            subtitle = stringResource(
+                                Res.string.settings_card_data_summary,
+                                state.cardCount,
+                                formatBytes(state.cardDataBytes),
+                            ),
+                            value = state.cardsBuild.orEmpty(),
+                            trailingIcon = null,
                             onClick = onOpenCardData,
                         )
                         Divider()
@@ -203,33 +228,28 @@ fun SettingsScreen(
                             )
                             Divider()
                         }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(Res.string.settings_version),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = DeckBuilderColors.OnSurface,
-                                )
-                                Text(
-                                    text = appInfo.applicationId,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = DeckBuilderColors.OnSurfaceDim,
-                                )
-                            }
-                            Text(
-                                text = appInfo.versionName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = DeckBuilderColors.OnSurfaceDim,
-                            )
-                        }
                     }
                 }
-                item { Spacer(Modifier.height(24.dp)) }
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, bottom = 28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(3.dp),
+                    ) {
+                        Text(
+                            text = "${appInfo.applicationId} · ${appInfo.versionName}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = DeckBuilderColors.OnSurfaceDimmer,
+                        )
+                        Text(
+                            text = stringResource(Res.string.settings_footer_source),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = DeckBuilderColors.OnSurfaceDimmer,
+                        )
+                    }
+                }
             }
         }
 
@@ -294,8 +314,8 @@ private fun SectionHeader(label: String) {
     Text(
         text = label.uppercase(),
         style = MaterialTheme.typography.labelSmall,
-        color = DeckBuilderColors.OnSurfaceDim,
-        modifier = Modifier.padding(top = 16.dp, bottom = 6.dp, start = 4.dp),
+        color = DeckBuilderColors.OnSurfaceDimmer,
+        modifier = Modifier.padding(top = 18.dp, bottom = 7.dp, start = 4.dp),
     )
 }
 
@@ -337,17 +357,18 @@ private fun DialogRow(
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = DeckBuilderColors.OnSurface,
             )
             if (subtitle.isNotEmpty()) {
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = DeckBuilderColors.OnSurfaceDim,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = DeckBuilderColors.OnSurfaceDimmer,
                 )
             }
         }
@@ -355,7 +376,8 @@ private fun DialogRow(
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
-                color = DeckBuilderColors.OnSurface,
+                fontWeight = FontWeight.SemiBold,
+                color = DeckBuilderColors.OnSurfaceDim,
             )
             Spacer(Modifier.size(6.dp))
         }
@@ -365,6 +387,52 @@ private fun DialogRow(
                 contentDescription = null,
                 tint = DeckBuilderColors.OnSurface,
                 modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+}
+
+/** Settings row whose trailing slot reports state instead of navigating. */
+@Composable
+private fun StatusRow(
+    title: String,
+    subtitle: String,
+    statusLabel: String,
+    statusOk: Boolean,
+    onClick: () -> Unit,
+) {
+    val color = if (statusOk) DeckBuilderColors.Success else DeckBuilderColors.Secondary
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = DeckBuilderColors.OnSurface,
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = DeckBuilderColors.OnSurfaceDimmer,
+            )
+        }
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(color.copy(alpha = 0.15f))
+                .padding(horizontal = 8.dp, vertical = 3.dp),
+        ) {
+            Text(
+                text = statusLabel.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = color,
             )
         }
     }

@@ -75,6 +75,10 @@ class SavedDecksViewModel(
         viewModelScope.launch { renameSaved(code, trimmed) }
     }
 
+    fun setSort(sort: DeckSort) {
+        _state.update { it.copy(sort = sort) }
+    }
+
     fun clearImportError() {
         _state.update { it.copy(importError = null) }
     }

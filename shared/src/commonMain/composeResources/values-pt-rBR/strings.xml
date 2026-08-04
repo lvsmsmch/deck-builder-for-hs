@@ -363,4 +363,13 @@
     <string name="card_detail_standard_legal">Standard · legal</string>
     <string name="card_detail_wild_only">Wild only</string>
     <string name="builder_deck_strip_label">In deck</string>
+    <string name="decks_sort_updated">Recently updated</string>
+    <string name="decks_sort_name">Name</string>
+    <string name="decks_sort_size">Deck size</string>
+    <string name="decks_footer_summary">Decks: %1$d · Cards: %2$d</string>
+    <string name="settings_status_up_to_date">Up to date</string>
+    <string name="settings_status_never_checked">Not checked yet</string>
+    <string name="settings_card_data_summary">%1$d cards · %2$s</string>
+    <string name="settings_footer_source">Card data from HearthstoneJSON</string>
+    <string name="settings_last_check_label">Last checked %1$s</string>
 </resources>

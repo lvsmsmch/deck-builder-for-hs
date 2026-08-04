@@ -37,6 +37,8 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.lvsmsmch.deckbuilder.resources.Res
 import com.lvsmsmch.deckbuilder.resources.*
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import com.lvsmsmch.deckbuilder.util.formatBytes
 import com.lvsmsmch.deckbuilder.util.formatDateTime
 import com.lvsmsmch.deckbuilder.domain.entities.AppPreferences
@@ -90,18 +92,22 @@ fun CardDataScreen(
                         title = stringResource(Res.string.settings_cards_build),
                         value = state.cardsBuild.orEmpty(),
                     )
+                    RowDivider()
                     InfoRow(
                         title = stringResource(Res.string.settings_last_check),
                         value = formatLastCheck(state.prefs.lastUpdateCheckAtMs),
                     )
+                    RowDivider()
                     InfoRow(
                         title = stringResource(Res.string.settings_card_data_locale),
                         value = SupportedCardLocales.displayName(state.prefs.cardLocale),
                     )
+                    RowDivider()
                     InfoRow(
                         title = stringResource(Res.string.settings_card_data_cards),
                         value = state.cardCount.toString(),
                     )
+                    RowDivider()
                     InfoRow(
                         title = stringResource(Res.string.settings_card_data_size),
                         value = formatBytes(state.cardDataBytes),
@@ -134,6 +140,16 @@ fun CardDataScreen(
 }
 
 @Composable
+private fun RowDivider() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(DeckBuilderColors.OutlineSoft),
+    )
+}
+
+@Composable
 private fun RefreshCardDataRow(
     isRefreshing: Boolean,
     onClick: () -> Unit,
@@ -153,14 +169,15 @@ private fun RefreshCardDataRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(Res.string.settings_refresh_card_data),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = DeckBuilderColors.OnSurface,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = stringResource(Res.string.settings_refresh_card_data_subtitle),
-                style = MaterialTheme.typography.bodySmall,
-                color = DeckBuilderColors.OnSurface,
+                style = MaterialTheme.typography.labelSmall,
+                color = DeckBuilderColors.OnSurfaceDimmer,
             )
         }
         if (isRefreshing) {
@@ -185,19 +202,22 @@ private fun InfoRow(title: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
             color = DeckBuilderColors.OnSurface,
             modifier = Modifier.weight(1f),
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            color = DeckBuilderColors.OnSurface,
+            fontWeight = FontWeight.SemiBold,
+            color = DeckBuilderColors.OnSurfaceDim,
+            textAlign = TextAlign.End,
         )
     }
 }

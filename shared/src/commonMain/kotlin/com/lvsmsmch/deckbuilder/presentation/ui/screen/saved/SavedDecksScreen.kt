@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
@@ -122,7 +123,10 @@ fun SavedDecksScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            Header()
+            Header(
+                sort = state.sort,
+                onSortChange = viewModel::setSort,
+            )
             if (state.decks.isEmpty()) {
                 EmptyState()
             } else {
@@ -131,7 +135,7 @@ fun SavedDecksScreen(
                         .fillMaxSize()
                         .padding(horizontal = 20.dp),
                 ) {
-                    items(state.decks, key = { it.code }) { deck ->
+                    items(state.sortedDecks, key = { it.code }) { deck ->
                         Spacer(Modifier.height(9.dp))
                         SavedDeckRow(
                             deck = deck,
@@ -143,6 +147,21 @@ fun SavedDecksScreen(
                             onInfo = { statsCode = deck.code },
                             onEdit = { onEditDeck(deck.code, deck.name) },
                             onDelete = { pendingDelete = deck },
+                        )
+                    }
+                    item {
+                        Text(
+                            text = stringResource(
+                                Res.string.decks_footer_summary,
+                                state.decks.size,
+                                state.totalCards,
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = DeckBuilderColors.OnSurfaceDimmer,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, bottom = 88.dp),
                         )
                     }
                 }
@@ -210,11 +229,15 @@ fun SavedDecksScreen(
 }
 
 @Composable
-private fun Header() {
+private fun Header(
+    sort: DeckSort,
+    onSortChange: (DeckSort) -> Unit,
+) {
+    var menuOpen by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+            .padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -222,7 +245,49 @@ private fun Header() {
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.weight(1f),
         )
+        Box {
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(DeckBuilderColors.SurfaceContainer)
+                    .border(1.dp, DeckBuilderColors.OutlineSoft, RoundedCornerShape(10.dp))
+                    .clickable { menuOpen = true }
+                    .padding(start = 10.dp, end = 5.dp)
+                    .height(30.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(sort.labelRes()),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = DeckBuilderColors.OnSurfaceDim,
+                )
+                Icon(
+                    Icons.Outlined.ArrowDropDown,
+                    contentDescription = null,
+                    tint = DeckBuilderColors.OnSurfaceDimmer,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                DeckSort.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(option.labelRes())) },
+                        onClick = {
+                            onSortChange(option)
+                            menuOpen = false
+                        },
+                    )
+                }
+            }
+        }
     }
+}
+
+private fun DeckSort.labelRes(): org.jetbrains.compose.resources.StringResource = when (this) {
+    DeckSort.Updated -> Res.string.decks_sort_updated
+    DeckSort.Name -> Res.string.decks_sort_name
+    DeckSort.Size -> Res.string.decks_sort_size
 }
 
 /**

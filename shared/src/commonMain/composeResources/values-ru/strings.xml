@@ -365,4 +365,13 @@
     <string name="card_detail_standard_legal">Standard · легальна</string>
     <string name="card_detail_wild_only">Только Wild</string>
     <string name="builder_deck_strip_label">В колоде</string>
+    <string name="decks_sort_updated">Недавние</string>
+    <string name="decks_sort_name">По имени</string>
+    <string name="decks_sort_size">По размеру</string>
+    <string name="decks_footer_summary">Колод: %1$d · карт: %2$d</string>
+    <string name="settings_status_up_to_date">Актуально</string>
+    <string name="settings_status_never_checked">Ещё не проверяли</string>
+    <string name="settings_card_data_summary">Карт: %1$d · %2$s</string>
+    <string name="settings_footer_source">Данные карт — HearthstoneJSON</string>
+    <string name="settings_last_check_label">Проверено %1$s</string>
 </resources>
